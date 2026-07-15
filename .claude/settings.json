@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\l10n\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\generated\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\constants\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\di\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\errors\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\localization\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\network\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\theme\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\utils\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\data\\\\datasources\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\data\\\\models\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\data\\\\repositories\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\domain\\\\entities\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\domain\\\\repositories\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\cubits\\\\app_settings\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\cubits\\\\book_detail\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\cubits\\\\department\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\cubits\\\\favorites\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\cubits\\\\scanner\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\cubits\\\\search\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\articles\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\book_detail\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\department\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\favorites\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\home\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\navigation\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\onboarding\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\scanner\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\search\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\screens\\\\settings\")",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\features\\\\library\\\\presentation\\\\widgets\\\\state_widgets\")",
+      "PowerShell(Set-Location \"d:\\\\Developer\\\\dalili\"; fvm dart run intl_utils:generate; Write-Output \"Exit: $LASTEXITCODE\"; ls lib/generated/)",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\localization\\\\l10n\")",
+      "Bash(cd /d \"d:\\\\Developer\\\\dalili\")",
+      "Bash(fvm dart *)"
+    ]
+  }
+}

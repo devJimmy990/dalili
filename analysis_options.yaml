@@ -1,0 +1,20 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - lib/generated/**
+    - lib/core/localization/generated/**
+  errors:
+    always_use_package_imports: error
+
+linter:
+  rules:
+    - prefer_final_fields
+    - prefer_final_locals
+    - prefer_const_constructors
+    - prefer_expression_function_bodies
+    - type_annotate_public_apis
+    - always_use_package_imports
+    - sort_constructors_first
+    - annotate_overrides
+    - avoid_print
