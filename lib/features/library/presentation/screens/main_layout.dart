@@ -22,54 +22,50 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: [
-            BlocProvider<DepartmentCubit>(
-              create: (_) => sl<DepartmentCubit>(),
-              child: const HomeScreen(),
-            ),
-            const NavigationScreen(),
-            BlocProvider<FavoritesCubit>.value(
-              value: sl<FavoritesCubit>(),
-              child: const FavoritesScreen(),
-            ),
-            const SettingsScreen(),
-          ],
+    body: IndexedStack(
+      index: _selectedIndex,
+      children: [
+        BlocProvider<DepartmentCubit>(
+          create: (_) => sl<DepartmentCubit>(),
+          child: const HomeScreen(),
         ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: (i) =>
-              setState(() => _selectedIndex = i),
-          backgroundColor: context.colors.surface,
-          indicatorColor: context.appTheme.secondaryContainer
-              .withValues(alpha: 0.2),
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home,
-                  color: context.colors.secondary),
-              label: AppLocalizations.home,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.explore_outlined),
-              selectedIcon: Icon(Icons.explore,
-                  color: context.colors.secondary),
-              label: AppLocalizations.navigation,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.favorite_outline),
-              selectedIcon: Icon(Icons.favorite,
-                  color: context.colors.secondary),
-              label: AppLocalizations.favorites,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings,
-                  color: context.colors.secondary),
-              label: AppLocalizations.settings,
-            ),
-          ],
+        const NavigationScreen(),
+        BlocProvider<FavoritesCubit>.value(
+          value: sl<FavoritesCubit>(),
+          child: const FavoritesScreen(),
         ),
-      );
+        const SettingsScreen(),
+      ],
+    ),
+    bottomNavigationBar: NavigationBar(
+      selectedIndex: _selectedIndex,
+      onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+      backgroundColor: context.colors.surface,
+      indicatorColor: context.appTheme.secondaryContainer.withValues(
+        alpha: 0.2,
+      ),
+      destinations: [
+        NavigationDestination(
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home, color: context.colors.secondary),
+          label: AppLocalizations.home,
+        ),
+        NavigationDestination(
+          icon: const Icon(Icons.explore_outlined),
+          selectedIcon: Icon(Icons.explore, color: context.colors.secondary),
+          label: AppLocalizations.navigation,
+        ),
+        NavigationDestination(
+          icon: const Icon(Icons.favorite_outline),
+          selectedIcon: Icon(Icons.favorite, color: context.colors.secondary),
+          label: AppLocalizations.favorites,
+        ),
+        NavigationDestination(
+          icon: const Icon(Icons.settings_outlined),
+          selectedIcon: Icon(Icons.settings, color: context.colors.secondary),
+          label: AppLocalizations.settings,
+        ),
+      ],
+    ),
+  );
 }

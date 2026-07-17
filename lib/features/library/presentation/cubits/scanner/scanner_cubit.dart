@@ -28,8 +28,9 @@ class ScannerCubit extends HydratedCubit<ScannerState> {
         emit(state.copyWith(status: ScannerStatus.found, book: book));
       }
     } on Failure catch (f) {
-      emit(state.copyWith(
-          status: ScannerStatus.error, errorMessage: f.message));
+      emit(
+        state.copyWith(status: ScannerStatus.error, errorMessage: f.message),
+      );
     } finally {
       _isProcessing = false;
     }

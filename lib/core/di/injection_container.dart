@@ -35,16 +35,8 @@ Future<void> initDependencies() async {
   );
 
   // Factory cubits — new instance per screen push
-  sl.registerFactory<DepartmentCubit>(
-    () => DepartmentCubit(sl()),
-  );
-  sl.registerFactory<SearchCubit>(
-    () => SearchCubit(sl()),
-  );
-  sl.registerFactory<ScannerCubit>(
-    () => ScannerCubit(sl()),
-  );
-  sl.registerFactory<BookDetailCubit>(
-    () => BookDetailCubit(),
-  );
+  sl.registerFactory<DepartmentCubit>(() => DepartmentCubit(sl()));
+  sl.registerFactory<SearchCubit>(() => SearchCubit(sl()));
+  sl.registerFactory<ScannerCubit>(() => ScannerCubit(sl()));
+  sl.registerFactory<BookDetailCubit>(() => BookDetailCubit());
 }

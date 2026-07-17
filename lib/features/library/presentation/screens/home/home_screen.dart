@@ -101,9 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   BlocBuilder<DepartmentCubit, DepartmentState>(
                     builder: (context, state) {
                       if (state.status == DepartmentStatus.loading) {
-                        return const Expanded(
-                          child: DepartmentListSkeleton(),
-                        );
+                        return const Expanded(child: DepartmentListSkeleton());
                       } else if (state.status == DepartmentStatus.error) {
                         return AppErrorWidget(
                           onRetry: () =>

@@ -26,6 +26,8 @@ dependencies:
 
   flutter_compass: ^0.8.1
   pedometer: ^4.2.0
+  permission_handler: ^11.3.1
+  camera: ^0.12.0+2
 
   
 dev_dependencies:
@@ -57,7 +59,7 @@ flutter:
     - .env
     - assets/images/
     - assets/fonts/
-    - assets/map/library_map.json
+    - assets/map/
   fonts:
     - family: Tajawal
       fonts:

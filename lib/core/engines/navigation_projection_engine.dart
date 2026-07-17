@@ -23,10 +23,6 @@ class NavigationProjectionEngine {
       ),
     );
 
-    return NavigationPositionModel(
-      x: projected.x,
-      y: projected.y,
-      progress: position.progress,
-    );
+    return NavigationPositionModel(x: projected.x, y: projected.y);
   }
 }

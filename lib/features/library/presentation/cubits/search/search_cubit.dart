@@ -15,28 +15,30 @@ class SearchCubit extends HydratedCubit<SearchState> {
   void search(String query) {
     _debounce?.cancel();
     if (query.trim().isEmpty) {
-      emit(state.copyWith(
-          status: SearchStatus.initial, query: '', results: []));
+      emit(
+        state.copyWith(status: SearchStatus.initial, query: '', results: []),
+      );
       return;
     }
     emit(state.copyWith(status: SearchStatus.loading, query: query));
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       try {
         final results = await _repository.searchBooks(query);
-        emit(state.copyWith(
-          status:
-              results.isEmpty ? SearchStatus.empty : SearchStatus.success,
-          results: results,
-        ));
+        emit(
+          state.copyWith(
+            status: results.isEmpty ? SearchStatus.empty : SearchStatus.success,
+            results: results,
+          ),
+        );
       } on Failure catch (f) {
-        emit(state.copyWith(
-            status: SearchStatus.error, errorMessage: f.message));
+        emit(
+          state.copyWith(status: SearchStatus.error, errorMessage: f.message),
+        );
       }
     });
   }
 
-  void setFilter(SearchFilter filter) =>
-      emit(state.copyWith(filter: filter));
+  void setFilter(SearchFilter filter) => emit(state.copyWith(filter: filter));
 
   void clearSearch() {
     _debounce?.cancel();
@@ -64,10 +66,8 @@ class SearchCubit extends HydratedCubit<SearchState> {
 
   @override
   Map<String, dynamic>? toJson(SearchState state) => {
-        'query': state.query,
-        'results': state.results
-            .map((b) => (b as BookModel).toJson())
-            .toList(),
-        'filter': state.filter.index,
-      };
+    'query': state.query,
+    'results': state.results.map((b) => (b as BookModel).toJson()).toList(),
+    'filter': state.filter.index,
+  };
 }

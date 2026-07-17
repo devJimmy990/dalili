@@ -74,7 +74,20 @@ class NavigationCubit extends Cubit<NavigationState> {
       emit(state.copyWith(loading: false, map: result.map));
 
       _emitNavigationState(navigation);
-      await _navigationSensorService.start();
+
+      final sensorsStarted = await _navigationSensorService.start();
+
+      if (!sensorsStarted) {
+        emit(
+          state.copyWith(
+            error:
+                "Motion & fitness / location permission is required for "
+                "live navigation. Please grant it in system settings and "
+                "try again.",
+          ),
+        );
+        return;
+      }
 
       _sensorSubscription = _navigationSensorService.updates.listen(
         _onSensorUpdate,
@@ -128,9 +141,14 @@ class NavigationCubit extends Cubit<NavigationState> {
     //-----------------------------------------
     // Arrived
     //-----------------------------------------
+    // Only stop the sensors here — do NOT call stopNavigation()/reset the
+    // state. That would wipe session/arrived (both just emitted above) in
+    // the same synchronous chain, before the UI ever gets a chance to
+    // render the "arrived" state. Full reset only happens when the user
+    // explicitly stops/starts a new navigation.
 
     if (result.session.status == NavigationStatus.arrived) {
-      stopNavigation();
+      unawaited(_stopSensors());
     }
   }
   //==========================================================

@@ -19,21 +19,21 @@ class ArticlesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: context.colors.surface,
-        appBar: AppBar(
-          title: Text(AppLocalizations.relatedArticles),
-          backgroundColor: context.colors.surface,
-          elevation: 0,
-        ),
-        body: articles.isEmpty
-            ? EmptyWidget(message: AppLocalizations.noArticles)
-            : ListView.builder(
-                itemCount: articles.length,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemBuilder: (_, i) => ArticleCard(
-                  article: articles[i],
-                  onTap: () => _launch(articles[i].url),
-                ),
-              ),
-      );
+    backgroundColor: context.colors.surface,
+    appBar: AppBar(
+      title: Text(AppLocalizations.relatedArticles),
+      backgroundColor: context.colors.surface,
+      elevation: 0,
+    ),
+    body: articles.isEmpty
+        ? EmptyWidget(message: AppLocalizations.noArticles)
+        : ListView.builder(
+            itemCount: articles.length,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemBuilder: (_, i) => ArticleCard(
+              article: articles[i],
+              onTap: () => _launch(articles[i].url),
+            ),
+          ),
+  );
 }

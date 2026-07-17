@@ -1,3 +1,4 @@
+import 'package:dalili/core/constants/assets_manager.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_state.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/widgets/navigation_controls.dart';
@@ -9,7 +10,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class NavigationScreen extends StatelessWidget {
   const NavigationScreen({super.key});
 
-  static const String endNode = "N6";
+  /// Asset path to the library's static map image, drawn as the
+  /// navigation background.
 
   @override
   Widget build(BuildContext context) => BlocProvider(
@@ -21,7 +23,7 @@ class NavigationScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              const NavigationControls(endNode: endNode),
+              const NavigationControls(),
 
               if (state.loading)
                 const Padding(
@@ -45,6 +47,7 @@ class NavigationScreen extends StatelessWidget {
                   child: NavigationMapWidget(
                     map: state.map!,
                     session: state.session!,
+                    mapImagePath: AssetsManager.assetsImagesLibraryMap,
                   ),
                 ),
 

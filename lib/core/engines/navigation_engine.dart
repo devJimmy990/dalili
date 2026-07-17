@@ -88,10 +88,15 @@ class NavigationEngine {
     //---------------------------------------
     // Correction
     //---------------------------------------
+    // NOTE: intentionally checks the raw (pre-projection) estimated
+    // position, not the projected one. Checking the projected position
+    // here would always read ~0 distance-from-segment, since it was
+    // already clamped onto that exact segment a few lines above — making
+    // drift undetectable.
 
     final correction = correctionEngine.calculate(
       session: updatedSession,
-      position: projectedPosition,
+      position: estimatedPosition,
     );
 
     //---------------------------------------

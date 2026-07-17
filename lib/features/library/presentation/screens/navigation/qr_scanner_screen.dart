@@ -1,4 +1,6 @@
 import 'package:dalili/features/library/data/models/navigation/library_map_model.dart';
+import 'package:dalili/features/library/data/models/navigation/node_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -56,14 +58,44 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   void _handleBarcode(BarcodeCapture capture) {
     final barcode = capture.barcodes.firstOrNull;
+    final rawValue = barcode?.rawValue;
 
-    if (barcode?.rawValue == null) {
+    if (rawValue == null) {
       return;
     }
 
-    debugPrint("debug - QR Scanned : ${barcode!.rawValue}");
+    debugPrint("debug - QR Scanned : $rawValue");
 
-    Navigator.pop(context, barcode.rawValue);
+    final matchedNode = _resolveNode(rawValue);
+
+    if (matchedNode == null) {
+      debugPrint(
+        "debug - No node found with qr == \"$rawValue\". Available QR "
+        "codes: ${widget.map.nodes.where((n) => n.qr != null).map((n) => n.qr).join(', ')}",
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Unrecognized QR code: $rawValue")),
+      );
+      return;
+    }
+
+    Navigator.pop(context, matchedNode.id);
+  }
+
+  /// Matches a raw scanned QR string against each node's `qr` field
+  /// (case/whitespace-insensitive), returning the node whose id should
+  /// actually be used for navigation.
+  NodeModel? _resolveNode(String rawValue) {
+    final normalized = rawValue.trim().toUpperCase().replaceAll(' ', '');
+
+    for (final node in widget.map.nodes) {
+      final nodeQr = node.qr?.trim().toUpperCase().replaceAll(' ', '');
+      if (nodeQr != null && nodeQr == normalized) {
+        return node;
+      }
+    }
+
+    return null;
   }
 
   //--------------------------------------------------
@@ -94,21 +126,25 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         children: [
           MobileScanner(controller: _controller, onDetect: _handleBarcode),
 
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              color: Colors.black54,
-              child: SizedBox(
+          // Dev-only bypass for testing without printed QR codes — must
+          // never reach a release build, since it would let anyone skip
+          // scanning entirely.
+          if (kDebugMode)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _fakeScan,
-                  child: Text(buttonText),
+                padding: const EdgeInsets.all(20),
+                color: Colors.black54,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _fakeScan,
+                    child: Text(buttonText),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

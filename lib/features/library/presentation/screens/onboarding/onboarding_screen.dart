@@ -41,29 +41,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: context.colors.surface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (i) => setState(() => _currentPage = i),
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    LanguagePage(onLanguageSelected: _nextPage),
-                    OnboardScanPage(onSkip: _finish, onContinue: _nextPage),
-                    OnboardNavigatePage(onGetStarted: _finish),
-                  ],
-                ),
-              ),
-              _PageIndicator(
-                  count: 3, current: _currentPage),
-              const SizedBox(height: 24),
-            ],
+    backgroundColor: context.colors.surface,
+    body: SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (i) => setState(() => _currentPage = i),
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                LanguagePage(onLanguageSelected: _nextPage),
+                OnboardScanPage(onSkip: _finish, onContinue: _nextPage),
+                OnboardNavigatePage(onGetStarted: _finish),
+              ],
+            ),
           ),
-        ),
-      );
+          _PageIndicator(count: 3, current: _currentPage),
+          const SizedBox(height: 24),
+        ],
+      ),
+    ),
+  );
 }
 
 class _PageIndicator extends StatelessWidget {
@@ -74,22 +73,21 @@ class _PageIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          count,
-          (i) => AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: i == current ? 20 : 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: i == current
-                  ? context.colors.secondary
-                  : context.appTheme.outlineVariant,
-              borderRadius:
-                  BorderRadius.circular(context.appTheme.radiusFull),
-            ),
-          ),
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: List.generate(
+      count,
+      (i) => AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: i == current ? 20 : 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: i == current
+              ? context.colors.secondary
+              : context.appTheme.outlineVariant,
+          borderRadius: BorderRadius.circular(context.appTheme.radiusFull),
         ),
-      );
+      ),
+    ),
+  );
 }

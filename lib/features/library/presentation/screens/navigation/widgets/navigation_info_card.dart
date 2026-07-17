@@ -1,6 +1,7 @@
 import 'package:dalili/features/library/data/models/navigation/library_map_model.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_state.dart';
+import 'package:dalili/features/library/presentation/screens/navigation/qr_scanner_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -74,11 +75,15 @@ class NavigationInfoCard extends StatelessWidget {
                 icon: const Icon(Icons.qr_code_scanner),
                 label: const Text("Scan QR Again"),
                 onPressed: () async {
+                  if (map == null) {
+                    return;
+                  }
+
                   final nodeId = await Navigator.push<String>(
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
-                          NavigationInfoCard(state: state, map: state.map),
+                          QRScannerScreen(mode: QRScanMode.relocate, map: map!),
                     ),
                   );
 

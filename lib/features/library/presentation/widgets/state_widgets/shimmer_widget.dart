@@ -96,44 +96,40 @@ class BookCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        color: context.appTheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
-        ),
-        elevation: 1,
-        margin: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.containerMargin,
-          vertical: AppSpacing.stackSm / 2,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.stackMd),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ShimmerBox(
-                width: 80,
-                height: 110,
-                radius: context.appTheme.radiusMd,
-              ),
-              const SizedBox(width: AppSpacing.gutter),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ShimmerBox(height: 16),
-                    SizedBox(height: 6),
-                    ShimmerBox(height: 12, width: 120),
-                    SizedBox(height: 6),
-                    ShimmerBox(height: 12, width: 160),
-                    SizedBox(height: 8),
-                    ShimmerBox(height: 12, width: 90),
-                  ],
-                ),
-              ),
-            ],
+    color: context.appTheme.surfaceContainerLow,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
+    ),
+    elevation: 1,
+    margin: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.containerMargin,
+      vertical: AppSpacing.stackSm / 2,
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(AppSpacing.stackMd),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ShimmerBox(width: 80, height: 110, radius: context.appTheme.radiusMd),
+          const SizedBox(width: AppSpacing.gutter),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShimmerBox(height: 16),
+                SizedBox(height: 6),
+                ShimmerBox(height: 12, width: 120),
+                SizedBox(height: 6),
+                ShimmerBox(height: 12, width: 160),
+                SizedBox(height: 8),
+                ShimmerBox(height: 12, width: 90),
+              ],
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 /// Mirrors [DepartmentTile] layout (no horizontal margin — used inside a Card).
@@ -142,24 +138,23 @@ class DepartmentTileSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        height: 56,
-        margin: const EdgeInsets.symmetric(vertical: AppSpacing.stackSm / 2),
-        decoration: BoxDecoration(
-          color: context.appTheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
-        ),
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppSpacing.stackMd),
-        child: const Row(
-          children: [
-            ShimmerBox(width: 40, height: 40, radius: 20),
-            SizedBox(width: AppSpacing.stackMd),
-            Expanded(child: ShimmerBox(height: 14)),
-            SizedBox(width: AppSpacing.stackMd),
-            ShimmerBox(width: 20, height: 20),
-          ],
-        ),
-      );
+    height: 56,
+    margin: const EdgeInsets.symmetric(vertical: AppSpacing.stackSm / 2),
+    decoration: BoxDecoration(
+      color: context.appTheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.stackMd),
+    child: const Row(
+      children: [
+        ShimmerBox(width: 40, height: 40, radius: 20),
+        SizedBox(width: AppSpacing.stackMd),
+        Expanded(child: ShimmerBox(height: 14)),
+        SizedBox(width: AppSpacing.stackMd),
+        ShimmerBox(width: 20, height: 20),
+      ],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -174,13 +169,13 @@ class BookListSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ShimmerWidget(
-        child: ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          itemCount: count,
-          itemBuilder: (_, __) => const BookCardSkeleton(),
-        ),
-      );
+    child: ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      itemCount: count,
+      itemBuilder: (_, __) => const BookCardSkeleton(),
+    ),
+  );
 }
 
 /// Drop-in replacement for [LoadingWidget] in department list context (home screen).
@@ -191,13 +186,12 @@ class DepartmentListSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ShimmerWidget(
-        child: Padding(
-          padding:
-              const EdgeInsets.only(top: AppSpacing.stackSm),
-          child: Column(
-            children:
-                List.generate(count, (_) => const DepartmentTileSkeleton()),
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.stackSm),
+      child: ListView.builder(
+        itemCount: count,
+        itemBuilder: (context, index) => const DepartmentTileSkeleton(),
+      ),
+    ),
+  );
 }

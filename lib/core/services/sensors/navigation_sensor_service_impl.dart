@@ -6,6 +6,7 @@ import 'package:dalili/core/services/pedometer_step_counter_service.dart';
 import 'package:dalili/core/services/sensors/navigation_sensor_service.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_location_update_model.dart';
 import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class NavigationSensorServiceImpl implements NavigationSensorService {
   NavigationSensorServiceImpl({
@@ -33,13 +34,35 @@ class NavigationSensorServiceImpl implements NavigationSensorService {
   Stream<NavigationLocationUpdateModel> get updates => _controller.stream;
 
   @override
-  Future<void> start() async {
+  Future<bool> start() async {
+    final granted = await _requestPermissions();
+
+    if (!granted) {
+      debugPrint(
+        "debug - Navigation sensors NOT started: required permissions denied "
+        "(activityRecognition / location). Pedometer and/or compass will "
+        "silently produce no events until these are granted.",
+      );
+      return false;
+    }
+
     await _compass.start();
     await _steps.start();
 
     _headingSubscription = _compass.heading.listen((value) {
       debugPrint("debug - Heading received: $value");
       _heading = value;
+
+      // Emit a heading-only update immediately so the UI (arrow rotation)
+      // reacts to turning in place, not only to steps. walkedDistance is 0
+      // so position/progress in the engine are unaffected.
+      _controller.add(
+        NavigationLocationUpdateModel(
+          heading: _heading,
+          walkedDistance: 0,
+          timestamp: DateTime.now(),
+        ),
+      );
     });
 
     _stepSubscription = _steps.steps.listen((step) {
@@ -50,7 +73,6 @@ class NavigationSensorServiceImpl implements NavigationSensorService {
         "debug - Navigation Update => heading=$_heading distance=$distance",
       );
 
-      debugPrint("Navigation Update => heading=$_heading distance=$distance");
       _controller.add(
         NavigationLocationUpdateModel(
           heading: _heading,
@@ -59,6 +81,35 @@ class NavigationSensorServiceImpl implements NavigationSensorService {
         ),
       );
     });
+
+    return true;
+  }
+
+  //==========================================================
+  // Permissions
+  //==========================================================
+
+  /// Requests the permissions required for step counting (Android 10+
+  /// needs runtime ACTIVITY_RECOGNITION) and heading updates (iOS needs
+  /// location authorization for CLLocationManager-based heading).
+  ///
+  /// Returns true if navigation can proceed. Location is only required
+  /// on iOS, so it's requested but not blocking on other platforms.
+  Future<bool> _requestPermissions() async {
+    final activityStatus = await Permission.activityRecognition.request();
+
+    if (!activityStatus.isGranted) {
+      debugPrint(
+        "debug - activityRecognition permission not granted: $activityStatus",
+      );
+      return false;
+    }
+
+    // Needed on iOS for compass heading; harmless to request on Android too
+    // since the app already declares fine/coarse location in the manifest.
+    await Permission.locationWhenInUse.request();
+
+    return true;
   }
 
   @override

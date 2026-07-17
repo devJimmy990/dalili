@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
+import 'package:dalili/core/engines/navigation_image_position_engine.dart';
 import 'package:dalili/features/library/data/models/navigation/library_map_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_session_model.dart';
 import 'package:dalili/features/library/data/models/navigation/node_model.dart';
@@ -11,10 +13,14 @@ class NavigationMapPainter extends CustomPainter {
     required this.session,
     required this.scale,
     required this.padding,
+    required this.backgroundImage,
+    this.imagePositionEngine = const NavigationImagePositionEngine(),
   });
 
   final LibraryMapModel map;
   final NavigationSessionModel session;
+  final ui.Image backgroundImage;
+  final NavigationImagePositionEngine imagePositionEngine;
 
   final double scale;
   final double padding;
@@ -23,113 +29,135 @@ class NavigationMapPainter extends CustomPainter {
     for (final node in map.nodes) node.id: node,
   };
 
-  Offset _offset(NodeModel node) =>
-      Offset(padding + node.x * scale, padding + node.y * scale);
+  /// Converts a node's calibrated image pixel position into canvas
+  /// coordinates. Returns null if the node hasn't been calibrated.
+  Offset? _canvasOffset(NodeModel node) {
+    if (!node.hasImagePosition) return null;
+    return Offset(
+      padding + node.imageX! * scale,
+      padding + node.imageY! * scale,
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
-    _drawEdges(canvas);
-    _drawPath(canvas);
-    _drawNodes(canvas);
+    _drawBackgroundImage(canvas);
+    _drawRoute(canvas);
     _drawCurrentUser(canvas);
   }
 
   //========================================================
 
-  void _drawEdges(Canvas canvas) {
-    final paint = Paint()
-      ..color = Colors.grey.shade400
-      ..strokeWidth = 2;
+  void _drawBackgroundImage(Canvas canvas) {
+    final destRect = Rect.fromLTWH(
+      padding,
+      padding,
+      map.imageWidth * scale,
+      map.imageHeight * scale,
+    );
 
-    for (final edge in map.edges) {
-      final from = _nodesById[edge.from];
-      final to = _nodesById[edge.to];
+    final srcRect = Rect.fromLTWH(
+      0,
+      0,
+      backgroundImage.width.toDouble(),
+      backgroundImage.height.toDouble(),
+    );
 
-      if (from == null || to == null) continue;
-
-      canvas.drawLine(_offset(from), _offset(to), paint);
-    }
+    canvas.drawImageRect(backgroundImage, srcRect, destRect, Paint());
   }
 
   //========================================================
+  // Highlights only the computed route on top of the (already
+  // fully-illustrated) map image — not the whole graph, to avoid
+  // cluttering a picture that already shows the room layout.
+  //========================================================
 
-  void _drawPath(Canvas canvas) {
+  void _drawRoute(Canvas canvas) {
     if (session.route.nodes.length < 2) return;
 
-    final paint = Paint()
-      ..color = Colors.red
-      ..strokeWidth = 6
+    final glowPaint = Paint()
+      ..color = Colors.blueAccent.withValues(alpha: 0.35)
+      ..strokeWidth = 14
+      ..strokeCap = StrokeCap.round;
+
+    final linePaint = Paint()
+      ..color = Colors.blueAccent
+      ..strokeWidth = 5
       ..strokeCap = StrokeCap.round;
 
     final nodes = session.route.nodes;
 
     for (int i = 0; i < nodes.length - 1; i++) {
-      canvas.drawLine(_offset(nodes[i]), _offset(nodes[i + 1]), paint);
+      final from = _canvasOffset(nodes[i]);
+      final to = _canvasOffset(nodes[i + 1]);
+
+      if (from == null || to == null) continue;
+
+      canvas.drawLine(from, to, glowPaint);
+      canvas.drawLine(from, to, linePaint);
     }
+
+    _drawEndpointMarker(canvas, nodes.first, Colors.green);
+    _drawEndpointMarker(canvas, nodes.last, Colors.redAccent);
   }
 
-  //========================================================
+  void _drawEndpointMarker(Canvas canvas, NodeModel node, Color color) {
+    final offset = _canvasOffset(node);
+    if (offset == null) return;
 
-  void _drawNodes(Canvas canvas) {
-    for (final node in map.nodes) {
-      Color color = Colors.blue;
-
-      if (node.id == session.route.start.id) {
-        color = Colors.green;
-      } else if (node.id == session.route.end.id) {
-        color = Colors.red;
-      }
-
-      final position = _offset(node);
-
-      canvas.drawCircle(position, 7, Paint()..color = color);
-
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: node.id,
-          style: const TextStyle(color: Colors.black, fontSize: 12),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-
-      textPainter.layout();
-
-      textPainter.paint(canvas, Offset(position.dx + 8, position.dy - 8));
-    }
+    canvas.drawCircle(offset, 9, Paint()..color = Colors.white);
+    canvas.drawCircle(offset, 7, Paint()..color = color);
   }
 
   //========================================================
 
   void _drawCurrentUser(Canvas canvas) {
-    final position = session.currentPosition;
+    final imagePosition = imagePositionEngine.calculate(session: session);
+
+    if (imagePosition == null) return;
 
     final offset = Offset(
-      padding + position.x * scale,
-      padding + position.y * scale,
+      padding + imagePosition.x * scale,
+      padding + imagePosition.y * scale,
     );
 
     canvas.save();
-
     canvas.translate(offset.dx, offset.dy);
-
     canvas.rotate(session.heading * pi / 180);
 
+    // Soft halo so the arrow stays visible over busy parts of the image.
+    canvas.drawCircle(
+      Offset.zero,
+      16,
+      Paint()..color = Colors.white.withValues(alpha: 0.85),
+    );
+    canvas.drawCircle(
+      Offset.zero,
+      16,
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.15)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
     final path = Path()
-      ..moveTo(0, -18)
-      ..lineTo(10, 12)
-      ..lineTo(0, 6)
-      ..lineTo(-10, 12)
+      ..moveTo(0, -13)
+      ..lineTo(8, 10)
+      ..lineTo(0, 4)
+      ..lineTo(-8, 10)
       ..close();
 
-    canvas.drawPath(path, Paint()..color = Colors.green);
+    canvas.drawPath(path, Paint()..color = Colors.blueAccent);
 
     canvas.restore();
   }
+
   //========================================================
 
   @override
   bool shouldRepaint(covariant NavigationMapPainter oldDelegate) =>
       oldDelegate.session != session ||
       oldDelegate.map != map ||
-      oldDelegate.scale != scale;
+      oldDelegate.scale != scale ||
+      oldDelegate.backgroundImage != backgroundImage;
 }

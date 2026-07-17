@@ -21,8 +21,6 @@ class BookDetailCubit extends HydratedCubit<BookDetailState> {
 
   @override
   Map<String, dynamic>? toJson(BookDetailState state) => {
-        'book': state.book != null
-            ? (state.book! as BookModel).toJson()
-            : null,
-      };
+    'book': state.book != null ? (state.book! as BookModel).toJson() : null,
+  };
 }

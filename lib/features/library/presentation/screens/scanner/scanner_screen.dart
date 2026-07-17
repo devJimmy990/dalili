@@ -38,55 +38,54 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) => BlocProvider<ScannerCubit>.value(
-        value: _cubit,
-        child: BlocListener<ScannerCubit, ScannerState>(
-          listener: (context, state) {
-            if (state.status == ScannerStatus.error) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage)),
-              );
-              _cubit.reset();
-            }
-          },
-          child: Scaffold(
-            backgroundColor: Colors.black,
-            body: Stack(
-              fit: StackFit.expand,
-              children: [
-                MobileScanner(
-                  controller: _cameraController,
-                  onDetect: (capture) => _cubit.onBarcodeDetected(
-                    capture.barcodes.firstOrNull?.rawValue,
-                  ),
-                ),
-                const _CornerOverlay(),
-                BlocBuilder<ScannerCubit, ScannerState>(
-                  builder: (context, state) =>
-                      _buildStateLayer(context, state),
-                ),
-                _TopBar(cameraController: _cameraController),
-              ],
+    value: _cubit,
+    child: BlocListener<ScannerCubit, ScannerState>(
+      listener: (context, state) {
+        if (state.status == ScannerStatus.error) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
+          _cubit.reset();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            MobileScanner(
+              controller: _cameraController,
+              onDetect: (capture) => _cubit.onBarcodeDetected(
+                capture.barcodes.firstOrNull?.rawValue,
+              ),
             ),
-          ),
+            const _CornerOverlay(),
+            BlocBuilder<ScannerCubit, ScannerState>(
+              builder: (context, state) => _buildStateLayer(context, state),
+            ),
+            _TopBar(cameraController: _cameraController),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _buildStateLayer(BuildContext context, ScannerState state) =>
       switch (state.status) {
         ScannerStatus.scanning => _ScanningPanel(
-            onTestScan: () => _cubit.onBarcodeDetected(null),
-          ),
+          onTestScan: () => _cubit.onBarcodeDetected(null),
+        ),
         ScannerStatus.loading => const _LoadingOverlay(),
         ScannerStatus.found => _FoundOverlay(
-            book: state.book!,
-            onViewDetails: () => Navigator.pushReplacement(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => BookDetailScreen(book: state.book!),
-              ),
+          book: state.book!,
+          onViewDetails: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => BookDetailScreen(book: state.book!),
             ),
-            onReset: _cubit.reset,
           ),
+          onReset: _cubit.reset,
+        ),
         ScannerStatus.notFound => _NotFoundOverlay(onReset: _cubit.reset),
         ScannerStatus.error => const SizedBox.shrink(),
       };
@@ -103,28 +102,28 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Positioned(
-        top: 0,
-        left: 0,
-        right: 0,
-        child: SafeArea(
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
-                  context.read<ScannerCubit>().reset();
-                  Navigator.pop(context);
-                },
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.flash_on, color: Colors.white),
-                onPressed: () => cameraController.toggleTorch(),
-              ),
-            ],
+    top: 0,
+    left: 0,
+    right: 0,
+    child: SafeArea(
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              context.read<ScannerCubit>().reset();
+              Navigator.pop(context);
+            },
           ),
-        ),
-      );
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.flash_on, color: Colors.white),
+            onPressed: () => cameraController.toggleTorch(),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -138,37 +137,37 @@ class _ScanningPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Positioned(
-        bottom: 0,
-        left: 0,
-        right: 0,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.stackLg),
-          decoration: const BoxDecoration(
-            color: Colors.black87,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    bottom: 0,
+    left: 0,
+    right: 0,
+    child: Container(
+      padding: const EdgeInsets.all(AppSpacing.stackLg),
+      decoration: const BoxDecoration(
+        color: Colors.black87,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            AppLocalizations.pointCameraAtBook,
+            style: const TextStyle(color: Colors.white70),
+            textAlign: TextAlign.center,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                AppLocalizations.pointCameraAtBook,
-                style: const TextStyle(color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.stackMd),
-              ElevatedButton.icon(
-                onPressed: onTestScan,
-                icon: const Icon(Icons.bug_report),
-                label: const Text('Test Scan'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colors.secondary,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
+          const SizedBox(height: AppSpacing.stackMd),
+          ElevatedButton.icon(
+            onPressed: onTestScan,
+            icon: const Icon(Icons.bug_report),
+            label: const Text('Test Scan'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.colors.secondary,
+              foregroundColor: Colors.white,
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -180,11 +179,11 @@ class _LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: Colors.black54,
-        child: Center(
-          child: CircularProgressIndicator(color: context.colors.secondary),
-        ),
-      );
+    color: Colors.black54,
+    child: Center(
+      child: CircularProgressIndicator(color: context.colors.secondary),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -204,44 +203,44 @@ class _FoundOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Stack(
-        fit: StackFit.expand,
-        children: [
-          // Blurred cover background when available
-          if (book.cover.isNotEmpty)
-            ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-              child: Image.network(
-                book.cover,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    Container(color: context.colors.primary),
-              ),
-            )
-          else
-            Container(color: context.colors.primary),
-          Container(color: Colors.black54),
-          SafeArea(
-            child: Column(
-              children: [
-                // Book cover image
-                Expanded(
-                  flex: 2,
-                  child: Center(child: _FoundCover(url: book.cover)),
-                ),
-                // Detail card
-                Expanded(
-                  flex: 3,
-                  child: _FoundDetailCard(
-                    book: book,
-                    onViewDetails: onViewDetails,
-                    onReset: onReset,
-                  ),
-                ),
-              ],
-            ),
+    fit: StackFit.expand,
+    children: [
+      // Blurred cover background when available
+      if (book.cover.isNotEmpty)
+        ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Image.network(
+            book.cover,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+                Container(color: context.colors.primary),
           ),
-        ],
-      );
+        )
+      else
+        Container(color: context.colors.primary),
+      Container(color: Colors.black54),
+      SafeArea(
+        child: Column(
+          children: [
+            // Book cover image
+            Expanded(
+              flex: 2,
+              child: Center(child: _FoundCover(url: book.cover)),
+            ),
+            // Detail card
+            Expanded(
+              flex: 3,
+              child: _FoundDetailCard(
+                book: book,
+                onViewDetails: onViewDetails,
+                onReset: onReset,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
 }
 
 class _FoundCover extends StatelessWidget {
@@ -251,43 +250,38 @@ class _FoundCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        decoration: const BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black45,
-              blurRadius: 24,
-              offset: Offset(0, 10),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius:
-              BorderRadius.circular(context.appTheme.radiusMd),
-          child: url.isNotEmpty
-              ? Image.network(
-                  url,
-                  height: 170,
-                  width: 115,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _placeholder(context),
-                )
-              : _placeholder(context),
-        ),
-      );
+    decoration: const BoxDecoration(
+      boxShadow: [
+        BoxShadow(color: Colors.black45, blurRadius: 24, offset: Offset(0, 10)),
+      ],
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
+      child: url.isNotEmpty
+          ? Image.network(
+              url,
+              height: 170,
+              width: 115,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder(context),
+            )
+          : _placeholder(context),
+    ),
+  );
 
   Widget _placeholder(BuildContext context) => Container(
-        height: 170,
-        width: 115,
-        decoration: BoxDecoration(
-          color: context.appTheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
-        ),
-        child: Icon(
-          Icons.menu_book_rounded,
-          size: 56,
-          color: context.colors.secondary,
-        ),
-      );
+    height: 170,
+    width: 115,
+    decoration: BoxDecoration(
+      color: context.appTheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
+    ),
+    child: Icon(
+      Icons.menu_book_rounded,
+      size: 56,
+      color: context.colors.secondary,
+    ),
+  );
 }
 
 class _FoundDetailCard extends StatelessWidget {
@@ -303,111 +297,112 @@ class _FoundDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(context.appTheme.radiusXl),
-          topRight: Radius.circular(context.appTheme.radiusXl),
+    borderRadius: BorderRadius.only(
+      topLeft: Radius.circular(context.appTheme.radiusXl),
+      topRight: Radius.circular(context.appTheme.radiusXl),
+    ),
+    child: BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.appTheme.surfaceContainerHigh.withValues(alpha: .2),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(context.appTheme.radiusXl),
+            topRight: Radius.circular(context.appTheme.radiusXl),
+          ),
         ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.appTheme.surfaceContainerHigh
-                  .withValues(alpha: .2),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(context.appTheme.radiusXl),
-                topRight: Radius.circular(context.appTheme.radiusXl),
-              ),
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.stackLg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.stackLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Recognized badge
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Recognized badge
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.greenAccent,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        AppLocalizations.bookRecognized,
-                        style: context.textStyles.bodySmall
-                            ?.copyWith(color: Colors.greenAccent),
-                      ),
-                    ],
+                  const Icon(
+                    Icons.check_circle,
+                    color: Colors.greenAccent,
+                    size: 16,
                   ),
-                  const SizedBox(height: AppSpacing.stackSm),
-                  // Title
+                  const SizedBox(width: 6),
                   Text(
-                    book.title,
-                    style: context.textStyles.displayMedium
-                        ?.copyWith(color: Colors.white),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: AppSpacing.stackSm / 2),
-                  // Author
-                  Text(
-                    book.author,
-                    style: context.textStyles.bodyLarge
-                        ?.copyWith(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
-                  Divider(
-                    color: context.appTheme.outlineVariant,
-                    height: AppSpacing.stackLg,
-                  ),
-                  _InfoRow(AppLocalizations.publisher, book.publisher),
-                  _InfoRow(AppLocalizations.year, book.year),
-                  _InfoRow(AppLocalizations.bookLanguage, book.language),
-                  _InfoRow(
-                    AppLocalizations.classification,
-                    '${book.location} - ${book.shelf}',
-                    icon: Icons.location_on,
-                  ),
-                  if (book.isbn.isNotEmpty)
-                    _InfoRow(AppLocalizations.isbn, book.isbn),
-                  const SizedBox(height: AppSpacing.stackMd),
-                  // View Details button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: onViewDetails,
-                      icon: const Icon(Icons.menu_book_rounded),
-                      label: Text(AppLocalizations.viewDetails),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.colors.secondary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            context.appTheme.radiusLg,
-                          ),
-                        ),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.stackSm),
-                  // Scan Again text button
-                  TextButton(
-                    onPressed: onReset,
-                    child: Text(
-                      AppLocalizations.scanAgain,
-                      style: const TextStyle(color: Colors.white54),
+                    AppLocalizations.bookRecognized,
+                    style: context.textStyles.bodySmall?.copyWith(
+                      color: Colors.greenAccent,
                     ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: AppSpacing.stackSm),
+              // Title
+              Text(
+                book.title,
+                style: context.textStyles.displayMedium?.copyWith(
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: AppSpacing.stackSm / 2),
+              // Author
+              Text(
+                book.author,
+                style: context.textStyles.bodyLarge?.copyWith(
+                  color: Colors.white70,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Divider(
+                color: context.appTheme.outlineVariant,
+                height: AppSpacing.stackLg,
+              ),
+              _InfoRow(AppLocalizations.publisher, book.publisher),
+              _InfoRow(AppLocalizations.year, book.year),
+              _InfoRow(AppLocalizations.bookLanguage, book.language),
+              _InfoRow(
+                AppLocalizations.classification,
+                '${book.location} - ${book.shelf}',
+                icon: Icons.location_on,
+              ),
+              if (book.isbn.isNotEmpty)
+                _InfoRow(AppLocalizations.isbn, book.isbn),
+              const SizedBox(height: AppSpacing.stackMd),
+              // View Details button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: onViewDetails,
+                  icon: const Icon(Icons.menu_book_rounded),
+                  label: Text(AppLocalizations.viewDetails),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.colors.secondary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        context.appTheme.radiusLg,
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.stackSm),
+              // Scan Again text button
+              TextButton(
+                onPressed: onReset,
+                child: Text(
+                  AppLocalizations.scanAgain,
+                  style: const TextStyle(color: Colors.white54),
+                ),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _InfoRow extends StatelessWidget {
@@ -419,32 +414,33 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          spacing: AppSpacing.stackSm,
-          children: [
-            Text(
-              label,
-              style: context.textStyles.labelLarge?.copyWith(
-                color: context.appTheme.onSurfaceVariant,
-              ),
-            ),
-            Expanded(
-              child: Directionality(
-                textDirection: TextDirection.ltr,
-                child: Text(
-                  value,
-                  maxLines: 1,
-                  textAlign: TextAlign.start,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.textStyles.bodyMedium
-                      ?.copyWith(color: Colors.white),
-                ),
-              ),
-            ),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      spacing: AppSpacing.stackSm,
+      children: [
+        Text(
+          label,
+          style: context.textStyles.labelLarge?.copyWith(
+            color: context.appTheme.onSurfaceVariant,
+          ),
         ),
-      );
+        Expanded(
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Text(
+              value,
+              maxLines: 1,
+              textAlign: TextAlign.start,
+              overflow: TextOverflow.ellipsis,
+              style: context.textStyles.bodyMedium?.copyWith(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -458,56 +454,56 @@ class _NotFoundOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: Colors.black87,
-        child: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.stackLg,
+    color: Colors.black87,
+    child: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.stackLg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.search_off_rounded,
+                size: 80,
+                color: Colors.white24,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.search_off_rounded,
-                    size: 80,
-                    color: Colors.white24,
-                  ),
-                  const SizedBox(height: AppSpacing.stackLg),
-                  Text(
-                    AppLocalizations.bookNotFound,
-                    style: context.textStyles.displaySmall
-                        ?.copyWith(color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.stackSm),
-                  Text(
-                    AppLocalizations.bookNotFoundDesc,
-                    style: context.textStyles.bodyMedium
-                        ?.copyWith(color: Colors.white54),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.stackLg),
-                  ElevatedButton.icon(
-                    onPressed: onReset,
-                    icon: const Icon(Icons.qr_code_scanner),
-                    label: Text(AppLocalizations.scanAgain),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.colors.secondary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 14,
-                      ),
-                      shape: const StadiumBorder(),
-                    ),
-                  ),
-                ],
+              const SizedBox(height: AppSpacing.stackLg),
+              Text(
+                AppLocalizations.bookNotFound,
+                style: context.textStyles.displaySmall?.copyWith(
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
+              const SizedBox(height: AppSpacing.stackSm),
+              Text(
+                AppLocalizations.bookNotFoundDesc,
+                style: context.textStyles.bodyMedium?.copyWith(
+                  color: Colors.white54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.stackLg),
+              ElevatedButton.icon(
+                onPressed: onReset,
+                icon: const Icon(Icons.qr_code_scanner),
+                label: Text(AppLocalizations.scanAgain),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colors.secondary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 14,
+                  ),
+                  shape: const StadiumBorder(),
+                ),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -566,10 +562,7 @@ class _CornerPainter extends CustomPainter {
       Path()
         ..moveTo(left, bottom - cornerLen)
         ..lineTo(left, bottom - r)
-        ..arcToPoint(
-          Offset(left + r, bottom),
-          radius: const Radius.circular(r),
-        )
+        ..arcToPoint(Offset(left + r, bottom), radius: const Radius.circular(r))
         ..lineTo(left + cornerLen, bottom),
       paint,
     );

@@ -39,7 +39,6 @@ class NavigationSessionBuilder {
       currentPosition: NavigationPositionModel(
         x: route.start.x,
         y: route.start.y,
-        progress: 0,
       ),
     );
   }
