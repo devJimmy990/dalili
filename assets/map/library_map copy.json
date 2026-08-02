@@ -4,7 +4,7 @@
   "imageHeight": 926,
   "nodes": [
     {
-      "id": "N8",
+      "id": "N0",
       "name": "المدخل",
       "type": "entrance",
       "x": 10.92,
@@ -13,10 +13,10 @@
       "imageY": 792,
       "qr": "QR01",
       "width": 1.5,
-      "height": 1.5
+      "height": 1.25
     },
     {
-      "id": "N0",
+      "id": "N2",
       "name": "قسم ميكانيكا",
       "type": "destination",
       "x": 15.7,
@@ -25,10 +25,10 @@
       "imageY": 744,
       "qr": "QR03",
       "width": 2.25,
-      "height": 1.5
+      "height": 1.50
     },
     {
-      "id": "N1",
+      "id": "N3",
       "name": "قسم كهربية",
       "type": "destination",
       "x": 18.56,
@@ -36,11 +36,11 @@
       "imageX": 928,
       "imageY": 758,
       "qr": "QR04",
-      "width": 1.6,
-      "height": 1.5
+      "width": 1.60,
+      "height": 1.50
     },
     {
-      "id": "N2",
+      "id": "N4",
       "name": "قسم مدنى",
       "type": "destination",
       "x": 20.38,
@@ -49,10 +49,10 @@
       "imageY": 769,
       "qr": "QR05",
       "width": 1.32,
-      "height": 1.5
+      "height": 1.50
     },
     {
-      "id": "N3",
+      "id": "N5",
       "name": "قسم عمارة",
       "type": "destination",
       "x": 23.42,
@@ -64,7 +64,7 @@
       "height": 1.25
     },
     {
-      "id": "N4",
+      "id": "N6",
       "name": "دوريات علمية",
       "type": "destination",
       "x": 23.68,
@@ -76,7 +76,7 @@
       "height": 1.25
     },
     {
-      "id": "N5",
+      "id": "N7",
       "name": "رسائل علمية",
       "type": "destination",
       "x": 23.36,
@@ -88,7 +88,7 @@
       "height": 1.25
     },
     {
-      "id": "N6",
+      "id": "N8",
       "name": "مراجع",
       "type": "destination",
       "x": 23.74,
@@ -109,7 +109,7 @@
       "imageY": 691
     },
     {
-      "id": "N10",
+      "id": "N11",
       "name": "ممر",
       "type": "intersection",
       "x": 13.1,
@@ -118,7 +118,7 @@
       "imageY": 530
     },
     {
-      "id": "N11",
+      "id": "N12",
       "name": "ممر",
       "type": "intersection",
       "x": 14.58,
@@ -127,7 +127,7 @@
       "imageY": 526
     },
     {
-      "id": "N12",
+      "id": "N13",
       "name": "ممر",
       "type": "intersection",
       "x": 14.5,
@@ -136,7 +136,7 @@
       "imageY": 705
     },
     {
-      "id": "N13",
+      "id": "N14",
       "name": "ممر",
       "type": "intersection",
       "x": 17.04,
@@ -145,7 +145,7 @@
       "imageY": 708
     },
     {
-      "id": "N14",
+      "id": "N15",
       "name": "ممر",
       "type": "intersection",
       "x": 21.08,
@@ -154,7 +154,7 @@
       "imageY": 698
     },
     {
-      "id": "N15",
+      "id": "N16",
       "name": "ممر",
       "type": "intersection",
       "x": 21.06,
@@ -163,141 +163,104 @@
       "imageY": 426
     },
     {
-      "id": "N16",
-      "name": "ممر",
+      "id": "N19",
+      "name": "ممر المدخل",
       "type": "intersection",
-      "x": 13.02,
-      "y": 13.84,
-      "imageX": 651,
-      "imageY": 692
+      "x": 13.04,
+      "y": 14.1,
+      "imageX": 652,
+      "imageY": 705
     },
     {
-      "id": "N17",
-      "name": "ممر",
+      "id": "N20",
+      "name": "ممر المدخل",
       "type": "intersection",
-      "x": 6.3,
-      "y": 13.84,
-      "imageX": 315,
-      "imageY": 692
-    },
-    {
-      "id": "N7",
-      "name": "امين المكتبة",
-      "type": "destination",
-      "x": 6.3,
-      "y": 5.48,
-      "imageX": 315,
-      "imageY": 274
+      "x": 8.62,
+      "y": 13.6,
+      "imageX": 431,
+      "imageY": 680
     }
   ],
   "edges": [
     {
-      "from": "N8",
+      "from": "N0",
       "to": "N9",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
+    },
+    {
+      "from": "N20",
+      "to": "N9",
+      "bidirectional": true
     },
     {
       "from": "N9",
-      "to": "N17",
-      "bidirectional": true,
-      "width": 1.5
+      "to": "N19",
+      "bidirectional": true
     },
     {
-      "from": "N17",
-      "to": "N7",
-      "bidirectional": true,
-      "width": 1.5
-    },
-    {
-      "from": "N9",
-      "to": "N16",
-      "bidirectional": true,
-      "width": 1.5
-    },
-    {
-      "from": "N16",
-      "to": "N10",
-      "bidirectional": true,
-      "width": 1.5
-    },
-    {
-      "from": "N10",
+      "from": "N19",
       "to": "N11",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
     },
     {
       "from": "N11",
       "to": "N12",
-      "bidirectional": true,
-      "width": 1.5
-    },
-    {
-      "from": "N12",
-      "to": "N0",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
     },
     {
       "from": "N12",
       "to": "N13",
-      "bidirectional": true,
-      "width": 1.5
-    },
-    {
-      "from": "N13",
-      "to": "N1",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
     },
     {
       "from": "N13",
       "to": "N14",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
     },
     {
-      "from": "N14",
+      "from": "N13",
       "to": "N2",
-      "bidirectional": true,
-      "width": 1.5
-    },
-    {
-      "from": "N14",
-      "to": "N3",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
     },
     {
       "from": "N14",
       "to": "N15",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
     },
     {
-      "from": "N14",
-      "to": "N4",
-      "bidirectional": true,
-      "width": 1.5
+      "from": "N3",
+      "to": "N14",
+      "bidirectional": true
     },
     {
       "from": "N15",
-      "to": "N6",
-      "bidirectional": true,
-      "width": 1.5
+      "to": "N4",
+      "bidirectional": true
     },
     {
       "from": "N15",
       "to": "N5",
-      "bidirectional": true,
-      "width": 1.5
+      "bidirectional": true
     },
     {
-      "from": "N13",
-      "to": "N0",
-      "bidirectional": true,
-      "width": 1.5
+      "from": "N15",
+      "to": "N16",
+      "bidirectional": true
+    },
+    {
+      "from": "N16",
+      "to": "N8",
+      "bidirectional": true
+    },
+    {
+      "from": "N16",
+      "to": "N7",
+      "bidirectional": true
+    },
+    {
+      "from": "N15",
+      "to": "N6",
+      "bidirectional": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import 'package:dalili/core/utils/angle_utils.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_instruction_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_route.dart';
 
@@ -35,15 +36,7 @@ class NavigationInstructionService {
       return NavigationInstructionType.start;
     }
 
-    double diff = currentAngle - previousAngle;
-
-    while (diff > 180) {
-      diff -= 360;
-    }
-
-    while (diff < -180) {
-      diff += 360;
-    }
+    final diff = AngleUtils.normalizeDegrees(currentAngle - previousAngle);
 
     if (diff.abs() < 20) {
       return NavigationInstructionType.forward;

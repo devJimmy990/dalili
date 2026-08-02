@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dalili/core/utils/angle_utils.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_decision_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_session_model.dart';
 
@@ -34,15 +35,7 @@ class NavigationDecisionEngine {
     // Difference
     //-----------------------------
 
-    double diff = segmentHeading - session.heading;
-
-    while (diff > 180) {
-      diff -= 360;
-    }
-
-    while (diff < -180) {
-      diff += 360;
-    }
+    final diff = AngleUtils.normalizeDegrees(segmentHeading - session.heading);
 
     final absDiff = diff.abs();
 

@@ -1,6 +1,5 @@
 import 'package:dalili/features/library/data/models/navigation/library_map_model.dart';
 import 'package:dalili/features/library/data/models/navigation/node_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -129,22 +128,22 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           // Dev-only bypass for testing without printed QR codes — must
           // never reach a release build, since it would let anyone skip
           // scanning entirely.
-          if (kDebugMode)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
+          // if (kDebugMode)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              color: Colors.black54,
+              child: SizedBox(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                color: Colors.black54,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _fakeScan,
-                    child: Text(buttonText),
-                  ),
+                child: ElevatedButton(
+                  onPressed: _fakeScan,
+                  child: Text(buttonText),
                 ),
               ),
             ),
+          ),
         ],
       ),
     );

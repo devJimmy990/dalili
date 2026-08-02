@@ -1,5 +1,6 @@
 import 'package:dalili/core/services/map_loader_service.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_cubit.dart';
+import 'package:dalili/features/library/presentation/cubits/navigation/navigation_state.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/ar_navigation_screen.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/qr_scanner_screen.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/select_destination_screen.dart';
@@ -10,30 +11,38 @@ class NavigationControls extends StatelessWidget {
   const NavigationControls({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final state = context.watch<NavigationCubit>().state;
-    final cubit = context.read<NavigationCubit>();
+  Widget build(BuildContext context) =>
+      BlocSelector<
+        NavigationCubit,
+        NavigationState,
+        (bool loading, bool navigating)
+      >(
+        selector: (state) => (state.loading, state.navigating),
+        builder: (context, flags) {
+          final (loading, navigating) = flags;
+          final cubit = context.read<NavigationCubit>();
 
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: state.loading || state.navigating
-                ? null
-                : () => _startFlow(context),
-            child: const Text("Start Navigation"),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: state.navigating ? cubit.stopNavigation : null,
-            child: const Text("Stop Navigation"),
-          ),
-        ),
-      ],
-    );
-  }
+          return Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: loading || navigating
+                      ? null
+                      : () => _startFlow(context),
+                  child: const Text("Start Navigation"),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: navigating ? cubit.stopNavigation : null,
+                  child: const Text("Stop Navigation"),
+                ),
+              ),
+            ],
+          );
+        },
+      );
 
   Future<void> _startFlow(BuildContext context) async {
     final map = await const MapLoaderService().load();
