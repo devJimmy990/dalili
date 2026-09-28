@@ -1,0 +1,73 @@
+name: dalili
+description: "Smart Library Assistant App — دليلي"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  flutter_bloc: ^9.1.1
+  hydrated_bloc: ^11.0.0
+  equatable: ^2.0.8
+  get_it: ^9.2.1
+  dio: ^5.8.0+1
+  flutter_dotenv: ^5.2.1
+  mobile_scanner: ^7.0.0
+  cached_network_image: ^3.4.1
+  url_launcher: ^6.3.1
+  path_provider: ^2.1.5
+
+  flutter_compass: ^0.8.1
+  pedometer: ^4.2.0
+  permission_handler: ^11.3.1
+  camera: ^0.12.0+2
+
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  intl_utils: ^2.8.7
+  flutter_launcher_icons: ^0.14.4
+
+
+flutter_intl:
+  enabled: true
+  class_name: S 
+  arb_dir: lib/core/localization/l10n
+  output_dir: lib/core/localization/generated
+
+
+flutter_assets:
+  classname: AssetsManager
+  filename: assets_manager.dart
+  output_path: lib/core/constants/
+  assets_path:
+    - assets/images/
+    
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - .env
+    - assets/images/
+    - assets/fonts/
+    - assets/map/
+  fonts:
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-Regular.ttf
+        - asset: assets/fonts/Tajawal-Bold.ttf
+          weight: 700
+    - family: Almarai
+      fonts:
+        - asset: assets/fonts/Almarai-Regular.ttf
+        - asset: assets/fonts/Almarai-Bold.ttf
+          weight: 700
+

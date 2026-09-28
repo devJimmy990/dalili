@@ -36,7 +36,10 @@
       "PowerShell(Set-Location \"d:\\\\Developer\\\\dalili\"; fvm dart run intl_utils:generate; Write-Output \"Exit: $LASTEXITCODE\"; ls lib/generated/)",
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\Developer\\\\dalili\\\\lib\\\\core\\\\localization\\\\l10n\")",
       "Bash(cd /d \"d:\\\\Developer\\\\dalili\")",
-      "Bash(fvm dart *)"
+      "Bash(fvm dart *)",
+      "Read(//d/Developer/PubCache/hosted/pub.dev/camera_android_camerax-0.7.2/lib/src/**)",
+      "Bash(grep -n \"autoStart\\\\|void start\\(\\\\|Future<void> start\\\\|class MobileScannerController\" \"/d/Developer/PubCache/hosted/pub.dev/mobile_scanner-7.2.0/lib/src/mobile_scanner_controller.dart\" | head -20)",
+      "Read(//d/Developer/PubCache/hosted/pub.dev/mobile_scanner-7.2.0/lib/src/**)"
     ]
   }
 }

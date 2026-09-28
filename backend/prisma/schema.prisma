@@ -1,0 +1,139 @@
+// Dalili — Smart Library Assistant
+// Database schema (PostgreSQL / Neon)
+//
+// Design notes
+// ─────────────────────────────────────────────────────────────
+// * Every human-readable label that differs per locale is stored
+//   twice (`*Ar` / `*En`). The API picks one based on `?lang=`.
+// * Ordinals (edition, shelf) are stored as plain integers so they
+//   can be sorted and localized ("3rd" / "الثالث") at response time.
+//   `editionLabel` keeps non-numeric values like "international".
+// * Nullability is deliberate: a column is NOT NULL only when the record
+//   cannot exist without it (identity, title, author, the department it
+//   belongs to). Every other field is optional and stored as NULL when
+//   the sheet leaves it blank — never as an empty string, so "unknown"
+//   and "empty" stay distinguishable and the app can hide the row.
+// * A book's physical location is NOT a column: it is derived from
+//   its department, which carries the map node id used by the
+//   in-app navigation (`assets/map/library_map.json`).
+// * Book ⇄ Article is many-to-many: one article may cite several
+//   books (the sheet encoded this as `id1/*-*/id2`).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A library section (كهرباء, عمارة, ...). `id` doubles as the
+/// node id inside library_map.json, so navigation can target it.
+model Department {
+  id        String  @id
+  nameAr    String
+  nameEn    String
+  /// Node id in library_map.json. Null when the section is not on the map yet.
+  mapNodeId String?
+  sortOrder Int     @default(0)
+
+  books Book[]
+
+  @@map("departments")
+}
+
+/// Publication city (New Delhi, القاهرة, ...).
+model Place {
+  id     String @id
+  nameAr String
+  nameEn String
+
+  books Book[]
+
+  @@map("places")
+}
+
+model Book {
+  id         String @id
+  /// Dewey-style code that locates the book on its shelf. Required: it is
+  /// how a visitor actually finds the book.
+  callNumber String
+  title      String
+  author     String
+
+  /// Numeric edition when parseable (1, 2, 3...), else null.
+  edition Int?
+  /// Raw edition when it is not a number ("international", "teacher").
+  editionLabel String?
+
+  publisher String?
+  /// Publication year; null when the sheet had no usable value.
+  year      Int?
+  subjects  String?
+  /// Shelf number inside the department (1..10).
+  shelf     Int?
+  /// Book text language code: "ar" | "en". Metadata only, never a filter.
+  language  String?
+  cover     String?
+  isbn      String?
+
+  placeId      String?
+  departmentId String
+
+  place      Place?     @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  articles   BookArticle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([departmentId])
+  @@index([author])
+  @@index([title])
+  @@map("books")
+}
+
+model Article {
+  id          String  @id
+  title       String
+  authors     String?
+  /// Journal or conference proceedings the article appeared in.
+  sourceTitle String?
+  keywords    String?
+  doi         String?
+  year        Int?
+  /// Free-text kind in Arabic ("مقال", "بحث مؤتمر", ...).
+  type        String?
+  /// "مجلة" | "مؤتمر".
+  source      String?
+  issn        String?
+  volume      String?
+  issue       String?
+  pages       String?
+  /// Relevance score from the dataset (0..1).
+  score       Float?
+  url         String?
+
+  books BookArticle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@map("articles")
+}
+
+/// Explicit join table so the pairing can carry data later
+/// (ordering, curator notes) without a migration.
+model BookArticle {
+  bookId    String
+  articleId String
+
+  book    Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, articleId])
+  @@index([articleId])
+  @@map("book_articles")
+}

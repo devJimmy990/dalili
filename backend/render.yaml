@@ -1,0 +1,33 @@
+# Render blueprint for the Dalili API.
+#
+# Deploy: Render dashboard → New → Blueprint → pick this repo.
+# Render reads this file, creates the service, and then asks for the one
+# value that is not in here: DATABASE_URL (marked sync:false so it is
+# never committed). Paste the Neon *pooled* connection string.
+#
+# The database lives in Neon, not Render, so no database block is needed.
+services:
+  - type: web
+    name: dalili-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    # `prisma generate` must run after install so the client matches the
+    # schema; `db push` syncs the tables on every deploy, which is what we
+    # want while the schema is still moving. Swap it for `prisma migrate
+    # deploy` once migrations are committed.
+    buildCommand: npm ci && npx prisma generate && npm run build
+    preDeployCommand: npx prisma db push --accept-data-loss
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        value: '*'
+      - key: PAGE_SIZE
+        value: '20'
