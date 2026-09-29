@@ -22,17 +22,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(error) => "تعذر تشغيل الكاميرا: ${error}";
 
-  static String m1(value) => "الاتجاه: ${value}°";
+  static String m1(name) => "الوجهة: ${name}";
 
-  static String m2(distance) => "استمر مستقيمًا ${distance} متر";
+  static String m2(value) => "الاتجاه: ${value}°";
 
-  static String m3(distance) => "ابدأ السير لمسافة ${distance} متر";
+  static String m3(distance) => "استمر مستقيمًا ${distance} متر";
 
-  static String m4(distance) => "متبقي ${distance} م";
+  static String m4(distance) => "ابدأ السير لمسافة ${distance} متر";
 
-  static String m5(value) => "فرق الاتجاه: ${value}°";
+  static String m5(distance) => "متبقي ${distance} م";
 
-  static String m6(code) => "كود QR غير معروف: ${code}";
+  static String m6(value) => "فرق الاتجاه: ${value}°";
+
+  static String m7(code) => "كود QR غير معروف: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -87,11 +89,15 @@ class MessageLookup extends MessageLookupByLibrary {
       "إلغاء التنقل؟",
     ),
     "navCancelTrip": MessageLookupByLibrary.simpleMessage("ألغِ الرحلة"),
+    "navDestinationLabel": m1,
+    "navDestinationUnavailable": MessageLookupByLibrary.simpleMessage(
+      "هذا القسم غير موجود على خريطة المكتبة بعد",
+    ),
     "navDone": MessageLookupByLibrary.simpleMessage("تم"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("استمر للأمام"),
-    "navHeadingLabel": m1,
-    "navInstructionForward": m2,
-    "navInstructionStart": m3,
+    "navHeadingLabel": m2,
+    "navInstructionForward": m3,
+    "navInstructionStart": m4,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("أكمل"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
       "مفيش كاميرا متاحة على الجهاز ده.",
@@ -99,7 +105,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navNoDestinationsFound": MessageLookupByLibrary.simpleMessage(
       "مفيش وجهات في الخريطة دي.",
     ),
-    "navRemainingDistance": m4,
+    "navRemainingDistance": m5,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("إعادة المحاولة"),
     "navScanCurrentQrTitle": MessageLookupByLibrary.simpleMessage(
       "امسح QR موقعك الحالي",
@@ -108,6 +114,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "navScanQrTooltip": MessageLookupByLibrary.simpleMessage("امسح QR تاني"),
     "navScanStartQrTitle": MessageLookupByLibrary.simpleMessage(
       "امسح QR نقطة البداية",
+    ),
+    "navScanToStart": MessageLookupByLibrary.simpleMessage(
+      "امسح كود QR الأقرب إليك للبدء",
     ),
     "navSelectDestinationHint": MessageLookupByLibrary.simpleMessage(
       "اختر وجهتك",
@@ -121,11 +130,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "انحرف قليلاً يميناً",
     ),
-    "navTargetDifferenceLabel": m5,
+    "navTargetDifferenceLabel": m6,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("لف يسار"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("لف يمين"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("استدر للخلف"),
-    "navUnrecognizedQr": m6,
+    "navUnrecognizedQr": m7,
+    "navigateToBook": MessageLookupByLibrary.simpleMessage("ودّيني للكتاب"),
     "navigation": MessageLookupByLibrary.simpleMessage("التنقل"),
     "noArticles": MessageLookupByLibrary.simpleMessage("لا توجد مقالات"),
     "noFavorites": MessageLookupByLibrary.simpleMessage("لا توجد مفضلات بعد"),

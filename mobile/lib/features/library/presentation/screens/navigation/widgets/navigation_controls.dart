@@ -13,7 +13,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// the previous separate "Start Navigation" button + destination-picker
 /// screen with a single inline step.
 class NavigationControls extends StatefulWidget {
-  const NavigationControls({super.key});
+  const NavigationControls({super.key, this.destinationNodeId});
+
+  /// Destination chosen elsewhere (from a book's section). When set, the
+  /// dropdown is replaced by the scan step for this node.
+  final String? destinationNodeId;
 
   @override
   State<NavigationControls> createState() => _NavigationControlsState();
@@ -22,10 +26,27 @@ class NavigationControls extends StatefulWidget {
 class _NavigationControlsState extends State<NavigationControls> {
   late final Future<LibraryMapModel> _mapFuture;
 
+  /// Guards the auto-start so returning from the AR screen — or any
+  /// rebuild — does not relaunch the QR scanner.
+  bool _autoStarted = false;
+
   @override
   void initState() {
     super.initState();
     _mapFuture = const MapLoaderService().load();
+  }
+
+  /// Kicks off the preselected destination once the map is available.
+  /// Deferred to after the frame: [_onDestinationSelected] pushes a route,
+  /// which cannot happen during build.
+  void _maybeAutoStart(LibraryMapModel map) {
+    final destination = widget.destinationNodeId;
+    if (destination == null || _autoStarted) return;
+    _autoStarted = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onDestinationSelected(context, map, destination);
+    });
   }
 
   @override
@@ -64,6 +85,44 @@ class _NavigationControlsState extends State<NavigationControls> {
               final destinations = map.nodes
                   .where((node) => node.type == 'destination')
                   .toList();
+
+              // Came here from a book: no picker, just the scan step.
+              if (widget.destinationNodeId case final destination?) {
+                final node = destinations
+                    .where((n) => n.id == destination)
+                    .firstOrNull;
+
+                if (node == null) {
+                  return Text(
+                    AppLocalizations.navDestinationUnavailable,
+                    style: const TextStyle(color: Colors.red),
+                  );
+                }
+
+                _maybeAutoStart(map);
+
+                return Column(
+                  children: [
+                    Text(
+                      AppLocalizations.navDestinationLabel(node.name),
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.qr_code_scanner),
+                      label: Text(AppLocalizations.navScanToStart),
+                      onPressed: loading
+                          ? null
+                          : () => _onDestinationSelected(
+                              context,
+                              map,
+                              destination,
+                            ),
+                    ),
+                  ],
+                );
+              }
 
               return DropdownButtonFormField<String>(
                 decoration: InputDecoration(

@@ -12,7 +12,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // showing a visual map to the user.
 
 class NavigationScreen extends StatelessWidget {
-  const NavigationScreen({super.key});
+  const NavigationScreen({super.key, this.destinationNodeId});
+
+  /// When set, the destination picker is skipped: the screen goes straight
+  /// to the QR scan for this node. Used by "take me to the book", which
+  /// already knows where the reader is heading.
+  final String? destinationNodeId;
 
   @override
   Widget build(BuildContext context) => BlocProvider(
@@ -24,7 +29,7 @@ class NavigationScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              const NavigationControls(),
+              NavigationControls(destinationNodeId: destinationNodeId),
 
               if (state.loading)
                 const Padding(

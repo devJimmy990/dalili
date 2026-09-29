@@ -85,5 +85,9 @@
 "navTurnLeft": "Turn left",
 "navUTurn": "Turn around",
 "navInstructionStart": "Start walking for {distance} m",
-"navInstructionForward": "Continue straight for {distance} m"
+"navInstructionForward": "Continue straight for {distance} m",
+  "navigateToBook": "Take me to the book",
+  "navDestinationUnavailable": "This section is not on the library map yet",
+  "navScanToStart": "Scan the QR code nearest to you to start",
+  "navDestinationLabel": "Destination: {name}"
 }

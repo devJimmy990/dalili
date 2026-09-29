@@ -12,6 +12,7 @@ import 'package:dalili/features/library/presentation/cubits/favorites/favorites_
 import 'package:dalili/features/library/presentation/screens/articles/articles_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dalili/features/library/presentation/screens/navigation/navigation_screen.dart';
 
 class BookDetailScreen extends StatelessWidget {
   const BookDetailScreen({super.key, required this.book});
@@ -212,11 +213,51 @@ class _DetailCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.link),
-                  label: Text(AppLocalizations.relatedArticles),
+                  icon: const Icon(Icons.directions_walk),
+                  label: Text(AppLocalizations.navigateToBook),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.colors.secondary,
                     foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        context.appTheme.radiusLg,
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  // Disabled when the book's section has no node on the
+                  // library map — there is nowhere to route to.
+                  onPressed: !book.location.isNavigable
+                      ? null
+                      : () => Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => NavigationScreen(
+                              destinationNodeId: book.location.nodeId,
+                            ),
+                          ),
+                        ),
+                ),
+              ),
+              if (!book.location.isNavigable) ...[
+                const SizedBox(height: AppSpacing.stackSm),
+                Text(
+                  AppLocalizations.navDestinationUnavailable,
+                  style: context.textStyles.bodySmall?.copyWith(
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: AppSpacing.stackMd),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.link),
+                  label: Text(AppLocalizations.relatedArticles),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white54),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                         context.appTheme.radiusLg,

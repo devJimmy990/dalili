@@ -48,7 +48,14 @@ Dio interceptor.
 The library map (`mobile/assets/map/library_map.json`) stays a local asset, so
 navigation works offline. The link between the two is the department: each one
 carries a `mapNodeId` that matches a node in that file, and every book reports
-`location.nodeId`, ready to hand to the navigation engine.
+`location.nodeId`.
+
+That link is what makes **"take me to the book"** work: the button on a book's
+detail screen opens navigation with the destination already chosen, so the
+reader only scans the QR code nearest to them and walks. It is disabled for a
+book whose section has no node on the map. Because a mismatch between the two
+sources would open a dead end, `mobile/test/navigation/` checks every
+department and book against the map asset.
 
 ## History
 

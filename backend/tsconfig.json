@@ -5,7 +5,9 @@
     "moduleResolution": "NodeNext",
     "lib": ["ES2022"],
     "outDir": "dist",
-    "rootDir": ".",
+    // Must be "src", not ".", or the output nests as dist/src/server.js
+    // and `npm start` (node dist/server.js) cannot find the entry point.
+    "rootDir": "src",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,

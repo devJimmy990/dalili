@@ -103,4 +103,10 @@ class AppLocalizations {
       S.current.navInstructionStart(distance);
   static String navInstructionForward(String distance) =>
       S.current.navInstructionForward(distance);
+  static String get navigateToBook => S.current.navigateToBook;
+  static String get navDestinationUnavailable =>
+      S.current.navDestinationUnavailable;
+  static String get navScanToStart => S.current.navScanToStart;
+  static String navDestinationLabel(String name) =>
+      S.current.navDestinationLabel(name);
 }

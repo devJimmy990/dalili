@@ -22,17 +22,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(error) => "Couldn\'t start the camera: ${error}";
 
-  static String m1(value) => "Heading: ${value}°";
+  static String m1(name) => "Destination: ${name}";
 
-  static String m2(distance) => "Continue straight for ${distance} m";
+  static String m2(value) => "Heading: ${value}°";
 
-  static String m3(distance) => "Start walking for ${distance} m";
+  static String m3(distance) => "Continue straight for ${distance} m";
 
-  static String m4(distance) => "${distance} m remaining";
+  static String m4(distance) => "Start walking for ${distance} m";
 
-  static String m5(value) => "Target difference: ${value}°";
+  static String m5(distance) => "${distance} m remaining";
 
-  static String m6(code) => "Unrecognized QR code: ${code}";
+  static String m6(value) => "Target difference: ${value}°";
+
+  static String m7(code) => "Unrecognized QR code: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -83,11 +85,15 @@ class MessageLookup extends MessageLookupByLibrary {
       "Cancel navigation?",
     ),
     "navCancelTrip": MessageLookupByLibrary.simpleMessage("Cancel trip"),
+    "navDestinationLabel": m1,
+    "navDestinationUnavailable": MessageLookupByLibrary.simpleMessage(
+      "This section is not on the library map yet",
+    ),
     "navDone": MessageLookupByLibrary.simpleMessage("Done"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("Go straight"),
-    "navHeadingLabel": m1,
-    "navInstructionForward": m2,
-    "navInstructionStart": m3,
+    "navHeadingLabel": m2,
+    "navInstructionForward": m3,
+    "navInstructionStart": m4,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("Keep going"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
       "No camera was found on this device.",
@@ -95,7 +101,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navNoDestinationsFound": MessageLookupByLibrary.simpleMessage(
       "No destinations found in this map.",
     ),
-    "navRemainingDistance": m4,
+    "navRemainingDistance": m5,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("Retry"),
     "navScanCurrentQrTitle": MessageLookupByLibrary.simpleMessage(
       "Scan Current QR",
@@ -104,6 +110,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "navScanQrTooltip": MessageLookupByLibrary.simpleMessage("Scan QR again"),
     "navScanStartQrTitle": MessageLookupByLibrary.simpleMessage(
       "Scan Start QR",
+    ),
+    "navScanToStart": MessageLookupByLibrary.simpleMessage(
+      "Scan the QR code nearest to you to start",
     ),
     "navSelectDestinationHint": MessageLookupByLibrary.simpleMessage(
       "Select where you want to go",
@@ -115,11 +124,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "Bear right slightly",
     ),
-    "navTargetDifferenceLabel": m5,
+    "navTargetDifferenceLabel": m6,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("Turn left"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("Turn right"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("Turn around"),
-    "navUnrecognizedQr": m6,
+    "navUnrecognizedQr": m7,
+    "navigateToBook": MessageLookupByLibrary.simpleMessage(
+      "Take me to the book",
+    ),
     "navigation": MessageLookupByLibrary.simpleMessage("Navigation"),
     "noArticles": MessageLookupByLibrary.simpleMessage("No articles available"),
     "noFavorites": MessageLookupByLibrary.simpleMessage("No favorites yet"),

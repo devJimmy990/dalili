@@ -135,3 +135,19 @@ deliberately not in the file). Health check is `/api/health`.
 The blueprint runs `prisma db push` before each deploy, which suits a schema
 that is still moving. Once you start committing migrations, swap the
 `preDeployCommand` for `npx prisma migrate deploy`.
+
+### Configuring the service by hand instead
+
+If you create the service through the dashboard rather than the blueprint:
+
+| Field | Value |
+| --- | --- |
+| Root Directory | `backend/` |
+| Build Command | `npm ci --include=dev && npx prisma generate && npm run build` |
+| Start Command | `npm start` |
+| Health Check Path | `/api/health` |
+| Environment | `DATABASE_URL` (the Neon string), `NODE_ENV=production` |
+
+`--include=dev` is not optional. Render sets `NODE_ENV=production`, which
+makes npm skip devDependencies — and TypeScript plus every `@types/*` package
+lives there, so the build fails on missing type declarations without it.

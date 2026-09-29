@@ -13,11 +13,15 @@ services:
     plan: free
     region: frankfurt
     rootDir: backend
+    # --include=dev is required: Render sets NODE_ENV=production, and npm
+    # then skips devDependencies — where TypeScript and every @types/*
+    # package live. Without it the build fails on missing type declarations.
+    #
     # `prisma generate` must run after install so the client matches the
     # schema; `db push` syncs the tables on every deploy, which is what we
     # want while the schema is still moving. Swap it for `prisma migrate
     # deploy` once migrations are committed.
-    buildCommand: npm ci && npx prisma generate && npm run build
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
     preDeployCommand: npx prisma db push --accept-data-loss
     startCommand: npm start
     healthCheckPath: /api/health

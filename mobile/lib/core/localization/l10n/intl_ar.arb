@@ -85,5 +85,9 @@
 "navTurnLeft": "لف يسار",
 "navUTurn": "استدر للخلف",
 "navInstructionStart": "ابدأ السير لمسافة {distance} متر",
-"navInstructionForward": "استمر مستقيمًا {distance} متر"
+"navInstructionForward": "استمر مستقيمًا {distance} متر",
+  "navigateToBook": "ودّيني للكتاب",
+  "navDestinationUnavailable": "هذا القسم غير موجود على خريطة المكتبة بعد",
+  "navScanToStart": "امسح كود QR الأقرب إليك للبدء",
+  "navDestinationLabel": "الوجهة: {name}"
 }

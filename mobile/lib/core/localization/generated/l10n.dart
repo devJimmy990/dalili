@@ -728,6 +728,46 @@ class S {
       args: [distance],
     );
   }
+
+  /// `Take me to the book`
+  String get navigateToBook {
+    return Intl.message(
+      'Take me to the book',
+      name: 'navigateToBook',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This section is not on the library map yet`
+  String get navDestinationUnavailable {
+    return Intl.message(
+      'This section is not on the library map yet',
+      name: 'navDestinationUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan the QR code nearest to you to start`
+  String get navScanToStart {
+    return Intl.message(
+      'Scan the QR code nearest to you to start',
+      name: 'navScanToStart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Destination: {name}`
+  String navDestinationLabel(Object name) {
+    return Intl.message(
+      'Destination: $name',
+      name: 'navDestinationLabel',
+      desc: '',
+      args: [name],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
