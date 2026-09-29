@@ -12,15 +12,23 @@ class DioClient {
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
+        // Render's free tier sleeps when idle, and the first request after
+        // that waits ~30-60s for the service to boot. A 15s timeout made the
+        // first launch of the day fail every time.
+        connectTimeout: const Duration(seconds: 45),
+        receiveTimeout: const Duration(seconds: 45),
         // The API answers 404 for an unknown id, which the data source
         // turns into `null`. Letting Dio treat it as a response instead of
         // an exception keeps that path out of the error handling.
         validateStatus: (status) => status != null && status < 500,
         headers: {'Accept': 'application/json'},
       ),
-    )..interceptors.addAll([_LangInterceptor(), _LogInterceptor()]);
+    );
+    dio.interceptors.addAll([
+      _LangInterceptor(),
+      RetryInterceptor(dio),
+      _LogInterceptor(),
+    ]);
   }
 
   late final Dio dio;
@@ -46,6 +54,52 @@ class _LangInterceptor extends Interceptor {
     options.queryParameters[ApiConstants.paramLang] =
         sl<AppSettingsCubit>().state.locale.languageCode;
     handler.next(options);
+  }
+}
+
+/// Retries a GET that failed for a transient network reason — typically a
+/// sleeping server that dropped the first connection while waking up.
+/// Non-GETs and HTTP errors (404, 422...) are never retried: those are
+/// answers, not glitches.
+class RetryInterceptor extends Interceptor {
+  RetryInterceptor(this._dio);
+
+  final Dio _dio;
+
+  static const _maxRetries = 2;
+
+  /// Overridable so tests do not wait real seconds between attempts.
+  static Duration Function(int attempt) backoff = (attempt) =>
+      Duration(seconds: 2 * attempt);
+  static const _retryKey = 'retry_count';
+
+  static bool _isTransient(DioException e) =>
+      e.type == DioExceptionType.connectionTimeout ||
+      e.type == DioExceptionType.receiveTimeout ||
+      e.type == DioExceptionType.connectionError;
+
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    final request = err.requestOptions;
+    final attempt = (request.extra[_retryKey] as int?) ?? 0;
+
+    if (request.method != 'GET' ||
+        !_isTransient(err) ||
+        attempt >= _maxRetries) {
+      return handler.next(err);
+    }
+
+    request.extra[_retryKey] = attempt + 1;
+    await Future<void>.delayed(backoff(attempt + 1));
+
+    try {
+      handler.resolve(await _dio.fetch<dynamic>(request));
+    } on DioException catch (e) {
+      handler.next(e);
+    }
   }
 }
 
@@ -96,8 +150,7 @@ Never rethrowAsAppException(DioException error) {
   final message = switch (error.type) {
     DioExceptionType.connectionTimeout ||
     DioExceptionType.sendTimeout ||
-    DioExceptionType.receiveTimeout =>
-      'Connection timed out',
+    DioExceptionType.receiveTimeout => 'Connection timed out',
     DioExceptionType.connectionError => 'Cannot reach the server',
     _ => error.message ?? 'Unknown network error',
   };
