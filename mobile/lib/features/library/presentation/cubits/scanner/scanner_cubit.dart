@@ -2,8 +2,9 @@ import 'package:dalili/core/errors/failures.dart';
 import 'package:dalili/features/library/domain/repositories/library_repository.dart';
 import 'package:dalili/features/library/presentation/cubits/scanner/scanner_state.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:dalili/core/utils/safe_emit.dart';
 
-class ScannerCubit extends HydratedCubit<ScannerState> {
+class ScannerCubit extends HydratedCubit<ScannerState> with SafeEmit<ScannerState> {
   ScannerCubit(this._repository) : super(const ScannerState());
 
   final LibraryRepository _repository;

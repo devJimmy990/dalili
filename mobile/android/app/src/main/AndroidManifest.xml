@@ -7,6 +7,10 @@
 
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 
+    <!-- Lets navigation ask to be exempt from battery optimization so the
+         step counter and compass keep reporting with the screen locked. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false"/>

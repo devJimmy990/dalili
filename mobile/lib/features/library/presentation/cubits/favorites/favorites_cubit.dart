@@ -7,8 +7,9 @@ import 'package:dalili/features/library/presentation/cubits/app_settings/app_set
 import 'package:dalili/features/library/presentation/cubits/favorites/favorites_state.dart';
 import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:dalili/core/utils/safe_emit.dart';
 
-class FavoritesCubit extends HydratedCubit<FavoritesState> {
+class FavoritesCubit extends HydratedCubit<FavoritesState> with SafeEmit<FavoritesState> {
   FavoritesCubit(this._repository, this._settingsCubit)
     : super(const FavoritesState()) {
     _lastLocale = _settingsCubit.state.locale;

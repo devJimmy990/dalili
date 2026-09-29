@@ -57,7 +57,8 @@ class NavigationRouteBuilder {
   }) {
     for (final edge in edges) {
       final forward = edge.from == fromId && edge.to == toId;
-      final backward = edge.bidirectional && edge.from == toId && edge.to == fromId;
+      final backward =
+          edge.bidirectional && edge.from == toId && edge.to == fromId;
 
       if (forward || backward) {
         return edge.width;

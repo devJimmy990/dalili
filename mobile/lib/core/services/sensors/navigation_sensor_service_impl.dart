@@ -65,22 +65,30 @@ class NavigationSensorServiceImpl implements NavigationSensorService {
       );
     });
 
-    _stepSubscription = _steps.steps.listen((step) {
-      debugPrint("debug - Step received: ${step.newSteps}");
+    _stepSubscription = _steps.steps.listen(
+      (step) {
+        debugPrint("debug - Step received: ${step.newSteps}");
 
-      final distance = _distanceEstimator.estimate(step.newSteps);
-      debugPrint(
-        "debug - Navigation Update => heading=$_heading distance=$distance",
-      );
+        final distance = _distanceEstimator.estimate(step.newSteps);
+        debugPrint(
+          "debug - Navigation Update => heading=$_heading distance=$distance",
+        );
 
-      _controller.add(
-        NavigationLocationUpdateModel(
-          heading: _heading,
-          walkedDistance: distance,
-          timestamp: DateTime.now(),
-        ),
-      );
-    });
+        _controller.add(
+          NavigationLocationUpdateModel(
+            heading: _heading,
+            walkedDistance: distance,
+            timestamp: DateTime.now(),
+          ),
+        );
+      },
+      onError: (Object error) {
+        // A device without a step-counter sensor (or an emulator) reports
+        // an error here. Heading updates keep flowing, so navigation stays
+        // usable; an unhandled error would just crash the zone.
+        debugPrint("debug - Step counter unavailable: $error");
+      },
+    );
 
     return true;
   }
@@ -108,6 +116,14 @@ class NavigationSensorServiceImpl implements NavigationSensorService {
     // Needed on iOS for compass heading; harmless to request on Android too
     // since the app already declares fine/coarse location in the manifest.
     await Permission.locationWhenInUse.request();
+
+    // Battery optimization can throttle the step counter and compass while
+    // the user walks with the screen dimmed. Asked once, and never blocking:
+    // declining only risks slower sensor updates, not a failed navigation.
+    if (defaultTargetPlatform == TargetPlatform.android &&
+        !await Permission.ignoreBatteryOptimizations.isGranted) {
+      await Permission.ignoreBatteryOptimizations.request();
+    }
 
     return true;
   }

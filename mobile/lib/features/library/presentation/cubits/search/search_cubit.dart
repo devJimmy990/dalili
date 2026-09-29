@@ -5,8 +5,9 @@ import 'package:dalili/features/library/data/models/book_model.dart';
 import 'package:dalili/features/library/domain/repositories/library_repository.dart';
 import 'package:dalili/features/library/presentation/cubits/search/search_state.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:dalili/core/utils/safe_emit.dart';
 
-class SearchCubit extends HydratedCubit<SearchState> {
+class SearchCubit extends HydratedCubit<SearchState> with SafeEmit<SearchState> {
   SearchCubit(this._repository) : super(const SearchState());
 
   final LibraryRepository _repository;

@@ -499,7 +499,9 @@ class _ErrorView extends StatelessWidget {
     // feed behind it must not show through.
     color: Colors.black,
     child: Center(
-      child: Padding(
+      // Platform exceptions can run to dozens of lines; scroll instead of
+      // overflowing the screen, and cap what is shown.
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -513,6 +515,8 @@ class _ErrorView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
+              maxLines: 8,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 16),
