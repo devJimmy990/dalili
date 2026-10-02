@@ -16,16 +16,12 @@ class ScoreBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: context.colors.secondary,
-        borderRadius:
-            BorderRadius.circular(context.appTheme.radiusFull),
+        borderRadius: BorderRadius.circular(context.appTheme.radiusFull),
       ),
       child: Text(
         // Two decimals at most, and no trailing ".0" on a whole score.
-        score == score.roundToDouble()
-            ? score.toStringAsFixed(0)
-            : score.toStringAsFixed(2),
-        style: context.textStyles.bodySmall
-            ?.copyWith(color: Colors.white),
+        "${(score * 100).toInt()}%",
+        style: context.textStyles.bodySmall?.copyWith(color: Colors.white),
       ),
     );
   }

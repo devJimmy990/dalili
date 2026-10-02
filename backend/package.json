@@ -13,7 +13,8 @@
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && npm run seed"
+    "db:reset": "prisma db push --force-reset && npm run seed",
+    "test": "tsx --test prisma/sheet-parsers.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

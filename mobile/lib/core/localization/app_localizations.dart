@@ -56,6 +56,10 @@ class AppLocalizations {
   static String get comingSoon => S.current.comingSoon;
   static String get isbn => S.current.isbn;
   static String get callNumber => S.current.callNumber;
+  static String get placeOfPublication => S.current.placeOfPublication;
+  static String get documentType => S.current.documentType;
+  static String get articleSource => S.current.articleSource;
+  static String get shelfLocation => S.current.shelfLocation;
   static String get viewDetails => S.current.viewDetails;
   static String get scanAgain => S.current.scanAgain;
   static String get bookNotFoundDesc => S.current.bookNotFoundDesc;

@@ -43,6 +43,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "appName": MessageLookupByLibrary.simpleMessage("Dalili"),
     "arabic": MessageLookupByLibrary.simpleMessage("Arabic"),
+    "articleSource": MessageLookupByLibrary.simpleMessage("Source"),
     "author": MessageLookupByLibrary.simpleMessage("Author"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("Language"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage("Book not found"),
@@ -57,6 +58,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "darkTheme": MessageLookupByLibrary.simpleMessage("Dark"),
     "department": MessageLookupByLibrary.simpleMessage("Department"),
     "departments": MessageLookupByLibrary.simpleMessage("Departments"),
+    "documentType": MessageLookupByLibrary.simpleMessage("Document Type"),
     "edition": MessageLookupByLibrary.simpleMessage("Edition"),
     "english": MessageLookupByLibrary.simpleMessage("English"),
     "error": MessageLookupByLibrary.simpleMessage("An error occurred"),
@@ -144,6 +146,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Point your camera at a book\'s barcode to instantly find it in our library catalog.",
     ),
     "onboardScanTitle": MessageLookupByLibrary.simpleMessage("Scan Any Book"),
+    "placeOfPublication": MessageLookupByLibrary.simpleMessage(
+      "Place of Publication",
+    ),
     "pointCameraAtBook": MessageLookupByLibrary.simpleMessage(
       "Point camera at a book barcode",
     ),
@@ -168,6 +173,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectLanguage": MessageLookupByLibrary.simpleMessage("Select Language"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "shelf": MessageLookupByLibrary.simpleMessage("Shelf"),
+    "shelfLocation": MessageLookupByLibrary.simpleMessage("Location"),
     "skip": MessageLookupByLibrary.simpleMessage("Skip"),
     "suggestedBooks": MessageLookupByLibrary.simpleMessage("Suggested Books"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:dalili/core/constants/app_spacing.dart';
 import 'package:dalili/core/utils/display.dart';
 import 'package:dalili/core/di/injection_container.dart';
@@ -10,6 +8,7 @@ import 'package:dalili/features/library/presentation/cubits/book_detail/book_det
 import 'package:dalili/features/library/presentation/cubits/favorites/favorites_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/favorites/favorites_state.dart';
 import 'package:dalili/features/library/presentation/screens/articles/articles_screen.dart';
+import 'package:dalili/features/library/presentation/widgets/book_info_rows.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/navigation_screen.dart';
@@ -156,183 +155,118 @@ class _DetailCard extends StatelessWidget {
       topLeft: Radius.circular(context.appTheme.radiusXl),
       topRight: Radius.circular(context.appTheme.radiusXl),
     ),
-    child: BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.appTheme.surfaceContainerHigh.withValues(alpha: .2),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(context.appTheme.radiusXl),
-            topRight: Radius.circular(context.appTheme.radiusXl),
-          ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.stackLg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                book.title,
-                style: context.textStyles.displayMedium?.copyWith(
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
+    // A solid panel, not a see-through blur: the text color is chosen for
+    // this color, so it must not change with the cover or camera behind it.
+    child: Container(
+      color: bookInfoPanelColor(context),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.stackLg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              book.title,
+              style: context.textStyles.displayMedium?.copyWith(
+                color: Colors.white,
               ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.stackSm),
+            Text(
+              book.author,
+              style: context.textStyles.bodyLarge?.copyWith(
+                color: Colors.white70,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Divider(
+              color: context.appTheme.outlineVariant,
+              height: AppSpacing.stackLg,
+            ),
+            BookInfoRows(book: book),
+            Divider(
+              color: context.appTheme.outlineVariant,
+              height: AppSpacing.stackLg,
+            ),
+            const SizedBox(height: AppSpacing.stackMd),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.directions_walk),
+                label: Text(AppLocalizations.navigateToBook),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colors.secondary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      context.appTheme.radiusLg,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                // Disabled when the book's section has no node on the
+                // library map — there is nowhere to route to.
+                onPressed: !book.location.isNavigable
+                    ? null
+                    : () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => NavigationScreen(
+                            destinationNodeId: book.location.nodeId,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            if (!book.location.isNavigable) ...[
               const SizedBox(height: AppSpacing.stackSm),
               Text(
-                book.author,
-                style: context.textStyles.bodyLarge?.copyWith(
-                  color: Colors.white70,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Divider(
-                color: context.appTheme.outlineVariant,
-                height: AppSpacing.stackLg,
-              ),
-              _InfoRow(AppLocalizations.publisher, book.publisher),
-              _InfoRow(AppLocalizations.year, book.year?.toString()),
-              _InfoRow(AppLocalizations.edition, book.editionLabel),
-              _InfoRow(AppLocalizations.bookLanguage, book.language),
-              _InfoRow(
-                AppLocalizations.classification,
-                joinParts([
-                  book.location.name,
-                  book.shelfLabel,
-                ], separator: ' - '),
-                icon: Icons.location_on,
-              ),
-              _InfoRow(AppLocalizations.callNumber, book.callNumber),
-              _InfoRow(AppLocalizations.department, book.department.name),
-              _InfoRow(AppLocalizations.isbn, book.isbn),
-              Divider(
-                color: context.appTheme.outlineVariant,
-                height: AppSpacing.stackLg,
-              ),
-              const SizedBox(height: AppSpacing.stackMd),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.directions_walk),
-                  label: Text(AppLocalizations.navigateToBook),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.colors.secondary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        context.appTheme.radiusLg,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  // Disabled when the book's section has no node on the
-                  // library map — there is nowhere to route to.
-                  onPressed: !book.location.isNavigable
-                      ? null
-                      : () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => NavigationScreen(
-                              destinationNodeId: book.location.nodeId,
-                            ),
-                          ),
-                        ),
-                ),
-              ),
-              if (!book.location.isNavigable) ...[
-                const SizedBox(height: AppSpacing.stackSm),
-                Text(
-                  AppLocalizations.navDestinationUnavailable,
-                  style: context.textStyles.bodySmall?.copyWith(
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              const SizedBox(height: AppSpacing.stackMd),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.link),
-                  label: Text(AppLocalizations.relatedArticles),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white54),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        context.appTheme.radiusLg,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: book.articles.isEmpty
-                      ? null
-                      : () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) =>
-                                ArticlesScreen(articles: book.articles),
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.stackMd),
-              Text(
-                AppLocalizations.scanHintBottom,
+                AppLocalizations.navDestinationUnavailable,
                 style: context.textStyles.bodySmall?.copyWith(
                   color: Colors.white70,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppSpacing.stackMd),
             ],
-          ),
+            const SizedBox(height: AppSpacing.stackMd),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.link),
+                label: Text(AppLocalizations.relatedArticles),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white54),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      context.appTheme.radiusLg,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: book.articles.isEmpty
+                    ? null
+                    : () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              ArticlesScreen(articles: book.articles),
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.stackMd),
+            Text(
+              AppLocalizations.scanHintBottom,
+              style: context.textStyles.bodySmall?.copyWith(
+                color: Colors.white70,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.stackMd),
+          ],
         ),
       ),
     ),
   );
-}
-
-/// A label/value line that renders nothing when the catalogue has no
-/// value — most book fields are optional, and a blank row reads as a bug.
-class _InfoRow extends StatelessWidget {
-  const _InfoRow(this.label, this.value, {this.icon});
-
-  final String label;
-  final String? value;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!hasText(value)) return const SizedBox.shrink();
-    return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Row(
-      spacing: AppSpacing.stackSm,
-      children: [
-        Text(
-          label,
-          style: context.textStyles.labelLarge?.copyWith(
-            color: context.appTheme.onSurfaceVariant,
-          ),
-        ),
-        Expanded(
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Text(
-              value!,
-              maxLines: 1,
-              // softWrap: false,
-              textAlign: TextAlign.start,
-              overflow: TextOverflow.ellipsis,
-              style: context.textStyles.bodyMedium?.copyWith(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-    );
-  }
 }

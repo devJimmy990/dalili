@@ -11,7 +11,8 @@ npm install
 cp .env.example .env     # then paste your Neon connection string
 npx prisma generate
 npx prisma db push       # creates the tables
-npm run seed             # loads data/Dalili.xlsx
+npm run seed             # loads data/Datasource.xlsx
+npm test                 # unit-tests the spreadsheet parsers
 npm run dev              # http://localhost:3000
 ```
 
@@ -49,7 +50,8 @@ Every response is wrapped:
 
 Add `?lang=ar` or `?lang=en` to anything (default `ar`; `Accept-Language` is
 used as a fallback). Language affects department names, place names, the
-ordinal labels, and error messages — never the book's own title or author.
+edition/shelf/language labels, document types, and error messages — never the
+book's own title or author.
 
 | Method | Path | Notes |
 | --- | --- | --- |
@@ -77,15 +79,19 @@ Paginated responses carry `items`, `total`, `page`, `limit`, `totalPages`,
   "author": "Wadhwa, C.L.",
   "edition": 3,
   "editionLabel": "الثالثة",
-  "publisher": "New Age International,",
+  "editionType": { "id": "standard", "name": "طبعة عادية" },
+  "editionInferred": false,
+  "publisher": "New Age International",
   "place": { "id": "new-delhi", "name": "نيودلهي" },
   "year": 2010,
   "subjects": "Voltage Engineering.",
-  "shelf": 3,
-  "shelfLabel": "الثالث",
+  "shelf": 31,
+  "shelfLabel": "الرف 31",
   "department": { "id": "d_electrical", "name": "كهرباء", "mapNodeId": "d_electrical" },
   "location": { "nodeId": "d_electrical", "name": "كهرباء" },
-  "language": "en",
+  "locationLabel": "قسم كهرباء، الرف 31",
+  "language": "الإنجليزية",
+  "languages": [{ "id": "en", "name": "الإنجليزية", "role": "TEXT" }],
   "cover": "https://...",
   "isbn": "9788122430905",
   "articles": [ ... ]
@@ -98,33 +104,43 @@ not on the map yet.
 
 ## Data notes
 
-The spreadsheet is the librarians' working copy, so `prisma/seed.ts` normalizes
-it on the way in. What it fixes, and why:
+The spreadsheet (`data/Datasource.xlsx`, sheets `books` and `articles`) is
+the librarians' working copy. `prisma/seed.ts` normalizes it on the way in;
+the cell-level rules live in `prisma/sheet-parsers.ts` and the lookup tables
+in `prisma/lookups.ts`. Run `npm run seed -- --dry-run` to validate the sheet
+and see every repair it makes without touching the database.
 
-- **Department codes.** `Books.department_id` uses `d1..d5`; the Departments
-  sheet uses slugs. `DEPARTMENT_ALIASES` maps them (`d1` → `d_electrical`, …).
-  An unmapped code aborts the seed rather than orphaning books.
-- **`location` is dropped.** It duplicated `department_id`. A book's location is
-  its department's place on the map, so the API derives it.
-- **Basic Sciences shares the Mechanical node.** The two sections sit together
-  and the map has no separate node, so `MAP_NODE_OVERRIDES` points
-  `d_basic_sciences` at `d_mechanical`.
-- **Ordinals become integers.** `"3rd"` → `3`, localized at response time.
-  Non-numeric editions (`"international"`, `"teacher"`) survive in
-  `editionLabel`; `"Null"` becomes `null`.
-- **Years are cleaned.** `"[2001]"` → `2001`.
-- **Article links are unpacked.** `Articles.book_ids` packs ids with a
-  `/*-*/` separator into the `book_articles` join table.
-- **Blank means NULL.** A column is `NOT NULL` only when the record cannot
-  exist without it (`id`, `callNumber`, `title`, `author`, `departmentId`).
-  Everything else is stored as `NULL` when the cell is blank, never as `""`.
+Anything shown in two languages is a table with `nameAr` / `nameEn` and an id —
+departments, places, languages, edition types, article types, source types —
+and rows point at the id. Sections and cities live in `prisma/reference-data.ts`
+(the sheet only names them; an unknown name aborts the seed).
 
-### Known gap in the source data
-
-Nine books have an ISBN that Excel stored as a float and rounded, losing the
-trailing digits (`9788120000000`). The digits are gone from the source, so the
-seed keeps the value and prints the list. To fix: format the `isbn` column as
-**Text** in `data/Dalili.xlsx`, re-enter those nine, and re-run `npm run seed`.
+- **Language is many-to-many with a role.** `العربية (مترجم عن الإنجليزية)` is
+  Arabic text *translated from* English; `الكورية والإنجليزية` is two text
+  languages. The API returns `language` (display text) and `languages` (ids).
+- **Edition is three fields.** The number (`2nd. ed`, `ط. 1` → 2, 1), the kind
+  (standard / international / teacher / not stated `[د.ط]`), and
+  `editionInferred` when the sheet printed it in `[brackets]` (supplied by the
+  cataloguer, not stated on the book).
+- **Shelf is the sheet's number** (13–68), a library-wide shelf code, shown as
+  "الرف 31". `locationLabel` is "قسم كهرباء، الرف 31".
+- **Document types are merged** from 15 spellings into six (مقال, بحث, مقال
+  مراجعة, بحث مؤتمر, مقال رأي, مقال إرشادي). A document whose source is a
+  conference is always a conference paper. The source type (مجلة / مؤتمر) is
+  separate.
+- **Articles get a stable id** (hash of the DOI, else the title), and an article
+  listed under two books is one row linked to both.
+- **ISBNs that lost their leading zero in Excel are restored** — only when the
+  padded number passes the ISBN-10 checksum. A number that fails its checksum is
+  kept as typed and listed in the seed report.
+- **Free text is cleaned**, not translated: trailing MARC punctuation
+  (`Electric machines :`), `[Cengage Learning]`, `Wiley,`, and publishers
+  spelled in different case become one name.
+- **Basic Sciences shares the Mechanical node.** The map has no separate node, so
+  `MAP_NODE_OVERRIDES` points `d_basic_sciences` at `d_mechanical`.
+- **Blank means NULL.** A column is `NOT NULL` only when the record cannot exist
+  without it (`id`, `callNumber`, `title`, `departmentId`). A book with no author
+  is stored with `NULL` and shown as "مؤلف غير معروف".
 
 ## Deploying to Render
 

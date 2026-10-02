@@ -43,6 +43,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "appName": MessageLookupByLibrary.simpleMessage("دليلي"),
     "arabic": MessageLookupByLibrary.simpleMessage("العربية"),
+    "articleSource": MessageLookupByLibrary.simpleMessage("المصدر"),
     "author": MessageLookupByLibrary.simpleMessage("المؤلف"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("اللغة"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage(
@@ -61,6 +62,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "darkTheme": MessageLookupByLibrary.simpleMessage("داكن"),
     "department": MessageLookupByLibrary.simpleMessage("القسم"),
     "departments": MessageLookupByLibrary.simpleMessage("الأقسام"),
+    "documentType": MessageLookupByLibrary.simpleMessage("نوع الوثيقة"),
     "edition": MessageLookupByLibrary.simpleMessage("الطبعة"),
     "english": MessageLookupByLibrary.simpleMessage("الإنجليزية"),
     "error": MessageLookupByLibrary.simpleMessage("حدث خطأ ما"),
@@ -148,6 +150,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "وجّه الكاميرا نحو الباركود الخاص بأي كتاب للعثور عليه فوراً في فهرس المكتبة.",
     ),
     "onboardScanTitle": MessageLookupByLibrary.simpleMessage("امسح أي كتاب"),
+    "placeOfPublication": MessageLookupByLibrary.simpleMessage("مكان النشر"),
     "pointCameraAtBook": MessageLookupByLibrary.simpleMessage(
       "وجّه الكاميرا نحو باركود الكتاب",
     ),
@@ -172,6 +175,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectLanguage": MessageLookupByLibrary.simpleMessage("اختر اللغة"),
     "settings": MessageLookupByLibrary.simpleMessage("الإعدادات"),
     "shelf": MessageLookupByLibrary.simpleMessage("الرف"),
+    "shelfLocation": MessageLookupByLibrary.simpleMessage("الموقع"),
     "skip": MessageLookupByLibrary.simpleMessage("تخطي"),
     "suggestedBooks": MessageLookupByLibrary.simpleMessage("كتب مقترحة"),
     "theme": MessageLookupByLibrary.simpleMessage("المظهر"),

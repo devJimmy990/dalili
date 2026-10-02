@@ -66,6 +66,7 @@ export async function searchBooks(query: string, lang: Lang) {
       { title: { contains: q, mode: 'insensitive' } },
       { author: { contains: q, mode: 'insensitive' } },
       { subjects: { contains: q, mode: 'insensitive' } },
+      { publisher: { contains: q, mode: 'insensitive' } },
       { callNumber: { contains: q, mode: 'insensitive' } },
       {
         articles: {

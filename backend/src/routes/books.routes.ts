@@ -76,6 +76,6 @@ booksRouter.get(
     const id = param(req, 'id');
     const book = await getBookById(id, req.lang);
     if (!book) throw notFound('book_not_found');
-    sendSuccess(res, { items: await getArticlesForBook(id) });
+    sendSuccess(res, { items: await getArticlesForBook(id, req.lang) });
   }),
 );

@@ -1,38 +1,61 @@
-import type { Article, Book, Department, Place } from '@prisma/client';
+import type {
+  Prisma,
+  Article,
+  ArticleType,
+  Book,
+  BookLanguage,
+  Department,
+  EditionType,
+  Language,
+  Place,
+  SourceType,
+} from '@prisma/client';
 import type { Lang } from './lang.js';
-import { editionLabel, shelfLabel } from './lang.js';
+import { editionLabel, languageLabel, locationLabel, pick, shelfLabel, unknownAuthor } from './lang.js';
 
 // Shapes the client sees. Names are camelCase and locale-resolved:
 // a book carries one `department.name`, not `nameAr` + `nameEn`.
 
+export type ArticleRow = Article & {
+  type: ArticleType | null;
+  sourceType: SourceType | null;
+};
+
 export type BookRow = Book & {
   department: Department;
   place: Place | null;
-  articles: { article: Article }[];
+  editionType: EditionType | null;
+  languages: (BookLanguage & { language: Language })[];
+  articles: { article: ArticleRow }[];
 };
 
 export function serializeDepartment(d: Department, lang: Lang) {
   return {
     id: d.id,
-    name: lang === 'en' ? d.nameEn : d.nameAr,
+    name: pick(d, lang),
     mapNodeId: d.mapNodeId,
   };
 }
 
 export function serializePlace(p: Place | null, lang: Lang) {
   if (!p) return null;
-  return { id: p.id, name: lang === 'en' ? p.nameEn : p.nameAr };
+  return { id: p.id, name: pick(p, lang) };
 }
 
-export function serializeArticle(a: Article, bookIds: string[] = []) {
+/// `type` and `source` stay flat strings (the localized name) so existing
+/// clients keep working; `typeId` / `sourceTypeId` are the stable ids for
+/// anything that wants to filter or style by kind.
+export function serializeArticle(a: ArticleRow, lang: Lang, bookIds: string[] = []) {
   return {
     id: a.id,
     bookIds,
     title: a.title,
     authors: a.authors,
     year: a.year,
-    type: a.type,
-    source: a.source,
+    typeId: a.typeId,
+    type: a.type ? pick(a.type, lang) : null,
+    sourceTypeId: a.sourceTypeId,
+    source: a.sourceType ? pick(a.sourceType, lang) : null,
     sourceTitle: a.sourceTitle,
     issn: a.issn,
     keywords: a.keywords,
@@ -54,9 +77,12 @@ export function serializeBook(b: BookRow, lang: Lang) {
     id: b.id,
     callNumber: b.callNumber,
     title: b.title,
-    author: b.author,
-    edition: b.edition,
-    editionLabel: editionLabel(b.edition, b.editionLabel, lang),
+    author: b.author ?? unknownAuthor(lang),
+    edition: b.editionNumber,
+    editionLabel: editionLabel(b.editionNumber, b.editionType, lang),
+    editionType: b.editionType ? { id: b.editionType.id, name: pick(b.editionType, lang) } : null,
+    /// Printed in brackets in the catalogue: the cataloguer's inference.
+    editionInferred: b.editionInferred,
     publisher: b.publisher,
     place: serializePlace(b.place, lang),
     year: b.year,
@@ -70,10 +96,14 @@ export function serializeBook(b: BookRow, lang: Lang) {
       nodeId: b.department.mapNodeId,
       name: department.name,
     },
-    language: b.language,
+    /// "قسم كهرباء، الرف 31" — ready to print.
+    locationLabel: locationLabel(department.name, b.shelf, lang),
+    /// Display text ("Arabic (translated from English)").
+    language: languageLabel(b.languages, lang),
+    languages: b.languages.map((l) => ({ id: l.languageId, name: pick(l.language, lang), role: l.role })),
     cover: b.cover,
     isbn: b.isbn,
-    articles: b.articles.map(({ article }) => serializeArticle(article)),
+    articles: b.articles.map(({ article }) => serializeArticle(article, lang)),
   };
 }
 
@@ -81,5 +111,11 @@ export function serializeBook(b: BookRow, lang: Lang) {
 export const bookInclude = {
   department: true,
   place: true,
-  articles: { include: { article: true }, orderBy: { articleId: 'asc' } },
-} as const;
+  editionType: true,
+  languages: { include: { language: true }, orderBy: [{ role: 'asc' }, { position: 'asc' }] },
+  articles: {
+    include: { article: { include: { type: true, sourceType: true } } },
+    // Best match first, the same order the related-articles screen uses.
+    orderBy: [{ article: { score: 'desc' } }, { articleId: 'asc' }],
+  },
+} satisfies Prisma.BookInclude;

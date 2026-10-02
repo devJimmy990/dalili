@@ -3,21 +3,32 @@
 //
 // Design notes
 // ─────────────────────────────────────────────────────────────
-// * Every human-readable label that differs per locale is stored
-//   twice (`*Ar` / `*En`). The API picks one based on `?lang=`.
-// * Ordinals (edition, shelf) are stored as plain integers so they
-//   can be sorted and localized ("3rd" / "الثالث") at response time.
-//   `editionLabel` keeps non-numeric values like "international".
+// * Anything a reader sees in two languages is a lookup table with
+//   `nameAr` / `nameEn` and a stable string id (Department, Place,
+//   Language, EditionType, ArticleType, SourceType). Rows reference the
+//   id, never a translated string, so a new locale or a renamed label is
+//   one UPDATE instead of a data migration. The API picks the column from
+//   `?lang=`.
+// * Free text stays on the row it describes (title, author, publisher,
+//   subjects): the catalogue holds one spelling of those, not a pair.
 // * Nullability is deliberate: a column is NOT NULL only when the record
-//   cannot exist without it (identity, title, author, the department it
-//   belongs to). Every other field is optional and stored as NULL when
+//   cannot exist without it (identity, title, call number, the department
+//   it belongs to). Every other field is optional and stored as NULL when
 //   the sheet leaves it blank — never as an empty string, so "unknown"
 //   and "empty" stay distinguishable and the app can hide the row.
-// * A book's physical location is NOT a column: it is derived from
-//   its department, which carries the map node id used by the
-//   in-app navigation (`assets/map/library_map.json`).
-// * Book ⇄ Article is many-to-many: one article may cite several
-//   books (the sheet encoded this as `id1/*-*/id2`).
+// * A book's physical location is its department (which carries the map
+//   node used by in-app navigation) plus `shelf`, the shelf number as the
+//   librarians print it on the stack — a library-wide number, not an index
+//   inside the department.
+// * Language is many-to-many with a role: a book can be written in two
+//   languages (Korean + English) or be a translation (Arabic, translated
+//   from English).
+// * Edition is split in three: the number (2 → "2nd"), the kind
+//   (standard / international / teacher / not stated) and whether the
+//   cataloguer inferred it (`[1st. ed]` in brackets = not printed on the
+//   book itself).
+// * Book ⇄ Article is many-to-many: one article may be recommended for
+//   several books.
 
 generator client {
   provider = "prisma-client-js"
@@ -54,36 +65,86 @@ model Place {
   @@map("places")
 }
 
+/// A language a book's text is written in (ar, en, ko).
+model Language {
+  id     String @id
+  nameAr String
+  nameEn String
+
+  books BookLanguage[]
+
+  @@map("languages")
+}
+
+/// The kind of edition: "standard" (numbered), "international", "teacher",
+/// or "unspecified" when the record states none ([د.ط]).
+model EditionType {
+  id        String @id
+  nameAr    String
+  nameEn    String
+  sortOrder Int    @default(0)
+
+  books Book[]
+
+  @@map("edition_types")
+}
+
+/// Normalized kind of a related document: مقال, بحث, مقال مراجعة, بحث مؤتمر...
+model ArticleType {
+  id        String @id
+  nameAr    String
+  nameEn    String
+  sortOrder Int    @default(0)
+
+  articles Article[]
+
+  @@map("article_types")
+}
+
+/// Where a document was published: journal or conference proceedings.
+model SourceType {
+  id     String @id
+  nameAr String
+  nameEn String
+
+  articles Article[]
+
+  @@map("source_types")
+}
+
 model Book {
-  id         String @id
+  id         String  @id
   /// Dewey-style code that locates the book on its shelf. Required: it is
   /// how a visitor actually finds the book.
   callNumber String
   title      String
-  author     String
+  /// Null for the few records catalogued with no author.
+  author     String?
 
-  /// Numeric edition when parseable (1, 2, 3...), else null.
-  edition Int?
-  /// Raw edition when it is not a number ("international", "teacher").
-  editionLabel String?
+  /// Edition number (1, 2, 3...); null when the record gives none.
+  editionNumber   Int?
+  editionTypeId   String?
+  /// True when the sheet printed the edition in brackets — the cataloguer
+  /// supplied it, the book does not state it.
+  editionInferred Boolean @default(false)
 
   publisher String?
   /// Publication year; null when the sheet had no usable value.
   year      Int?
   subjects  String?
-  /// Shelf number inside the department (1..10).
+  /// Library-wide shelf number as printed in the sheet (13..68).
   shelf     Int?
-  /// Book text language code: "ar" | "en". Metadata only, never a filter.
-  language  String?
   cover     String?
   isbn      String?
 
   placeId      String?
   departmentId String
 
-  place      Place?     @relation(fields: [placeId], references: [id], onDelete: SetNull)
-  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  articles   BookArticle[]
+  place       Place?        @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  department  Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  editionType EditionType?  @relation(fields: [editionTypeId], references: [id], onDelete: SetNull)
+  languages   BookLanguage[]
+  articles    BookArticle[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -92,6 +153,28 @@ model Book {
   @@index([author])
   @@index([title])
   @@map("books")
+}
+
+enum LanguageRole {
+  /// The language the book's text is in.
+  TEXT
+  /// The language a translated book was translated *from*.
+  TRANSLATED_FROM
+}
+
+model BookLanguage {
+  bookId     String
+  languageId String
+  role       LanguageRole @default(TEXT)
+  /// Keeps the sheet's order ("Korean and English", not the reverse).
+  position   Int          @default(0)
+
+  book     Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, languageId, role])
+  @@index([languageId])
+  @@map("book_languages")
 }
 
 model Article {
@@ -103,10 +186,6 @@ model Article {
   keywords    String?
   doi         String?
   year        Int?
-  /// Free-text kind in Arabic ("مقال", "بحث مؤتمر", ...).
-  type        String?
-  /// "مجلة" | "مؤتمر".
-  source      String?
   issn        String?
   volume      String?
   issue       String?
@@ -115,7 +194,12 @@ model Article {
   score       Float?
   url         String?
 
-  books BookArticle[]
+  typeId       String?
+  sourceTypeId String?
+
+  type       ArticleType? @relation(fields: [typeId], references: [id], onDelete: SetNull)
+  sourceType SourceType?  @relation(fields: [sourceTypeId], references: [id], onDelete: SetNull)
+  books      BookArticle[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

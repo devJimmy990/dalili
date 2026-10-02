@@ -434,6 +434,36 @@ class S {
     return Intl.message('Call Number', name: 'callNumber', desc: '', args: []);
   }
 
+  /// `Place of Publication`
+  String get placeOfPublication {
+    return Intl.message(
+      'Place of Publication',
+      name: 'placeOfPublication',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Document Type`
+  String get documentType {
+    return Intl.message(
+      'Document Type',
+      name: 'documentType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Source`
+  String get articleSource {
+    return Intl.message('Source', name: 'articleSource', desc: '', args: []);
+  }
+
+  /// `Location`
+  String get shelfLocation {
+    return Intl.message('Location', name: 'shelfLocation', desc: '', args: []);
+  }
+
   /// `View Details`
   String get viewDetails {
     return Intl.message(

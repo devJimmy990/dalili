@@ -8,6 +8,7 @@ import 'package:dalili/features/library/domain/entities/book.dart';
 import 'package:dalili/features/library/presentation/cubits/scanner/scanner_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/scanner/scanner_state.dart';
 import 'package:dalili/features/library/presentation/screens/book_detail/book_detail_screen.dart';
+import 'package:dalili/features/library/presentation/widgets/book_info_rows.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -302,153 +303,92 @@ class _FoundDetailCard extends StatelessWidget {
       topLeft: Radius.circular(context.appTheme.radiusXl),
       topRight: Radius.circular(context.appTheme.radiusXl),
     ),
-    child: BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.appTheme.surfaceContainerHigh.withValues(alpha: .2),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(context.appTheme.radiusXl),
-            topRight: Radius.circular(context.appTheme.radiusXl),
-          ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.stackLg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Recognized badge
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.check_circle,
+    // A solid panel, not a see-through blur: the text color is chosen for
+    // this color, so it must not change with the camera frame behind it.
+    child: Container(
+      color: bookInfoPanelColor(context),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.stackLg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Recognized badge
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  color: Colors.greenAccent,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  AppLocalizations.bookRecognized,
+                  style: context.textStyles.bodySmall?.copyWith(
                     color: Colors.greenAccent,
-                    size: 16,
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    AppLocalizations.bookRecognized,
-                    style: context.textStyles.bodySmall?.copyWith(
-                      color: Colors.greenAccent,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.stackSm),
+            // Title
+            Text(
+              book.title,
+              style: context.textStyles.displayMedium?.copyWith(
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: AppSpacing.stackSm / 2),
+            // Author
+            Text(
+              book.author,
+              style: context.textStyles.bodyLarge?.copyWith(
+                color: Colors.white70,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Divider(
+              color: context.appTheme.outlineVariant,
+              height: AppSpacing.stackLg,
+            ),
+            BookInfoRows(book: book),
+            const SizedBox(height: AppSpacing.stackMd),
+            // View Details button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onViewDetails,
+                icon: const Icon(Icons.menu_book_rounded),
+                label: Text(AppLocalizations.viewDetails),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colors.secondary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      context.appTheme.radiusLg,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.stackSm),
-              // Title
-              Text(
-                book.title,
-                style: context.textStyles.displayMedium?.copyWith(
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: AppSpacing.stackSm / 2),
-              // Author
-              Text(
-                book.author,
-                style: context.textStyles.bodyLarge?.copyWith(
-                  color: Colors.white70,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Divider(
-                color: context.appTheme.outlineVariant,
-                height: AppSpacing.stackLg,
-              ),
-              _InfoRow(AppLocalizations.publisher, book.publisher),
-              _InfoRow(AppLocalizations.year, book.year?.toString()),
-              _InfoRow(AppLocalizations.bookLanguage, book.language),
-              _InfoRow(
-                AppLocalizations.classification,
-                joinParts([
-                  book.location.name,
-                  book.shelfLabel,
-                ], separator: ' - '),
-                icon: Icons.location_on,
-              ),
-              _InfoRow(AppLocalizations.callNumber, book.callNumber),
-              _InfoRow(AppLocalizations.isbn, book.isbn),
-              const SizedBox(height: AppSpacing.stackMd),
-              // View Details button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: onViewDetails,
-                  icon: const Icon(Icons.menu_book_rounded),
-                  label: Text(AppLocalizations.viewDetails),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.colors.secondary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        context.appTheme.radiusLg,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
-              const SizedBox(height: AppSpacing.stackSm),
-              // Scan Again text button
-              TextButton(
-                onPressed: onReset,
-                child: Text(
-                  AppLocalizations.scanAgain,
-                  style: const TextStyle(color: Colors.white54),
-                ),
+            ),
+            const SizedBox(height: AppSpacing.stackSm),
+            // Scan Again text button
+            TextButton(
+              onPressed: onReset,
+              child: Text(
+                AppLocalizations.scanAgain,
+                style: const TextStyle(color: Colors.white54),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     ),
   );
-}
-
-/// Renders nothing when the catalogue has no value for this field.
-class _InfoRow extends StatelessWidget {
-  const _InfoRow(this.label, this.value, {this.icon});
-
-  final String label;
-  final String? value;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!hasText(value)) return const SizedBox.shrink();
-    return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Row(
-      spacing: AppSpacing.stackSm,
-      children: [
-        Text(
-          label,
-          style: context.textStyles.labelLarge?.copyWith(
-            color: context.appTheme.onSurfaceVariant,
-          ),
-        ),
-        Expanded(
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Text(
-              value!,
-              maxLines: 1,
-              textAlign: TextAlign.start,
-              overflow: TextOverflow.ellipsis,
-              style: context.textStyles.bodyMedium?.copyWith(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-    );
-  }
 }
 
 // ---------------------------------------------------------------------------

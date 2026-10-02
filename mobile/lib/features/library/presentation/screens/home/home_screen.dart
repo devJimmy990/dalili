@@ -57,82 +57,47 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.stackLg),
-        // Padding(
-        //   padding: const EdgeInsets.symmetric(
-        //     horizontal: AppSpacing.containerMargin,
-        //   ),
-        //   child: Row(
-        //     children: [
-        //       Text(
-        //         AppLocalizations.departments,
-        //         style: context.textStyles.displaySmall,
-        //       ),
-        //       const Spacer(),
-        //       TextButton(
-        //         onPressed: () {},
-        //         child: Text(AppLocalizations.viewAll),
-        //       ),
-        //     ],
-        //   ),
-        // ),
         Expanded(
-          child: Card(
-            margin: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.containerMargin,
-              vertical: AppSpacing.gutter,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.stackSm,
-                    ),
-                    child: Text(
-                      AppLocalizations.departments,
-                      style: context.textStyles.displaySmall,
-                    ),
-                  ),
-                  BlocBuilder<DepartmentCubit, DepartmentState>(
-                    builder: (context, state) {
-                      if (state.status == DepartmentStatus.loading) {
-                        return const Expanded(child: DepartmentListSkeleton());
-                      } else if (state.status == DepartmentStatus.error) {
-                        return AppErrorWidget(
-                          onRetry: () =>
-                              context.read<DepartmentCubit>().loadDepartments(),
-                        );
-                      } else if (state.status == DepartmentStatus.empty ||
-                          state.departments.isEmpty) {
-                        return const SizedBox(
-                          height: 200,
-                          child: EmptyWidget(),
-                        );
-                      }
-                      return Expanded(
-                        child: ListView.separated(
-                          padding: const EdgeInsets.only(
-                            top: AppSpacing.stackSm,
-                          ),
-                          itemCount: state.departments.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: AppSpacing.stackSm),
-                          itemBuilder: (_, i) => DepartmentTile(
-                            key: ValueKey(state.departments[i].id),
-                            department: state.departments[i],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.stackSm,
+                ),
+                child: Text(
+                  AppLocalizations.departments,
+                  style: context.textStyles.displaySmall,
+                ),
               ),
-            ),
+              BlocBuilder<DepartmentCubit, DepartmentState>(
+                builder: (context, state) {
+                  if (state.status == DepartmentStatus.loading) {
+                    return const Expanded(child: DepartmentListSkeleton());
+                  } else if (state.status == DepartmentStatus.error) {
+                    return AppErrorWidget(
+                      onRetry: () =>
+                          context.read<DepartmentCubit>().loadDepartments(),
+                    );
+                  } else if (state.status == DepartmentStatus.empty ||
+                      state.departments.isEmpty) {
+                    return const SizedBox(height: 200, child: EmptyWidget());
+                  }
+                  return Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.only(top: AppSpacing.stackSm),
+                      itemCount: state.departments.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AppSpacing.stackSm),
+                      itemBuilder: (_, i) => DepartmentTile(
+                        key: ValueKey(state.departments[i].id),
+                        department: state.departments[i],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ],

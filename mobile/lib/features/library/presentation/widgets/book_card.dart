@@ -57,7 +57,8 @@ class BookCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (joinParts([book.publisher, book.year]) case final meta?) ...[
+                  if (joinParts([book.publisher, book.year])
+                      case final meta?) ...[
                     const SizedBox(height: 2),
                     Text(
                       meta,
@@ -79,10 +80,11 @@ class BookCard extends StatelessWidget {
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          joinParts([
+                          book.locationLabel ??
+                              joinParts([
                                 book.location.name,
                                 book.shelfLabel,
-                              ], separator: ' - ') ??
+                              ], separator: '، ') ??
                               book.callNumber,
                           style: context.textStyles.bodySmall?.copyWith(
                             color: context.colors.secondary,

@@ -1,47 +1,51 @@
 /**
- * Seeds the database from the curated spreadsheet (`data/Dalili.xlsx`).
+ * Seeds the database from the librarians' spreadsheet (`data/Datasource.xlsx`,
+ * sheets `books` and `articles`).
  *
- * The sheet is the librarians' working copy, so it carries a few quirks
- * this script normalizes rather than pushing downstream:
+ * The sheet is a hand-kept working copy, so this script normalizes it rather
+ * than pushing quirks downstream (the cell-level rules live in
+ * sheet-parsers.ts and lookups.ts):
  *
- *   1. `Books.department_id` uses short codes (d1..d5) while the
- *      Departments sheet uses slugs (d_electrical...). DEPARTMENT_ALIASES
- *      bridges the two; an unmapped code aborts the seed.
- *   2. `Books.location` duplicates `department_id` and is dropped — a
- *      book's location is its department's spot on the library map.
- *   3. Ordinals arrive as "3rd" / "Null" / "international". Numbers are
- *      stored as integers; anything else survives in `editionLabel`.
- *   4. `year` sometimes reads "[2001]".
- *   5. `Articles.book_ids` packs several ids with a "/*-*\/" separator.
+ *   1. Sections and cities come from reference-data.ts — the sheet only
+ *      names them, and every name must resolve to an existing row.
+ *   2. Language, edition and document type are lookup tables with Arabic and
+ *      English names; the books/articles store ids.
+ *   3. "BibID" is the book id. The articles sheet has no id of its own, so
+ *      each gets a stable one derived from its DOI (or title).
+ *   4. The same article listed under two books becomes ONE article linked
+ *      to both.
+ *   5. A conference-sourced document is always a conference paper, whatever
+ *      its "نوع الوثيقة" says.
  *
- * Idempotent: upserts everything and re-links articles, so it is safe to
- * re-run after editing the sheet.
+ * Idempotent: upserts everything, rebuilds the join tables and removes rows
+ * the sheet no longer has, so it is safe to re-run after editing the sheet.
  *
  * `npm run seed -- --dry-run` parses and validates the sheet, prints what
- * it would write, and never opens a database connection.
+ * it would write and what it had to repair, and never opens a database
+ * connection.
  */
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
+import {
+  ARTICLE_TYPES,
+  ARTICLE_TYPE_BY_SHEET_NAME,
+  DEPARTMENT_BY_SHEET_NAME,
+  EDITION_TYPES,
+  LANGUAGES,
+  PLACE_BY_SHEET_NAME,
+  SOURCE_TYPES,
+  SOURCE_TYPE_BY_SHEET_NAME,
+} from './lookups.js';
+import * as parse from './sheet-parsers.js';
+import { DEPARTMENTS, PLACES } from './reference-data.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const XLSX_PATH = resolve(here, '../data/Dalili.xlsx');
+const XLSX_PATH = resolve(here, '../data/Datasource.xlsx');
 const MAP_PATH = resolve(here, '../../mobile/assets/map/library_map.json');
-
-const BOOK_IDS_SEPARATOR = '/*-*/';
-
-/// Short codes used in the Books sheet → canonical department slugs.
-/// Derived from the books themselves (d1 is all electrical engineering,
-/// d2 architecture, and so on).
-const DEPARTMENT_ALIASES: Record<string, string> = {
-  d1: 'd_electrical',
-  d2: 'd_architecture',
-  d3: 'd_civil',
-  d4: 'd_mechanical',
-  d5: 'd_basic_sciences',
-};
 
 /// Departments that share another section's spot on the library map.
 /// Basic Sciences sits with Mechanical Engineering, and the map has no
@@ -49,12 +53,6 @@ const DEPARTMENT_ALIASES: Record<string, string> = {
 const MAP_NODE_OVERRIDES: Record<string, string> = {
   d_basic_sciences: 'd_mechanical',
 };
-
-/// ISBNs Excel stored as a float and rounded, losing the trailing digits
-/// (`9788120000000`). Kept as-is — the digits are gone from the source —
-/// but reported so the sheet can be fixed later by formatting the column
-/// as Text. A real ISBN never ends in this many zeros.
-const TRUNCATED_ISBN = /0{5,}$/;
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
@@ -66,70 +64,26 @@ if (DRY_RUN && !process.env.DATABASE_URL) {
 
 const prisma = new PrismaClient();
 
-// ─── Cell helpers ──────────────────────────────────────────
+// ─── Sheet access ──────────────────────────────────────────
 
 type Row = Record<string, unknown>;
 
-function str(row: Row, key: string): string {
-  const v = row[key];
-  if (v === null || v === undefined) return '';
-  return String(v).trim();
-}
-
-/// A blank cell means "we don't know", not "the value is an empty string",
-/// so it becomes NULL. "Null" typed literally by hand counts as blank too.
-function nullable(row: Row, key: string): string | null {
-  const v = str(row, key);
-  return v.length === 0 || /^null$/i.test(v) ? null : v;
-}
-
-/// "[2001]" → 2001, "" → null. Rejects anything outside a sane range so
-/// a stray cell cannot land in the database as a year.
-function year(raw: string): number | null {
-  const digits = raw.replace(/[^0-9]/g, '');
-  if (digits.length !== 4) return null;
-  const n = Number(digits);
-  return n >= 1000 && n <= 2100 ? n : null;
-}
-
-/// "3rd" → 3, "1st" → 1, "Null"/"international" → null.
-function ordinal(raw: string): number | null {
-  if (!raw || /^null$/i.test(raw)) return null;
-  const m = /^(\d{1,2})\s*(st|nd|rd|th)?$/i.exec(raw);
-  if (!m?.[1]) return null;
-  const n = Number(m[1]);
-  return n >= 1 && n <= 20 ? n : null;
-}
-
-/// Keeps a non-numeric edition as free text ("international", "teacher").
-function editionFallback(raw: string, parsed: number | null): string | null {
-  if (parsed !== null) return null;
-  if (!raw || /^null$/i.test(raw)) return null;
-  return raw;
-}
-
-/// Note the blank check: Number('') is 0, which would silently rank an
-/// unscored article as the least relevant instead of unranked.
-function score(raw: string): number | null {
-  if (raw.length === 0) return null;
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : null;
-}
-
-function splitBookIds(raw: string): string[] {
-  return raw
-    .split(BOOK_IDS_SEPARATOR)
-    .flatMap((part) => part.split(','))
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
+/// Header names are matched trimmed: the sheet has " المجموعة المنتمي إليها "
+/// with stray spaces, and a re-export may add or drop them.
 function readSheet(wb: XLSX.WorkBook, name: string): Row[] {
   const sheet = wb.Sheets[name];
   if (!sheet) throw new Error(`Sheet "${name}" not found in ${XLSX_PATH}`);
-  return XLSX.utils
-    .sheet_to_json<Row>(sheet, { defval: '', raw: true })
-    .filter((row) => str(row, 'id') !== '');
+  return XLSX.utils.sheet_to_json<Row>(sheet, { defval: '', raw: true }).map((row) => {
+    const trimmed: Row = {};
+    for (const [key, value] of Object.entries(row)) trimmed[key.trim()] = value;
+    return trimmed;
+  });
+}
+
+function requireColumns(rows: Row[], sheet: string, columns: string[]): void {
+  const have = new Set(Object.keys(rows[0] ?? {}));
+  const missing = columns.filter((c) => !have.has(c));
+  if (missing.length > 0) throw new Error(`Sheet "${sheet}" is missing column(s): ${missing.join(', ')}`);
 }
 
 /// Node ids present in the app's map asset, so a department can only
@@ -144,38 +98,185 @@ function readMapNodeIds(): Set<string> {
   }
 }
 
+function lookup(map: Record<string, string>, raw: string, what: string, owner: string): string {
+  const id = map[raw.trim()];
+  if (!id) throw new Error(`${owner}: unknown ${what} "${raw}". Add it to prisma/lookups.ts.`);
+  return id;
+}
+
+/// Stable across re-seeds, so a favorited article keeps its id.
+function articleId(doi: string | null, titleText: string): string {
+  const basis = (doi ?? titleText).toLowerCase().replace(/\s+/g, ' ').trim();
+  return `a_${createHash('sha1').update(basis).digest('hex').slice(0, 10)}`;
+}
+
+// ─── Build (pure: no database) ─────────────────────────────
+
+interface Report {
+  editionInferred: string[];
+  isbnPadded: string[];
+  isbnBad: string[];
+  noAuthor: string[];
+  placeIsBinding: string[];
+  mergedArticles: string[];
+  reclassified: string[];
+  noIssn: number;
+}
+
+function buildBooks(rows: Row[], report: Report) {
+  requireColumns(rows, 'books', [
+    'BibID', 'رقم الاستدعاء', 'العنوان', 'المؤلف', 'الطبعة', 'الناشر', 'سنة النشر', 'مكان النشر',
+    'ISBN', 'رؤوس الموضوعات', 'الموقع على الرف', 'المجموعة المنتمي إليها', 'اللغة', 'الغلاف',
+  ]);
+
+  const canonicalPublisher = parse.publisherCanonicalizer(rows.map((r) => parse.publisher(r['الناشر'])));
+  const seen = new Set<string>();
+
+  return rows.map((row) => {
+    const id = parse.text(row['BibID']);
+    if (id.length === 0) throw new Error('A book row has no BibID');
+    if (seen.has(id)) throw new Error(`Duplicate BibID ${id}`);
+    seen.add(id);
+
+    const callNumber = parse.text(row['رقم الاستدعاء']);
+    const bookTitle = parse.title(row['العنوان']);
+    if (callNumber.length === 0 || bookTitle.length === 0) {
+      throw new Error(`Book ${id} is missing its call number or title`);
+    }
+
+    const departmentId = lookup(DEPARTMENT_BY_SHEET_NAME, parse.text(row['المجموعة المنتمي إليها']), 'department', `Book ${id}`);
+    const placeRaw = parse.text(row['مكان النشر']);
+    const placeId = placeRaw ? PLACE_BY_SHEET_NAME[parse.placeKey(placeRaw)] : undefined;
+    if (placeRaw && !placeId) throw new Error(`Book ${id}: unknown place "${placeRaw}". Add it to PLACE_BY_SHEET_NAME.`);
+    if (placeId === 'hardcover' || placeId === 'paperback') report.placeIsBinding.push(`${id} (${placeRaw})`);
+
+    const ed = parse.edition(row['الطبعة']);
+    if (ed.inferred && ed.typeId !== 'unspecified') report.editionInferred.push(`${id} "${parse.text(row['الطبعة'])}"`);
+
+    const code = parse.isbn(row['ISBN']);
+    if (code.note === 'padded') report.isbnPadded.push(`${id} ${parse.text(row['ISBN'])} → ${code.value}`);
+    if (code.note === 'bad-checksum') report.isbnBad.push(`${id} ${code.value}`);
+
+    const bookAuthor = parse.author(row['المؤلف']);
+    if (bookAuthor === null) report.noAuthor.push(id);
+
+    return {
+      id,
+      callNumber,
+      title: bookTitle,
+      author: bookAuthor,
+      editionNumber: ed.number,
+      editionTypeId: ed.typeId,
+      editionInferred: ed.inferred,
+      publisher: canonicalPublisher(parse.publisher(row['الناشر'])),
+      year: parse.year(row['سنة النشر']),
+      subjects: parse.subjects(row['رؤوس الموضوعات']),
+      shelf: parse.integer(row['الموقع على الرف']),
+      cover: parse.nullable(row['الغلاف']),
+      isbn: code.value,
+      placeId: placeId ?? null,
+      departmentId,
+      languages: parse.languages(row['اللغة']),
+    };
+  });
+}
+
+function buildArticles(rows: Row[], bookIds: Set<string>, report: Report) {
+  requireColumns(rows, 'articles', [
+    'bibID', 'العنوان', 'المؤلفون', 'السنة', 'نوع الوثيقة', 'نوع المصدر', 'عنوان المصدر',
+    'ISSN / ISBN', 'الكلمات المفتاحية', 'المجلد', 'العدد', 'الصفحات', 'رابط الوصول المباشر', 'DOI', 'نسبة الارتباط',
+  ]);
+
+  const byId = new Map<string, ReturnType<typeof toArticle> & { bookIds: Set<string> }>();
+
+  function toArticle(row: Row, owner: string) {
+    const titleText = parse.text(row['العنوان']);
+    if (titleText.length === 0) throw new Error(`${owner}: article has no title`);
+
+    const sourceTypeId = lookup(SOURCE_TYPE_BY_SHEET_NAME, parse.text(row['نوع المصدر']), 'source type', owner);
+    let typeId = lookup(ARTICLE_TYPE_BY_SHEET_NAME, parse.text(row['نوع الوثيقة']), 'document type', owner);
+    if (sourceTypeId === 'conference' && typeId !== 'conference-paper') {
+      report.reclassified.push(`${owner} "${parse.text(row['نوع الوثيقة'])}" → conference paper`);
+      typeId = 'conference-paper';
+    }
+
+    const doi = parse.nullable(row['DOI']);
+    const issn = parse.nullable(row['ISSN / ISBN']);
+    if (issn === null) report.noIssn += 1;
+    const rawScore = parse.text(row['نسبة الارتباط']);
+    const score = rawScore.length > 0 && Number.isFinite(Number(rawScore)) ? Number(rawScore) : null;
+
+    return {
+      id: articleId(doi, titleText),
+      title: titleText,
+      authors: parse.nullable(row['المؤلفون']),
+      sourceTitle: parse.nullable(row['عنوان المصدر']),
+      keywords: parse.nullable(row['الكلمات المفتاحية']),
+      doi,
+      year: parse.year(row['السنة']),
+      issn,
+      volume: parse.nullable(row['المجلد']),
+      issue: parse.nullable(row['العدد']),
+      pages: parse.nullable(row['الصفحات']),
+      score,
+      url: parse.nullable(row['رابط الوصول المباشر']),
+      typeId,
+      sourceTypeId,
+    };
+  }
+
+  rows.forEach((row, i) => {
+    const bookId = parse.text(row['bibID']);
+    const owner = `Article row ${i + 2}`;
+    if (!bookIds.has(bookId)) throw new Error(`${owner} points at BibID ${bookId}, which is not in the books sheet`);
+
+    const article = toArticle(row, owner);
+    const existing = byId.get(article.id);
+    if (existing) {
+      existing.bookIds.add(bookId);
+      report.mergedArticles.push(`"${article.title.slice(0, 60)}" → books ${[...existing.bookIds].join(', ')}`);
+    } else {
+      byId.set(article.id, { ...article, bookIds: new Set([bookId]) });
+    }
+  });
+
+  return [...byId.values()];
+}
+
 // ─── Seed ──────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   console.log(DRY_RUN ? `Dry run — reading ${XLSX_PATH}, nothing will be written` : `Reading ${XLSX_PATH}`);
   const wb = XLSX.readFile(XLSX_PATH);
+  const report: Report = {
+    editionInferred: [], isbnPadded: [], isbnBad: [], noAuthor: [],
+    placeIsBinding: [], mergedArticles: [], reclassified: [], noIssn: 0,
+  };
 
-  const departmentRows = readSheet(wb, 'Departments');
-  const placeRows = readSheet(wb, 'Places');
-  const bookRows = readSheet(wb, 'Books');
-  const articleRows = readSheet(wb, 'Articles');
+  // Build everything first: a bad cell aborts before a single row is written.
+  const books = buildBooks(readSheet(wb, 'books'), report);
+  const bookIds = new Set(books.map((b) => b.id));
+  const articles = buildArticles(readSheet(wb, 'articles'), bookIds, report);
+
   const mapNodeIds = readMapNodeIds();
-
-  // ── Departments ──
-  const departments = departmentRows.map((row, i) => {
-    const id = str(row, 'id');
-    const node = MAP_NODE_OVERRIDES[id] ?? id;
-    return {
-      id,
-      nameAr: str(row, 'name_ar'),
-      nameEn: str(row, 'name_en'),
-      mapNodeId: mapNodeIds.has(node) ? node : null,
-      sortOrder: i,
-    };
+  const departments = DEPARTMENTS.map((d, i) => {
+    const node = MAP_NODE_OVERRIDES[d.id] ?? d.id;
+    return { ...d, mapNodeId: mapNodeIds.has(node) ? node : null, sortOrder: i };
   });
-  const departmentIds = new Set(departments.map((d) => d.id));
 
+  // ── Lookups + departments + places ──
   if (!DRY_RUN) {
-    for (const d of departments) {
-      await prisma.department.upsert({ where: { id: d.id }, create: d, update: d });
-    }
+    for (const d of departments) await prisma.department.upsert({ where: { id: d.id }, create: d, update: d });
+    for (const p of PLACES) await prisma.place.upsert({ where: { id: p.id }, create: p, update: p });
+    for (const l of LANGUAGES) await prisma.language.upsert({ where: { id: l.id }, create: l, update: l });
+    for (const e of EDITION_TYPES) await prisma.editionType.upsert({ where: { id: e.id }, create: e, update: e });
+    for (const t of ARTICLE_TYPES) await prisma.articleType.upsert({ where: { id: t.id }, create: t, update: t });
+    for (const s of SOURCE_TYPES) await prisma.sourceType.upsert({ where: { id: s.id }, create: s, update: s });
   }
-  console.log(`  departments: ${departments.length}`);
+  console.log(
+    `  lookups: ${departments.length} departments, ${PLACES.length} places, ${LANGUAGES.length} languages, ` +
+      `${EDITION_TYPES.length} edition types, ${ARTICLE_TYPES.length} article types, ${SOURCE_TYPES.length} source types`,
+  );
   const unmapped = departments.filter((d) => d.mapNodeId === null);
   if (unmapped.length > 0) {
     console.warn(
@@ -184,137 +285,48 @@ async function main(): Promise<void> {
     );
   }
 
-  // ── Places ──
-  const places = placeRows.map((row) => ({
-    id: str(row, 'id'),
-    nameAr: str(row, 'place_ar'),
-    nameEn: str(row, 'place_en'),
-  }));
-  if (!DRY_RUN) {
-    for (const p of places) {
-      await prisma.place.upsert({ where: { id: p.id }, create: p, update: p });
-    }
-  }
-  console.log(`  places: ${places.length}`);
-
   // ── Books ──
-  const books = bookRows.map((row) => {
-    const rawDept = str(row, 'department_id');
-    const departmentId = DEPARTMENT_ALIASES[rawDept] ?? rawDept;
-    if (!departmentIds.has(departmentId)) {
-      throw new Error(
-        `Book ${str(row, 'id')} has department_id "${rawDept}" which matches no department. ` +
-          'Fix the sheet or add an entry to DEPARTMENT_ALIASES.',
-      );
-    }
-
-    const rawEdition = str(row, 'edition');
-    const edition = ordinal(rawEdition);
-    const placeId = str(row, 'place_id');
-
-    // These four are NOT NULL in the schema; a blank one is a broken row,
-    // not a book with an unknown title.
-    for (const field of ['call_number', 'title', 'author', 'department_id']) {
-      if (str(row, field).length === 0) {
-        throw new Error(`Book ${str(row, 'id')} is missing required column "${field}"`);
-      }
-    }
-
-    return {
-      id: str(row, 'id'),
-      callNumber: str(row, 'call_number'),
-      title: str(row, 'title'),
-      author: str(row, 'author'),
-      edition,
-      editionLabel: editionFallback(rawEdition, edition),
-      publisher: nullable(row, 'publisher'),
-      year: year(str(row, 'year')),
-      subjects: nullable(row, 'subjects'),
-      shelf: ordinal(str(row, 'shelf')),
-      language: nullable(row, 'language'),
-      cover: nullable(row, 'cover'),
-      isbn: nullable(row, 'isbn'),
-      placeId: placeId.length > 0 ? placeId : null,
-      departmentId,
-    };
-  });
-
-  const knownPlaceIds = new Set(places.map((p) => p.id));
-  const orphanPlaces = [...new Set(books.flatMap((b) => (b.placeId && !knownPlaceIds.has(b.placeId) ? [b.placeId] : [])))];
-  if (orphanPlaces.length > 0) {
-    throw new Error(`Books reference unknown place_id: ${orphanPlaces.join(', ')}`);
-  }
-
   if (!DRY_RUN) {
-    for (const b of books) {
+    for (const { languages, ...b } of books) {
       await prisma.book.upsert({ where: { id: b.id }, create: b, update: b });
     }
+    await prisma.book.deleteMany({ where: { id: { notIn: [...bookIds] } } });
+    await prisma.bookLanguage.deleteMany({});
+    await prisma.bookLanguage.createMany({
+      data: books.flatMap((b) => b.languages.map((l) => ({ bookId: b.id, ...l }))),
+    });
   }
-  console.log(`  books: ${books.length}`);
-
-  const truncated = books.filter((b) => b.isbn !== null && TRUNCATED_ISBN.test(b.isbn));
-  if (truncated.length > 0) {
-    console.warn(`  ! ${truncated.length} book(s) have an ISBN Excel rounded off — format the column as Text and re-seed:`);
-    for (const b of truncated) console.warn(`      ${b.id}  ${b.isbn}  ${b.title.slice(0, 48)}`);
-  }
+  const languageLinks = books.reduce((n, b) => n + b.languages.length, 0);
+  console.log(`  books: ${books.length} (${languageLinks} language links)`);
 
   // ── Articles + links ──
-  const bookIds = new Set(books.map((b) => b.id));
-  const links: { bookId: string; articleId: string }[] = [];
-  const orphanLinks: string[] = [];
-
-  const articles = articleRows.map((row) => {
-    const id = str(row, 'id');
-    if (str(row, 'title').length === 0) {
-      throw new Error(`Article ${id} is missing required column "title"`);
-    }
-    for (const bookId of splitBookIds(str(row, 'book_ids'))) {
-      if (bookIds.has(bookId)) links.push({ bookId, articleId: id });
-      else orphanLinks.push(`${id} → ${bookId}`);
-    }
-
-    return {
-      id,
-      title: str(row, 'title'),
-      authors: nullable(row, 'authors'),
-      sourceTitle: nullable(row, 'source_title'),
-      keywords: nullable(row, 'keywords'),
-      doi: nullable(row, 'doi'),
-      year: year(str(row, 'year')),
-      type: nullable(row, 'type'),
-      source: nullable(row, 'source'),
-      issn: nullable(row, 'issn'),
-      volume: nullable(row, 'volume'),
-      issue: nullable(row, 'issue'),
-      pages: nullable(row, 'pages'),
-      score: score(str(row, 'score')),
-      url: nullable(row, 'url'),
-    };
-  });
-
+  const links = articles.flatMap((a) => [...a.bookIds].map((bookId) => ({ bookId, articleId: a.id })));
   if (!DRY_RUN) {
-    for (const a of articles) {
+    for (const { bookIds: _ids, ...a } of articles) {
       await prisma.article.upsert({ where: { id: a.id }, create: a, update: a });
     }
-  }
-  console.log(`  articles: ${articles.length}`);
-
-  // Rebuild the join table so links removed from the sheet disappear too.
-  if (!DRY_RUN) {
+    await prisma.article.deleteMany({ where: { id: { notIn: articles.map((a) => a.id) } } });
     await prisma.bookArticle.deleteMany({});
     await prisma.bookArticle.createMany({ data: links, skipDuplicates: true });
   }
+  console.log(`  articles: ${articles.length}`);
   console.log(`  book↔article links: ${links.length}`);
-  if (orphanLinks.length > 0) {
-    console.warn(`  ! ${orphanLinks.length} article link(s) point to a missing book: ${orphanLinks.join(', ')}`);
-  }
 
-  const booksWithoutArticles = books.filter((b) => !links.some((l) => l.bookId === b.id)).length;
-  if (booksWithoutArticles > 0) {
-    console.log(`  note: ${booksWithoutArticles} book(s) have no linked articles`);
-  }
+  // ── What the seed had to repair ──
+  console.log('\nRepairs (review these in the sheet):');
+  const list = (label: string, items: string[]) => {
+    if (items.length > 0) console.log(`  ${label} (${items.length}):\n${items.map((i) => `      ${i}`).join('\n')}`);
+  };
+  list('editions supplied by the cataloguer ([ ] in the sheet)', report.editionInferred);
+  list('ISBNs that lost a leading zero in Excel — restored', report.isbnPadded);
+  list('ISBNs that fail their checksum — kept as typed', report.isbnBad);
+  list('books with no author on record', report.noAuthor);
+  list('"place" cells that are really a binding (Hardcover/Paperback)', report.placeIsBinding);
+  list('articles listed under several books — merged', report.mergedArticles);
+  list('documents re-typed as conference papers (source is a conference)', report.reclassified);
+  if (report.noIssn > 0) console.log(`  ${report.noIssn} article rows have no ISSN/ISBN`);
 
-  console.log(DRY_RUN ? 'Dry run complete — the sheet is valid, no rows written.' : 'Seed complete.');
+  console.log(DRY_RUN ? '\nDry run complete — the sheet is valid, no rows written.' : '\nSeed complete.');
 }
 
 main()

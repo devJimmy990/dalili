@@ -36,37 +36,73 @@ export function msg(lang: Lang, key: MessageKey): string {
   return MESSAGES[lang][key];
 }
 
-// ─── Ordinals ──────────────────────────────────────────────
-// Edition is feminine in Arabic (الطبعة الأولى), shelf is masculine
-// (الرف الأول) — hence two tables for the same numbers.
+// ─── Labels ────────────────────────────────────────────────
+// Everything below turns stored ids/numbers into the sentence a reader
+// sees. Names that live in lookup tables are resolved by `pick`; only the
+// connecting words ("shelf", "department", ...) are defined here.
+
+/// A lookup row (department, language, edition type...) in the active language.
+export function pick(row: { nameAr: string; nameEn: string }, lang: Lang): string {
+  return lang === 'en' ? row.nameEn : row.nameAr;
+}
 
 const ORDINAL_EN: Record<number, string> = {
   1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th',
   6: '6th', 7: '7th', 8: '8th', 9: '9th', 10: '10th',
 };
 
+/// Edition is feminine in Arabic (الطبعة الأولى).
 const EDITION_AR: Record<number, string> = {
   1: 'الأولى', 2: 'الثانية', 3: 'الثالثة', 4: 'الرابعة', 5: 'الخامسة',
   6: 'السادسة', 7: 'السابعة', 8: 'الثامنة', 9: 'التاسعة', 10: 'العاشرة',
 };
 
-const SHELF_AR: Record<number, string> = {
-  1: 'الأول', 2: 'الثاني', 3: 'الثالث', 4: 'الرابع', 5: 'الخامس',
-  6: 'السادس', 7: 'السابع', 8: 'الثامن', 9: 'التاسع', 10: 'العاشر',
-};
-
-function ordinal(table: Record<number, string>, n: number, lang: Lang): string {
-  const map = lang === 'en' ? ORDINAL_EN : table;
-  return map[n] ?? String(n);
+/// "الثالثة" / "3rd"; kinds other than a plain numbered edition are named
+/// ("طبعة عالمية" / "International edition"). A record with no edition at all
+/// ("[د.ط]") has no label, so the app hides the row.
+export function editionLabel(
+  n: number | null,
+  type: { id: string; nameAr: string; nameEn: string } | null,
+  lang: Lang,
+): string | null {
+  const parts: string[] = [];
+  if (type && type.id !== 'standard' && type.id !== 'unspecified') parts.push(pick(type, lang));
+  if (n !== null) parts.push((lang === 'en' ? ORDINAL_EN : EDITION_AR)[n] ?? String(n));
+  return parts.length > 0 ? parts.join(' - ') : null;
 }
 
-/// "الثالثة" / "3rd". `fallback` carries non-numeric editions ("international").
-export function editionLabel(n: number | null, fallback: string | null, lang: Lang): string | null {
-  if (n !== null) return ordinal(EDITION_AR, n, lang);
-  return fallback && fallback.length > 0 ? fallback : null;
-}
-
-/// "الثالث" / "3rd".
+/// Shelf numbers are library-wide codes printed on the stacks, so they are
+/// shown as-is, not as an ordinal: "الرف 31" / "Shelf 31".
 export function shelfLabel(n: number | null, lang: Lang): string | null {
-  return n === null ? null : ordinal(SHELF_AR, n, lang);
+  if (n === null) return null;
+  return lang === 'en' ? `Shelf ${n}` : `الرف ${n}`;
+}
+
+/// "قسم كهرباء، الرف 31" / "Electrical Engineering Department, Shelf 31".
+export function locationLabel(departmentName: string, shelf: number | null, lang: Lang): string {
+  const dept = lang === 'en' ? `${departmentName} Department` : `قسم ${departmentName}`;
+  const shelfText = shelfLabel(shelf, lang);
+  return shelfText ? `${dept}${lang === 'en' ? ', ' : '، '}${shelfText}` : dept;
+}
+
+export interface LanguageLink {
+  role: 'TEXT' | 'TRANSLATED_FROM';
+  language: { id: string; nameAr: string; nameEn: string };
+}
+
+/// "الكورية والإنجليزية" · "العربية (مترجم عن الإنجليزية)" ·
+/// "Korean and English" · "Arabic (translated from English)".
+export function languageLabel(links: LanguageLink[], lang: Lang): string | null {
+  const text = links.filter((l) => l.role === 'TEXT').map((l) => pick(l.language, lang));
+  if (text.length === 0) return null;
+  const joined = lang === 'en' ? text.join(' and ') : text.join(' و');
+  const from = links.find((l) => l.role === 'TRANSLATED_FROM');
+  if (!from) return joined;
+  const source = pick(from.language, lang);
+  return lang === 'en' ? `${joined} (translated from ${source})` : `${joined} (مترجم عن ${source})`;
+}
+
+/// Shown when a record has no author, so a book card never has a blank line.
+export function unknownAuthor(lang: Lang): string {
+  return lang === 'en' ? 'Unknown author' : 'مؤلف غير معروف';
 }

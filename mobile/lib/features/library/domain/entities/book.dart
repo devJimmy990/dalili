@@ -27,6 +27,7 @@ class Book extends Equatable {
     this.subjects,
     this.shelf,
     this.shelfLabel,
+    this.locationLabel,
     this.language,
     this.cover,
     this.isbn,
@@ -43,11 +44,11 @@ class Book extends Equatable {
   final List<Article> articles;
 
   /// Numeric edition, for sorting. Null when the catalogue had none, or
-  /// when the value was not a number — see [editionLabel].
+  /// when the edition is a kind rather than a number — see [editionLabel].
   final int? edition;
 
-  /// Display text for the edition in the active language ("الثالثة", "3rd"),
-  /// or the raw value when it was not numeric ("international").
+  /// Display text for the edition in the active language ("الثالثة", "3rd",
+  /// "طبعة عالمية"). Null when the catalogue states none.
   final String? editionLabel;
 
   final String? publisher;
@@ -55,13 +56,17 @@ class Book extends Equatable {
   final int? year;
   final String? subjects;
 
-  /// Shelf number inside the section.
+  /// Library-wide shelf number, as printed on the stacks.
   final int? shelf;
 
-  /// Display text for the shelf in the active language ("الثالث", "3rd").
+  /// Display text for the shelf in the active language ("الرف 31", "Shelf 31").
   final String? shelfLabel;
 
-  /// The book's own language code ("ar" / "en"), metadata only.
+  /// Section and shelf as one sentence ("قسم كهرباء، الرف 31"), resolved by
+  /// the API. Null on payloads cached before the API sent it.
+  final String? locationLabel;
+
+  /// The book's language(s) as display text ("العربية (مترجم عن الإنجليزية)").
   final String? language;
 
   final String? cover;
@@ -71,6 +76,6 @@ class Book extends Equatable {
   List<Object?> get props => [
     id, callNumber, title, author, department, location, articles,
     edition, editionLabel, publisher, place, year, subjects,
-    shelf, shelfLabel, language, cover, isbn,
+    shelf, shelfLabel, locationLabel, language, cover, isbn,
   ];
 }

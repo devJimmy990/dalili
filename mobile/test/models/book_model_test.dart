@@ -26,7 +26,7 @@ void main() {
       expect(book.callNumber, '621.3193.W H');
       expect(book.year, 2010);
       expect(book.edition, 3);
-      expect(book.shelf, 3);
+      expect(book.shelf, 31);
       expect(book.isbn, '9788122430905');
       expect(book.place?.name, isNotEmpty);
       expect(book.articles, hasLength(3));
@@ -55,20 +55,35 @@ void main() {
       expect(book.location.isNavigable, isTrue);
     });
 
-    test('exposes the localized ordinal labels the API resolved', () {
+    test('exposes the localized labels the API resolved', () {
       final ar = BookModel.fromJson(
         _fixture('book')['book'] as Map<String, dynamic>,
       );
-      expect(ar.shelfLabel, 'الثالث');
+      expect(ar.shelfLabel, 'الرف 31');
+      expect(ar.locationLabel, 'قسم كهرباء، الرف 31');
       expect(ar.editionLabel, 'الثالثة');
+      expect(ar.language, 'الإنجليزية');
 
-      // A non-numeric edition ("teacher") survives as free text with no
-      // numeric value behind it.
+      // A kind of edition (teacher's) is named by the API, with no number
+      // behind it.
       final en = BookModel.fromJson(
         _fixture('book_en')['book'] as Map<String, dynamic>,
       );
       expect(en.edition, isNull);
-      expect(en.editionLabel, 'teacher');
+      expect(en.editionLabel, "Teacher's edition");
+      expect(en.locationLabel, 'Basic Sciences Department, Shelf 13');
+    });
+
+    test('reads the document kind and source of each related article', () {
+      final book = BookModel.fromJson(
+        _fixture('book')['book'] as Map<String, dynamic>,
+      );
+
+      // Flat localized strings, as the article card prints them.
+      expect(book.articles.first.type, 'مقال مراجعة');
+      expect(book.articles.first.source, 'مجلة');
+      expect(book.articles.last.type, 'بحث مؤتمر');
+      expect(book.articles.last.source, 'مؤتمر');
     });
 
     test('survives a round trip through toJson, for cached favorites', () {

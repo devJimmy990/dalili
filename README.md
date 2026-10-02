@@ -40,7 +40,7 @@ API, the schema and deployment.
 ## How the two halves meet
 
 The API owns the catalogue and all localization: send `?lang=ar|en` and
-department names, place names, ordinal labels ("الثالث" / "3rd") and error
+department names, place names, edition, shelf and language labels ("الثالثة" / "3rd", "الرف 31") and error
 messages come back in that language. Book titles and authors are never
 translated. The Flutter app sends the active locale on every request through a
 Dio interceptor.
