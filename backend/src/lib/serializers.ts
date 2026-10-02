@@ -79,7 +79,7 @@ export function serializeBook(b: BookRow, lang: Lang) {
     title: b.title,
     author: b.author ?? unknownAuthor(lang),
     edition: b.editionNumber,
-    editionLabel: editionLabel(b.editionNumber, b.editionType, lang),
+    editionLabel: editionLabel(b.editionNumber, b.editionType, lang, b.editionInferred),
     editionType: b.editionType ? { id: b.editionType.id, name: pick(b.editionType, lang) } : null,
     /// Printed in brackets in the catalogue: the cataloguer's inference.
     editionInferred: b.editionInferred,

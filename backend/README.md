@@ -121,7 +121,8 @@ and rows point at the id. Sections and cities live in `prisma/reference-data.ts`
 - **Edition is three fields.** The number (`2nd. ed`, `ط. 1` → 2, 1), the kind
   (standard / international / teacher / not stated `[د.ط]`), and
   `editionInferred` when the sheet printed it in `[brackets]` (supplied by the
-  cataloguer, not stated on the book).
+  cataloguer, not stated on the book). `[1st. ed]` is shown as "[الأولى]" / "[1st]" and
+  `1st. ed` as "الأولى" / "1st" — brackets appear only where the sheet has them.
 - **Shelf is the sheet's number** (13–68), a library-wide shelf code, shown as
   "الرف 31". `locationLabel` is "قسم كهرباء، الرف 31".
 - **Document types are merged** from 15 spellings into six (مقال, بحث, مقال

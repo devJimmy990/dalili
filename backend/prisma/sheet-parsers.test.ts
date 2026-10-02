@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { ARTICLE_TYPE_BY_SHEET_NAME, ARTICLE_TYPES, PLACE_BY_SHEET_NAME } from './lookups.js';
 import { PLACES } from './reference-data.js';
+import { editionLabel } from '../src/lib/lang.js';
 import * as p from './sheet-parsers.js';
 
 test('edition: every spelling in the sheet', () => {
@@ -13,6 +14,15 @@ test('edition: every spelling in the sheet', () => {
   assert.deepEqual(p.edition('International edition.'), { number: null, typeId: 'international', inferred: false });
   assert.deepEqual(p.edition('Teacher ed.'), { number: null, typeId: 'teacher', inferred: false });
   assert.throws(() => p.edition('Revised pocket printing'), /Unrecognised edition/);
+});
+
+test('edition label: brackets in the sheet are shown, none are invented', () => {
+  const std = { id: 'standard', nameAr: 'طبعة عادية', nameEn: 'Standard edition' };
+  assert.equal(editionLabel(1, std, 'en', false), '1st');
+  assert.equal(editionLabel(1, std, 'en', true), '[1st]');
+  assert.equal(editionLabel(1, std, 'ar', true), '[الأولى]');
+  const none = { id: 'unspecified', nameAr: 'غير محددة', nameEn: 'Not specified' };
+  assert.equal(editionLabel(null, none, 'ar', true), null);
 });
 
 test('isbn: restores the zero Excel dropped, but only when the checksum agrees', () => {

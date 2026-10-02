@@ -60,15 +60,23 @@ const EDITION_AR: Record<number, string> = {
 /// "الثالثة" / "3rd"; kinds other than a plain numbered edition are named
 /// ("طبعة عالمية" / "International edition"). A record with no edition at all
 /// ("[د.ط]") has no label, so the app hides the row.
+///
+/// `inferred` is the sheet's "[1st. ed]": the number is the cataloguer's
+/// assumption, not something printed on the book, so it is not shown as
+/// the same fact as "1st. ed" — it keeps its brackets: "[الأولى]" / "[1st]".
 export function editionLabel(
   n: number | null,
   type: { id: string; nameAr: string; nameEn: string } | null,
   lang: Lang,
+  inferred = false,
 ): string | null {
   const parts: string[] = [];
   if (type && type.id !== 'standard' && type.id !== 'unspecified') parts.push(pick(type, lang));
   if (n !== null) parts.push((lang === 'en' ? ORDINAL_EN : EDITION_AR)[n] ?? String(n));
-  return parts.length > 0 ? parts.join(' - ') : null;
+  if (parts.length === 0) return null;
+  const label = parts.join(' - ');
+  if (!inferred) return label;
+  return `[${label}]`;
 }
 
 /// Shelf numbers are library-wide codes printed on the stacks, so they are
