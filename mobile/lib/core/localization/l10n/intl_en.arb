@@ -92,6 +92,7 @@
 "navInstructionForward": "Continue straight for {distance} m",
   "navigateToBook": "Take me to the book",
   "navDestinationUnavailable": "This section is not on the library map yet",
+  "navScanMyLocation": "Scan my current location QR",
   "navScanToStart": "Scan the QR code nearest to you to start",
   "navDestinationLabel": "Destination: {name}"
 }

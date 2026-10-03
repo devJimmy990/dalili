@@ -27,39 +27,41 @@ class NavigationScreen extends StatelessWidget {
       body: BlocBuilder<NavigationCubit, NavigationState>(
         builder: (context, state) => Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              NavigationControls(destinationNodeId: destinationNodeId),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                NavigationControls(destinationNodeId: destinationNodeId),
 
-              if (state.loading)
-                const Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: CircularProgressIndicator(),
-                ),
-
-              if (state.error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Text(
-                    state.error!,
-                    style: const TextStyle(color: Colors.red),
+                if (state.loading)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 20),
+                    child: CircularProgressIndicator(),
                   ),
-                ),
 
-              // NavigationInfoCard(state: state, map: state.map),
-              if (state.arrived)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    AppLocalizations.navArrivedMessage,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.green,
+                if (state.error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Text(
+                      state.error!,
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
-                ),
-            ],
+
+                // NavigationInfoCard(state: state, map: state.map),
+                if (state.arrived)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text(
+                      AppLocalizations.navArrivedMessage,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

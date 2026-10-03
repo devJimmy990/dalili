@@ -92,6 +92,7 @@
 "navInstructionForward": "استمر مستقيمًا {distance} متر",
   "navigateToBook": "ودّيني للكتاب",
   "navDestinationUnavailable": "هذا القسم غير موجود على خريطة المكتبة بعد",
+  "navScanMyLocation": "امسح QR موقعي الحالي",
   "navScanToStart": "امسح كود QR الأقرب إليك للبدء",
   "navDestinationLabel": "الوجهة: {name}"
 }

@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:dalili/core/localization/app_localizations.dart';
 import 'package:dalili/core/services/shared_camera_lock.dart';
+import 'package:dalili/core/utils/qr_payload.dart';
 import 'package:dalili/features/library/data/models/navigation/library_map_model.dart';
-import 'package:dalili/features/library/data/models/navigation/node_model.dart';
+import 'package:dalili/features/library/presentation/screens/navigation/qr_node_resolver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -131,36 +132,28 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
     debugPrint("debug - QR Scanned : $rawValue");
 
-    final matchedNode = _resolveNode(rawValue);
+    // The code carries {"id": <map node id>, "name": ...}; only the id is
+    // used to place the visitor. The name is just a friendlier label for
+    // the "unrecognized" message.
+    final payload = QrPayload.parse(rawValue);
+    final matchedNode = resolveQrNode(widget.map.nodes, payload);
 
     if (matchedNode == null) {
       debugPrint(
-        "debug - No node found with qr == \"$rawValue\". Available QR "
-        "codes: ${widget.map.nodes.where((n) => n.qr != null).map((n) => n.qr).join(', ')}",
+        "debug - No node with id \"${payload.id}\" on the map. Node ids: "
+        "${widget.map.nodes.map((n) => n.id).join(', ')}",
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.navUnrecognizedQr(rawValue))),
+        SnackBar(
+          content: Text(
+            AppLocalizations.navUnrecognizedQr(payload.name ?? payload.id),
+          ),
+        ),
       );
       return;
     }
 
     _popWithRelease(matchedNode.id);
-  }
-
-  /// Matches a raw scanned QR string against each node's `qr` field
-  /// (case/whitespace-insensitive), returning the node whose id should
-  /// actually be used for navigation.
-  NodeModel? _resolveNode(String rawValue) {
-    final normalized = rawValue.trim().toUpperCase().replaceAll(' ', '');
-
-    for (final node in widget.map.nodes) {
-      final nodeQr = node.qr?.trim().toUpperCase().replaceAll(' ', '');
-      if (nodeQr != null && nodeQr == normalized) {
-        return node;
-      }
-    }
-
-    return null;
   }
 
   //--------------------------------------------------

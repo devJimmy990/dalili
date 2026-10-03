@@ -779,6 +779,16 @@ class S {
     );
   }
 
+  /// `Scan my current location QR`
+  String get navScanMyLocation {
+    return Intl.message(
+      'Scan my current location QR',
+      name: 'navScanMyLocation',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Scan the QR code nearest to you to start`
   String get navScanToStart {
     return Intl.message(

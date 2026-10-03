@@ -108,6 +108,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "navScanCurrentQrTitle": MessageLookupByLibrary.simpleMessage(
       "Scan Current QR",
     ),
+    "navScanMyLocation": MessageLookupByLibrary.simpleMessage(
+      "Scan my current location QR",
+    ),
     "navScanQrAgain": MessageLookupByLibrary.simpleMessage("Scan QR Again"),
     "navScanQrTooltip": MessageLookupByLibrary.simpleMessage("Scan QR again"),
     "navScanStartQrTitle": MessageLookupByLibrary.simpleMessage(

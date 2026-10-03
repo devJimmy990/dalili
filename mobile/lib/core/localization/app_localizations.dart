@@ -110,6 +110,7 @@ class AppLocalizations {
   static String get navigateToBook => S.current.navigateToBook;
   static String get navDestinationUnavailable =>
       S.current.navDestinationUnavailable;
+  static String get navScanMyLocation => S.current.navScanMyLocation;
   static String get navScanToStart => S.current.navScanToStart;
   static String navDestinationLabel(String name) =>
       S.current.navDestinationLabel(name);
