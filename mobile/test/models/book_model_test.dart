@@ -61,7 +61,7 @@ void main() {
       );
       expect(ar.shelfLabel, 'الرف 31');
       expect(ar.locationLabel, 'قسم كهرباء، الرف 31');
-      expect(ar.editionLabel, 'الثالثة');
+      expect(ar.editionLabel, 'ط. 3');
       expect(ar.language, 'الإنجليزية');
 
       // A kind of edition (teacher's) is named by the API, with no number

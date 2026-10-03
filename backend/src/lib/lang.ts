@@ -51,19 +51,13 @@ const ORDINAL_EN: Record<number, string> = {
   6: '6th', 7: '7th', 8: '8th', 9: '9th', 10: '10th',
 };
 
-/// Edition is feminine in Arabic (الطبعة الأولى).
-const EDITION_AR: Record<number, string> = {
-  1: 'الأولى', 2: 'الثانية', 3: 'الثالثة', 4: 'الرابعة', 5: 'الخامسة',
-  6: 'السادسة', 7: 'السابعة', 8: 'الثامنة', 9: 'التاسعة', 10: 'العاشرة',
-};
-
-/// "الثالثة" / "3rd"; kinds other than a plain numbered edition are named
+/// "ط. 3" / "3rd"; kinds other than a plain numbered edition are named
 /// ("طبعة عالمية" / "International edition"). A record with no edition at all
 /// ("[د.ط]") has no label, so the app hides the row.
 ///
 /// `inferred` is the sheet's "[1st. ed]": the number is the cataloguer's
 /// assumption, not something printed on the book, so it is not shown as
-/// the same fact as "1st. ed" — it keeps its brackets: "[الأولى]" / "[1st]".
+/// the same fact as "1st. ed" — it keeps its brackets: "[ط. 1]" / "[1st]".
 export function editionLabel(
   n: number | null,
   type: { id: string; nameAr: string; nameEn: string } | null,
@@ -72,7 +66,7 @@ export function editionLabel(
 ): string | null {
   const parts: string[] = [];
   if (type && type.id !== 'standard' && type.id !== 'unspecified') parts.push(pick(type, lang));
-  if (n !== null) parts.push((lang === 'en' ? ORDINAL_EN : EDITION_AR)[n] ?? String(n));
+  if (n !== null) parts.push(lang === 'en' ? (ORDINAL_EN[n] ?? String(n)) : `ط. ${n}`);
   if (parts.length === 0) return null;
   const label = parts.join(' - ');
   if (!inferred) return label;

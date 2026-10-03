@@ -76,8 +76,9 @@ class ArticleCard extends StatelessWidget {
   );
 }
 
-/// What the document itself is, below a divider: year, kind and where it was
-/// published. A conference paper often has no journal title and a preprint no
+/// What the document itself is, below a divider: year, kind, where it was
+/// published, and its citation details (volume, issue, pages, ISSN). A
+/// conference paper often has no journal title or ISSN and a preprint no
 /// year, so each part shows only when the catalogue has it, and the whole
 /// footer (divider included) disappears when none do.
 class _DocumentFooter extends StatelessWidget {
@@ -93,7 +94,18 @@ class _DocumentFooter extends StatelessWidget {
       (AppLocalizations.documentType, article.type),
     ].where((f) => hasText(f.$2)).toList();
 
-    if (facts.isEmpty && source == null) return const SizedBox.shrink();
+    // Volume, issue, pages and ISSN are numbers and codes: they keep their
+    // left-to-right order inside an Arabic layout.
+    final citation = [
+      (AppLocalizations.articleVolume, article.volume),
+      (AppLocalizations.articleIssue, article.issue),
+      (AppLocalizations.articlePages, article.pages),
+      (AppLocalizations.articleIssn, article.issn),
+    ].where((f) => hasText(f.$2)).toList();
+
+    if (facts.isEmpty && source == null && citation.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,16 +126,31 @@ class _DocumentFooter extends StatelessWidget {
           if (facts.isNotEmpty) const SizedBox(height: 4),
           _Fact(AppLocalizations.articleSource, source),
         ],
+        if (citation.isNotEmpty) ...[
+          if (facts.isNotEmpty || source != null) const SizedBox(height: 4),
+          Wrap(
+            spacing: AppSpacing.stackMd,
+            runSpacing: 4,
+            children: [
+              for (final (label, value) in citation)
+                _Fact(label, value!, code: true),
+            ],
+          ),
+        ],
       ],
     );
   }
 }
 
 class _Fact extends StatelessWidget {
-  const _Fact(this.label, this.value);
+  const _Fact(this.label, this.value, {this.code = false});
 
   final String label;
   final String value;
+
+  /// Wraps the value in a left-to-right isolate so "1996-1073" and "267-272"
+  /// are not reordered by the surrounding Arabic text.
+  final bool code;
 
   @override
   Widget build(BuildContext context) => Text.rich(
@@ -134,7 +161,7 @@ class _Fact extends StatelessWidget {
           style: TextStyle(color: context.appTheme.onSurfaceVariant),
         ),
         TextSpan(
-          text: value,
+          text: code ? '\u2066$value\u2069' : value,
           style: TextStyle(
             color: context.colors.onSurface,
             fontWeight: FontWeight.w600,

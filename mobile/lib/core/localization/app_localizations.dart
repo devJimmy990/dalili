@@ -59,6 +59,10 @@ class AppLocalizations {
   static String get placeOfPublication => S.current.placeOfPublication;
   static String get documentType => S.current.documentType;
   static String get articleSource => S.current.articleSource;
+  static String get articleVolume => S.current.articleVolume;
+  static String get articleIssue => S.current.articleIssue;
+  static String get articlePages => S.current.articlePages;
+  static String get articleIssn => S.current.articleIssn;
   static String get shelfLocation => S.current.shelfLocation;
   static String get viewDetails => S.current.viewDetails;
   static String get scanAgain => S.current.scanAgain;

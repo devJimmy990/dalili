@@ -20,7 +20,7 @@ test('edition label: brackets in the sheet are shown, none are invented', () => 
   const std = { id: 'standard', nameAr: 'طبعة عادية', nameEn: 'Standard edition' };
   assert.equal(editionLabel(1, std, 'en', false), '1st');
   assert.equal(editionLabel(1, std, 'en', true), '[1st]');
-  assert.equal(editionLabel(1, std, 'ar', true), '[الأولى]');
+  assert.equal(editionLabel(1, std, 'ar', true), '[ط. 1]');
   const none = { id: 'unspecified', nameAr: 'غير محددة', nameEn: 'Not specified' };
   assert.equal(editionLabel(null, none, 'ar', true), null);
 });

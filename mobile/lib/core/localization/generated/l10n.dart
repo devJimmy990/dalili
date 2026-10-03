@@ -459,6 +459,26 @@ class S {
     return Intl.message('Source', name: 'articleSource', desc: '', args: []);
   }
 
+  /// `Volume`
+  String get articleVolume {
+    return Intl.message('Volume', name: 'articleVolume', desc: '', args: []);
+  }
+
+  /// `Issue`
+  String get articleIssue {
+    return Intl.message('Issue', name: 'articleIssue', desc: '', args: []);
+  }
+
+  /// `Pages`
+  String get articlePages {
+    return Intl.message('Pages', name: 'articlePages', desc: '', args: []);
+  }
+
+  /// `ISSN`
+  String get articleIssn {
+    return Intl.message('ISSN', name: 'articleIssn', desc: '', args: []);
+  }
+
   /// `Location`
   String get shelfLocation {
     return Intl.message('Location', name: 'shelfLocation', desc: '', args: []);
