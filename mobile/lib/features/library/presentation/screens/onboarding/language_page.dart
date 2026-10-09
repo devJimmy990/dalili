@@ -14,7 +14,7 @@ class LanguagePage extends StatelessWidget {
   Widget build(BuildContext context) => BlocBuilder<AppSettingsCubit, dynamic>(
     bloc: sl<AppSettingsCubit>(),
     builder: (context, settings) {
-      final currentLang = sl<AppSettingsCubit>().state.locale.languageCode;
+      final currentLang = sl<AppSettingsCubit>().state.locale;
       return Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.containerMargin,
@@ -35,7 +35,7 @@ class LanguagePage extends StatelessWidget {
               flag: '🇸🇦',
               isSelected: currentLang == 'ar',
               onTap: () {
-                sl<AppSettingsCubit>().setLocale(const Locale('ar'));
+                sl<AppSettingsCubit>().setLocale('ar');
                 onLanguageSelected();
               },
             ),
@@ -45,7 +45,7 @@ class LanguagePage extends StatelessWidget {
               flag: '🇺🇸',
               isSelected: currentLang == 'en',
               onTap: () {
-                sl<AppSettingsCubit>().setLocale(const Locale('en'));
+                sl<AppSettingsCubit>().setLocale('en');
                 onLanguageSelected();
               },
             ),

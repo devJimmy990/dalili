@@ -52,7 +52,7 @@ class _LangInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     options.queryParameters[ApiConstants.paramLang] =
-        sl<AppSettingsCubit>().state.locale.languageCode;
+        sl<AppSettingsCubit>().state.locale;
     handler.next(options);
   }
 }

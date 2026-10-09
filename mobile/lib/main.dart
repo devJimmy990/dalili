@@ -32,15 +32,23 @@ class DaliliApp extends StatelessWidget {
       BlocBuilder<AppSettingsCubit, AppSettingsState>(
         bloc: sl<AppSettingsCubit>(),
         builder: (context, settings) => MaterialApp(
-          key: ValueKey(settings.locale.languageCode),
+          key: ValueKey(settings.locale),
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          locale: settings.locale,
+          theme: settings.themeMode == AppThemeMode.light
+              ? AppTheme.light
+              : AppTheme.dark,
+          darkTheme: AppTheme.dark,
+          themeMode: settings.themeMode == AppThemeMode.light
+              ? ThemeMode.light
+              : settings.themeMode == AppThemeMode.dark
+              ? ThemeMode.dark
+              : ThemeMode.system,
+          locale: Locale(settings.locale),
           supportedLocales: S.delegate.supportedLocales,
           localizationsDelegates: const [
             S.delegate,
-            GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
           builder: (context, child) => MediaQuery(
@@ -48,7 +56,7 @@ class DaliliApp extends StatelessWidget {
               context,
             ).copyWith(textScaler: TextScaler.noScaling),
             child: Directionality(
-              textDirection: settings.locale.languageCode == 'ar'
+              textDirection: settings.locale == 'ar'
                   ? TextDirection.rtl
                   : TextDirection.ltr,
               child: child!,

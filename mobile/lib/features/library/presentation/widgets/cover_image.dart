@@ -51,13 +51,12 @@ class _CoverPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: Container(
-          width: width,
-          height: height,
-          color: context.appTheme.surfaceContainerHigh,
-          child: Icon(Icons.menu_book,
-              color: context.appTheme.onSurfaceVariant),
-        ),
-      );
+    borderRadius: BorderRadius.circular(radius),
+    child: Container(
+      width: width,
+      height: height,
+      color: context.appTheme.surfaceContainerHigh,
+      child: Icon(Icons.menu_book, color: context.appTheme.onSurfaceVariant),
+    ),
+  );
 }
