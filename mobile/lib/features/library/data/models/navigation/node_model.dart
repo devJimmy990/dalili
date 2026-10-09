@@ -3,6 +3,7 @@ class NodeModel {
     required this.id,
     required this.name,
     required this.type,
+    this.nameEn,
     required this.x,
     required this.y,
     this.qr,
@@ -16,6 +17,7 @@ class NodeModel {
     id: json['id'] as String,
     qr: json['qr'] as String?,
     name: json['name'] as String,
+    nameEn: json['nameEn'] as String?,
     type: json['type'] as String,
     x: (json['x'] as num).toDouble(),
     y: (json['y'] as num).toDouble(),
@@ -26,7 +28,19 @@ class NodeModel {
   );
 
   final String id, name, type;
+
+  /// English label for the node. Null falls back to [name], so a node that
+  /// has not been translated still shows something readable.
+  final String? nameEn;
+
   final String? qr;
+
+  /// The node's label in [languageCode] ("ar" / "en").
+  String displayName(String languageCode) {
+    if (languageCode != 'en') return name;
+    final english = nameEn;
+    return english == null || english.isEmpty ? name : english;
+  }
 
   /// Position in real-world meters. Used for route-weighting math
   /// (Dijkstra) and for dead-reckoning distance accumulation. Not used
