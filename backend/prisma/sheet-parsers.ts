@@ -17,6 +17,23 @@ export function text(cell: Cell): string {
   return String(cell).replace(/\s+/g, ' ').trim();
 }
 
+/// Prefix of the stand-in id given to a book whose sheet row has no id yet.
+/// Recognizable on sight, and derived from the BibID so a re-seed hands the
+/// same book the same stand-in.
+export const PLACEHOLDER_ID_PREFIX = 'tmp-';
+
+/// The book's own id: the sheet's `id` cell once the librarians have filled
+/// it in, otherwise a placeholder built from the BibID.
+///
+/// The two are deliberately unrelated values. A scanned barcode is looked up
+/// by this id and a search by BibID, so deriving one from the other for good
+/// would let a barcode quietly resolve through the wrong door.
+export function bookId(cell: Cell, bibid: string): { id: string; placeholder: boolean } {
+  const given = text(cell);
+  if (given.length > 0) return { id: given, placeholder: false };
+  return { id: `${PLACEHOLDER_ID_PREFIX}${bibid}`, placeholder: true };
+}
+
 /// Blank, or a hand-typed "null", means "unknown" → NULL.
 export function nullable(cell: Cell): string | null {
   const v = text(cell);

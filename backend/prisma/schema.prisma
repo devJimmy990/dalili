@@ -113,7 +113,15 @@ model SourceType {
 }
 
 model Book {
+  /// The book's own identifier: what a scanned barcode carries, and what
+  /// articles point at. Independent of [bibid] — until the librarians issue
+  /// real ids the seed fills it with a placeholder ("tmp-<bibid>"), and a
+  /// re-seed with the real ones replaces it.
   id         String  @id
+  /// The catalogue's BibID. Searchable and shown to the reader, but never a
+  /// key: nothing links to a book through it. Nullable only so the column
+  /// could be added to a populated table; the seed always supplies one.
+  bibid      String? @unique
   /// Dewey-style code that locates the book on its shelf. Required: it is
   /// how a visitor actually finds the book.
   callNumber String

@@ -10,8 +10,13 @@
  *      names them, and every name must resolve to an existing row.
  *   2. Language, edition and document type are lookup tables with Arabic and
  *      English names; the books/articles store ids.
- *   3. "BibID" is the book id. The articles sheet has no id of its own, so
- *      each gets a stable one derived from its DOI (or title).
+ *   3. A book has two independent identifiers. "BibID" is the catalogue
+ *      number — searchable and shown, never a key. `id` is the book's own
+ *      id (what a barcode carries, what articles link to); it is read from
+ *      an `id` column when the sheet has one, and until then every book
+ *      gets a placeholder "tmp-<BibID>". Articles still name their book by
+ *      BibID in the sheet, resolved to the book's id here. The articles
+ *      themselves get a stable id derived from their DOI (or title).
  *   4. The same article listed under two books becomes ONE article linked
  *      to both.
  *   5. A conference-sourced document is always a conference paper, whatever
@@ -47,12 +52,11 @@ const here = dirname(fileURLToPath(import.meta.url));
 const XLSX_PATH = resolve(here, '../data/Datasource.xlsx');
 const MAP_PATH = resolve(here, '../../mobile/assets/map/library_map.json');
 
-/// Departments that share another section's spot on the library map.
-/// Basic Sciences sits with Mechanical Engineering, and the map has no
-/// node of its own for it — navigation routes to the shared node.
-const MAP_NODE_OVERRIDES: Record<string, string> = {
-  d_basic_sciences: 'd_mechanical',
-};
+/// A department whose map node is named differently from its id. Empty
+/// today: every section has a node of its own, including Basic Sciences,
+/// which shares Mechanical Engineering's coordinates but keeps a separate
+/// node so a book routes to its own section's name.
+const MAP_NODE_OVERRIDES: Record<string, string> = {};
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
@@ -113,6 +117,8 @@ function articleId(doi: string | null, titleText: string): string {
 // ─── Build (pure: no database) ─────────────────────────────
 
 interface Report {
+  /** Books still on a placeholder id because the sheet has no `id` for them. */
+  placeholderIds: number;
   editionInferred: string[];
   isbnPadded: string[];
   isbnBad: string[];
@@ -130,13 +136,21 @@ function buildBooks(rows: Row[], report: Report) {
   ]);
 
   const canonicalPublisher = parse.publisherCanonicalizer(rows.map((r) => parse.publisher(r['الناشر'])));
-  const seen = new Set<string>();
+  const seenBibids = new Set<string>();
+  const seenIds = new Set<string>();
 
   return rows.map((row) => {
-    const id = parse.text(row['BibID']);
-    if (id.length === 0) throw new Error('A book row has no BibID');
-    if (seen.has(id)) throw new Error(`Duplicate BibID ${id}`);
-    seen.add(id);
+    const bibid = parse.text(row['BibID']);
+    if (bibid.length === 0) throw new Error('A book row has no BibID');
+    if (seenBibids.has(bibid)) throw new Error(`Duplicate BibID ${bibid}`);
+    seenBibids.add(bibid);
+
+    // The `id` column does not exist yet; when it arrives it is picked up
+    // here with no other change.
+    const { id, placeholder } = parse.bookId(row['id'], bibid);
+    if (placeholder) report.placeholderIds += 1;
+    if (seenIds.has(id)) throw new Error(`Duplicate book id "${id}" (BibID ${bibid})`);
+    seenIds.add(id);
 
     const callNumber = parse.text(row['رقم الاستدعاء']);
     const bookTitle = parse.title(row['العنوان']);
@@ -162,6 +176,7 @@ function buildBooks(rows: Row[], report: Report) {
 
     return {
       id,
+      bibid,
       callNumber,
       title: bookTitle,
       author: bookAuthor,
@@ -181,7 +196,7 @@ function buildBooks(rows: Row[], report: Report) {
   });
 }
 
-function buildArticles(rows: Row[], bookIds: Set<string>, report: Report) {
+function buildArticles(rows: Row[], idByBibid: Map<string, string>, report: Report) {
   requireColumns(rows, 'articles', [
     'bibID', 'العنوان', 'المؤلفون', 'السنة', 'نوع الوثيقة', 'نوع المصدر', 'عنوان المصدر',
     'ISSN / ISBN', 'الكلمات المفتاحية', 'المجلد', 'العدد', 'الصفحات', 'رابط الوصول المباشر', 'DOI', 'نسبة الارتباط',
@@ -226,9 +241,11 @@ function buildArticles(rows: Row[], bookIds: Set<string>, report: Report) {
   }
 
   rows.forEach((row, i) => {
-    const bookId = parse.text(row['bibID']);
+    const bibid = parse.text(row['bibID']);
     const owner = `Article row ${i + 2}`;
-    if (!bookIds.has(bookId)) throw new Error(`${owner} points at BibID ${bookId}, which is not in the books sheet`);
+    // The sheet names a book by BibID; the link itself is stored on the id.
+    const bookId = idByBibid.get(bibid);
+    if (bookId === undefined) throw new Error(`${owner} points at BibID ${bibid}, which is not in the books sheet`);
 
     const article = toArticle(row, owner);
     const existing = byId.get(article.id);
@@ -249,6 +266,7 @@ async function main(): Promise<void> {
   console.log(DRY_RUN ? `Dry run — reading ${XLSX_PATH}, nothing will be written` : `Reading ${XLSX_PATH}`);
   const wb = XLSX.readFile(XLSX_PATH);
   const report: Report = {
+    placeholderIds: 0,
     editionInferred: [], isbnPadded: [], isbnBad: [], noAuthor: [],
     placeIsBinding: [], mergedArticles: [], reclassified: [], noIssn: 0,
   };
@@ -256,7 +274,8 @@ async function main(): Promise<void> {
   // Build everything first: a bad cell aborts before a single row is written.
   const books = buildBooks(readSheet(wb, 'books'), report);
   const bookIds = new Set(books.map((b) => b.id));
-  const articles = buildArticles(readSheet(wb, 'articles'), bookIds, report);
+  const idByBibid = new Map(books.map((b) => [b.bibid, b.id]));
+  const articles = buildArticles(readSheet(wb, 'articles'), idByBibid, report);
 
   const mapNodeIds = readMapNodeIds();
   const departments = DEPARTMENTS.map((d, i) => {
@@ -287,10 +306,13 @@ async function main(): Promise<void> {
 
   // ── Books ──
   if (!DRY_RUN) {
+    // Stale rows go first. When the real ids arrive, the replacement for a
+    // placeholder row carries the same BibID, which is unique — creating it
+    // while the old row still exists would be rejected.
+    await prisma.book.deleteMany({ where: { id: { notIn: [...bookIds] } } });
     for (const { languages, ...b } of books) {
       await prisma.book.upsert({ where: { id: b.id }, create: b, update: b });
     }
-    await prisma.book.deleteMany({ where: { id: { notIn: [...bookIds] } } });
     await prisma.bookLanguage.deleteMany({});
     await prisma.bookLanguage.createMany({
       data: books.flatMap((b) => b.languages.map((l) => ({ bookId: b.id, ...l }))),
@@ -298,6 +320,12 @@ async function main(): Promise<void> {
   }
   const languageLinks = books.reduce((n, b) => n + b.languages.length, 0);
   console.log(`  books: ${books.length} (${languageLinks} language links)`);
+  if (report.placeholderIds > 0) {
+    console.warn(
+      `  ! ${report.placeholderIds} of ${books.length} books are on a placeholder id ("tmp-<BibID>") — ` +
+        'add an "id" column to the books sheet and re-seed; barcodes scan by id, so none will resolve until then',
+    );
+  }
 
   // ── Articles + links ──
   const links = articles.flatMap((a) => [...a.bookIds].map((bookId) => ({ bookId, articleId: a.id })));

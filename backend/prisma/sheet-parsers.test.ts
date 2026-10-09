@@ -72,3 +72,23 @@ test('every place alias points at a real place, and every article type is define
   assert.equal(PLACE_BY_SHEET_NAME[p.placeKey('[Washington, D.C.]')], 'washington');
   assert.equal(PLACE_BY_SHEET_NAME[p.placeKey('Iran+:')], 'iran');
 });
+
+test('bookId: a placeholder until the sheet carries a real id', () => {
+  // No `id` cell yet → a stand-in derived from the BibID, flagged as such.
+  assert.deepEqual(p.bookId(undefined, '12492294'), { id: 'tmp-12492294', placeholder: true });
+  assert.deepEqual(p.bookId('', '12492294'), { id: 'tmp-12492294', placeholder: true });
+  assert.deepEqual(p.bookId('   ', '12492294'), { id: 'tmp-12492294', placeholder: true });
+
+  // The day the sheet has one, it wins — and is not treated as a placeholder.
+  assert.deepEqual(p.bookId('BK-000417', '12492294'), { id: 'BK-000417', placeholder: false });
+  assert.deepEqual(p.bookId(417, '12492294'), { id: '417', placeholder: false });
+});
+
+test('bookId: the placeholder can never be mistaken for a BibID', () => {
+  // A barcode must not resolve through the wrong identifier: the stand-in id
+  // is never equal to the BibID it was built from.
+  for (const bibid of ['188693', '12492294', '9071176']) {
+    assert.notEqual(p.bookId(undefined, bibid).id, bibid);
+    assert.ok(p.bookId(undefined, bibid).id.startsWith(p.PLACEHOLDER_ID_PREFIX));
+  }
+});
