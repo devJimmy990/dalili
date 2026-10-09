@@ -14,6 +14,7 @@ class BookModel extends Book {
     required super.department,
     required super.location,
     required super.articles,
+    super.bibid,
     super.edition,
     super.editionLabel,
     super.publisher,
@@ -41,6 +42,7 @@ class BookModel extends Book {
 
     return BookModel(
       id: json.requireString('id'),
+      bibid: json.optString('bibid'),
       callNumber: json.requireString('callNumber'),
       title: json.requireString('title'),
       author: json.requireString('author'),
@@ -69,6 +71,7 @@ class BookModel extends Book {
   /// rehydrates with [BookModel.fromJson] unchanged.
   Map<String, dynamic> toJson() => {
     'id': id,
+    'bibid': bibid,
     'callNumber': callNumber,
     'title': title,
     'author': author,

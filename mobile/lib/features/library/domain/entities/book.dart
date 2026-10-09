@@ -19,6 +19,7 @@ class Book extends Equatable {
     required this.department,
     required this.location,
     required this.articles,
+    this.bibid,
     this.edition,
     this.editionLabel,
     this.publisher,
@@ -33,7 +34,13 @@ class Book extends Equatable {
     this.isbn,
   });
 
+  /// The book's own identifier — what a scanned barcode carries and what its
+  /// articles link to. Not meant to be read or typed by people.
   final String id;
+
+  /// The catalogue number (BibID): shown to the reader and searchable, but
+  /// never a key. Null on payloads cached before the API sent it.
+  final String? bibid;
 
   /// Dewey-style code printed on the spine.
   final String callNumber;
@@ -74,8 +81,25 @@ class Book extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, callNumber, title, author, department, location, articles,
-    edition, editionLabel, publisher, place, year, subjects,
-    shelf, shelfLabel, locationLabel, language, cover, isbn,
+    id,
+    bibid,
+    callNumber,
+    title,
+    author,
+    department,
+    location,
+    articles,
+    edition,
+    editionLabel,
+    publisher,
+    place,
+    year,
+    subjects,
+    shelf,
+    shelfLabel,
+    locationLabel,
+    language,
+    cover,
+    isbn,
   ];
 }

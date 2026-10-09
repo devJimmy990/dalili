@@ -33,7 +33,7 @@ class _BookDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     extendBodyBehindAppBar: true,
-    backgroundColor: context.colors.primary,
+    backgroundColor: context.appTheme.hero,
     appBar: AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -68,17 +68,28 @@ class _BookDetailView extends StatelessWidget {
         ),
       ],
     ),
+    // One scrolling column, not a fixed cover above a scrolling panel: the
+    // cover used to hold 40% of the screen permanently, pushing the two
+    // things a visitor standing in the library actually needs — where the
+    // book is, and the button that walks them there — below the fold.
     body: Stack(
       fit: StackFit.expand,
       children: [
         _BackgroundImage(book.cover),
         Container(color: Colors.black54),
         SafeArea(
-          child: Column(
-            children: [
-              Expanded(flex: 2, child: Center(child: _BookCover(book.cover))),
-              Expanded(flex: 3, child: _DetailCard(book: book)),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.stackMd,
+                  ),
+                  child: _BookCover(book.cover),
+                ),
+                _DetailCard(book: book),
+              ],
+            ),
           ),
         ),
       ],
@@ -95,12 +106,12 @@ class _BackgroundImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = this.url;
     if (url == null || url.isEmpty) {
-      return Container(color: context.colors.primary);
+      return Container(color: context.appTheme.hero);
     }
     return Image.network(
       url,
       fit: BoxFit.fill,
-      errorBuilder: (_, __, ___) => Container(color: context.colors.primary),
+      errorBuilder: (_, __, ___) => Container(color: context.appTheme.hero),
     );
   }
 }
@@ -123,8 +134,8 @@ class _BookCover extends StatelessWidget {
       child: hasText(url)
           ? Image.network(
               url!,
-              height: 190,
-              width: 130,
+              height: 150,
+              width: 103,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => _placeholder(context),
             )
@@ -133,8 +144,8 @@ class _BookCover extends StatelessWidget {
   );
 
   Widget _placeholder(BuildContext context) => Container(
-    height: 190,
-    width: 130,
+    height: 150,
+    width: 103,
     color: context.appTheme.surfaceContainerHigh,
     child: Icon(
       Icons.menu_book_rounded,
@@ -159,7 +170,7 @@ class _DetailCard extends StatelessWidget {
     // this color, so it must not change with the cover or camera behind it.
     child: Container(
       color: bookInfoPanelColor(context),
-      child: SingleChildScrollView(
+      child: Padding(
         padding: const EdgeInsets.all(AppSpacing.stackLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -183,11 +194,9 @@ class _DetailCard extends StatelessWidget {
               color: context.appTheme.outlineVariant,
               height: AppSpacing.stackLg,
             ),
-            BookInfoRows(book: book),
-            Divider(
-              color: context.appTheme.outlineVariant,
-              height: AppSpacing.stackLg,
-            ),
+            // Where it is, then how to get there — both reachable without
+            // scrolling. The publishing data follows further down.
+            BookFindItRows(book: book),
             const SizedBox(height: AppSpacing.stackMd),
             SizedBox(
               width: double.infinity,
@@ -195,7 +204,7 @@ class _DetailCard extends StatelessWidget {
                 icon: const Icon(Icons.directions_walk),
                 label: Text(AppLocalizations.navigateToBook),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colors.secondary,
+                  backgroundColor: context.appTheme.accent,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
@@ -213,6 +222,7 @@ class _DetailCard extends StatelessWidget {
                         MaterialPageRoute<void>(
                           builder: (_) => NavigationScreen(
                             destinationNodeId: book.location.nodeId,
+                            destinationShelfLabel: book.shelfLabel,
                           ),
                         ),
                       ),
@@ -255,6 +265,11 @@ class _DetailCard extends StatelessWidget {
                       ),
               ),
             ),
+            Divider(
+              color: context.appTheme.outlineVariant,
+              height: AppSpacing.stackLg,
+            ),
+            BookPublishingRows(book: book),
             const SizedBox(height: AppSpacing.stackMd),
             Text(
               AppLocalizations.scanHintBottom,

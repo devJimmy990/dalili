@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:dalili/core/utils/display.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -74,9 +75,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   Widget _buildStateLayer(BuildContext context, ScannerState state) =>
       switch (state.status) {
-        ScannerStatus.scanning => _ScanningPanel(
-          onTestScan: () => _cubit.onBarcodeDetected(null),
-        ),
+        ScannerStatus.scanning => _ScanningPanel(onTestScan: _cubit.scanSample),
         ScannerStatus.loading => const _LoadingOverlay(),
         ScannerStatus.found => _FoundOverlay(
           book: state.book!,
@@ -156,16 +155,19 @@ class _ScanningPanel extends StatelessWidget {
             style: const TextStyle(color: Colors.white70),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.stackMd),
-          ElevatedButton.icon(
-            onPressed: onTestScan,
-            icon: const Icon(Icons.bug_report),
-            label: const Text('Test Scan'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.colors.secondary,
-              foregroundColor: Colors.white,
+          // A development shortcut; readers never see it.
+          if (kDebugMode) ...[
+            const SizedBox(height: AppSpacing.stackMd),
+            ElevatedButton.icon(
+              onPressed: onTestScan,
+              icon: const Icon(Icons.bug_report),
+              label: const Text('Test Scan'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.appTheme.accent,
+                foregroundColor: Colors.white,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     ),
@@ -215,11 +217,11 @@ class _FoundOverlay extends StatelessWidget {
             cover,
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) =>
-                Container(color: context.colors.primary),
+                Container(color: context.appTheme.hero),
           ),
         )
       else
-        Container(color: context.colors.primary),
+        Container(color: context.appTheme.hero),
       Container(color: Colors.black54),
       SafeArea(
         child: Column(
@@ -364,7 +366,7 @@ class _FoundDetailCard extends StatelessWidget {
                 icon: const Icon(Icons.menu_book_rounded),
                 label: Text(AppLocalizations.viewDetails),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colors.secondary,
+                  backgroundColor: context.appTheme.accent,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
@@ -437,7 +439,7 @@ class _NotFoundOverlay extends StatelessWidget {
                 icon: const Icon(Icons.qr_code_scanner),
                 label: Text(AppLocalizations.scanAgain),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colors.secondary,
+                  backgroundColor: context.appTheme.accent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
