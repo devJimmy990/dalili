@@ -26,15 +26,18 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m2(value) => "Heading: ${value}°";
 
-  static String m3(distance) => "Continue straight for ${distance} m";
+  static String m3(height, stride) =>
+      "${height} cm · about ${stride} m per step";
 
-  static String m4(distance) => "Start walking for ${distance} m";
+  static String m4(distance) => "Continue straight for ${distance} m";
 
-  static String m5(distance) => "${distance} m remaining";
+  static String m5(distance) => "Start walking for ${distance} m";
 
-  static String m6(value) => "Target difference: ${value}°";
+  static String m6(distance) => "${distance} m remaining";
 
-  static String m7(code) => "Unrecognized QR code: ${code}";
+  static String m7(value) => "Target difference: ${value}°";
+
+  static String m8(code) => "Unrecognized QR code: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -49,6 +52,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "articleSource": MessageLookupByLibrary.simpleMessage("Source"),
     "articleVolume": MessageLookupByLibrary.simpleMessage("Volume"),
     "author": MessageLookupByLibrary.simpleMessage("Author"),
+    "bibid": MessageLookupByLibrary.simpleMessage("BibID"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("Language"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage("Book not found"),
     "bookNotFoundDesc": MessageLookupByLibrary.simpleMessage(
@@ -74,6 +78,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "language": MessageLookupByLibrary.simpleMessage("Language"),
     "lightTheme": MessageLookupByLibrary.simpleMessage("Light"),
     "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
+    "navAlreadyAtDestination": MessageLookupByLibrary.simpleMessage(
+      "You are already in this section",
+    ),
     "navArNavigationTitle": MessageLookupByLibrary.simpleMessage(
       "AR Navigation",
     ),
@@ -98,17 +105,33 @@ class MessageLookup extends MessageLookupByLibrary {
     "navDone": MessageLookupByLibrary.simpleMessage("Done"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("Go straight"),
     "navHeadingLabel": m2,
-    "navInstructionForward": m3,
-    "navInstructionStart": m4,
+    "navHeightClear": MessageLookupByLibrary.simpleMessage("Use the average"),
+    "navHeightHint": MessageLookupByLibrary.simpleMessage(
+      "Indoor directions count your steps. Your height sets how long a step is, so the remaining distance stays right.",
+    ),
+    "navHeightLabel": MessageLookupByLibrary.simpleMessage("Your height"),
+    "navHeightNotSet": MessageLookupByLibrary.simpleMessage(
+      "Not set — using an average step of 0.75 m",
+    ),
+    "navHeightValue": m3,
+    "navInstructionForward": m4,
+    "navInstructionStart": m5,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("Keep going"),
+    "navMetersUnit": MessageLookupByLibrary.simpleMessage("m"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
       "No camera was found on this device.",
     ),
     "navNoDestinationsFound": MessageLookupByLibrary.simpleMessage(
       "No destinations found in this map.",
     ),
-    "navRemainingDistance": m5,
+    "navNoRouteFound": MessageLookupByLibrary.simpleMessage(
+      "No walking route to this section could be found",
+    ),
+    "navRemainingDistance": m6,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("Retry"),
+    "navRouteFailed": MessageLookupByLibrary.simpleMessage(
+      "Navigation could not be started. Please try again.",
+    ),
     "navScanCurrentQrTitle": MessageLookupByLibrary.simpleMessage(
       "Scan Current QR",
     ),
@@ -133,11 +156,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "Bear right slightly",
     ),
-    "navTargetDifferenceLabel": m6,
+    "navTargetDifferenceLabel": m7,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("Turn left"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("Turn right"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("Turn around"),
-    "navUnrecognizedQr": m7,
+    "navUnrecognizedQr": m8,
+    "navWalkingAccuracy": MessageLookupByLibrary.simpleMessage(
+      "Walking accuracy",
+    ),
     "navigateToBook": MessageLookupByLibrary.simpleMessage(
       "Take me to the book",
     ),
@@ -175,7 +201,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "searchBooks": MessageLookupByLibrary.simpleMessage("Search Books"),
     "searchHint": MessageLookupByLibrary.simpleMessage(
-      "Search books, articles...",
+      "Search by title, author or BibID...",
     ),
     "selectLanguage": MessageLookupByLibrary.simpleMessage("Select Language"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
@@ -183,6 +209,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "shelfLocation": MessageLookupByLibrary.simpleMessage("Location"),
     "skip": MessageLookupByLibrary.simpleMessage("Skip"),
     "suggestedBooks": MessageLookupByLibrary.simpleMessage("Suggested Books"),
+    "systemTheme": MessageLookupByLibrary.simpleMessage("System default"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "viewAll": MessageLookupByLibrary.simpleMessage("View All"),
     "viewDetails": MessageLookupByLibrary.simpleMessage("View Details"),

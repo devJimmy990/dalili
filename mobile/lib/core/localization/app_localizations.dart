@@ -27,6 +27,7 @@ class AppLocalizations {
   static String get navigation => S.current.navigation;
   static String get language => S.current.language;
   static String get theme => S.current.theme;
+  static String get systemTheme => S.current.systemTheme;
   static String get lightTheme => S.current.lightTheme;
   static String get darkTheme => S.current.darkTheme;
   static String get arabic => S.current.arabic;
@@ -114,8 +115,21 @@ class AppLocalizations {
   static String get navigateToBook => S.current.navigateToBook;
   static String get navDestinationUnavailable =>
       S.current.navDestinationUnavailable;
+  static String get navMetersUnit => S.current.navMetersUnit;
   static String get navScanMyLocation => S.current.navScanMyLocation;
   static String get navScanToStart => S.current.navScanToStart;
   static String navDestinationLabel(String name) =>
       S.current.navDestinationLabel(name);
+  static String get navAlreadyAtDestination =>
+      S.current.navAlreadyAtDestination;
+  static String get navNoRouteFound => S.current.navNoRouteFound;
+  static String get navRouteFailed => S.current.navRouteFailed;
+  static String get navWalkingAccuracy => S.current.navWalkingAccuracy;
+  static String get navHeightLabel => S.current.navHeightLabel;
+  static String get navHeightHint => S.current.navHeightHint;
+  static String navHeightValue(String height, String stride) =>
+      S.current.navHeightValue(height, stride);
+  static String get navHeightNotSet => S.current.navHeightNotSet;
+  static String get navHeightClear => S.current.navHeightClear;
+  static String get bibid => S.current.bibid;
 }

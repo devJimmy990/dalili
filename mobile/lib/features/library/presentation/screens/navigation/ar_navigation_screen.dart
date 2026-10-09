@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:dalili/core/localization/app_localizations.dart';
 import 'package:dalili/core/services/shared_camera_lock.dart';
+import 'package:dalili/core/theme/app_theme_extension.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_session_model.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_state.dart';
@@ -24,7 +25,18 @@ import 'package:permission_handler/permission_handler.dart';
 /// destination is straight ahead of wherever the phone is currently
 /// pointed", positive/negative means "turn that many degrees left/right".
 class ArNavigationScreen extends StatefulWidget {
-  const ArNavigationScreen({super.key});
+  const ArNavigationScreen({
+    super.key,
+    this.destinationName,
+    this.destinationShelfLabel,
+  });
+
+  /// The section being walked to ("قسم كهربية"), shown in the side panel.
+  final String? destinationName;
+
+  /// The shelf inside that section ("الرف 34"), when the trip started from a
+  /// book. A destination picked from the list has no shelf to show.
+  final String? destinationShelfLabel;
 
   @override
   State<ArNavigationScreen> createState() => _ArNavigationScreenState();
@@ -314,6 +326,8 @@ class _ArNavigationScreenState extends State<ArNavigationScreen>
 
             return _ArOverlay(
               state: state,
+              destinationName: widget.destinationName,
+              destinationShelfLabel: widget.destinationShelfLabel,
               onArrivedDone: () => _handleArrivedDone(context),
             );
           },
@@ -341,9 +355,16 @@ class _ArNavigationScreenState extends State<ArNavigationScreen>
 //==============================================================
 
 class _ArOverlay extends StatelessWidget {
-  const _ArOverlay({required this.state, required this.onArrivedDone});
+  const _ArOverlay({
+    required this.state,
+    required this.onArrivedDone,
+    this.destinationName,
+    this.destinationShelfLabel,
+  });
 
   final NavigationState state;
+  final String? destinationName;
+  final String? destinationShelfLabel;
   final VoidCallback onArrivedDone;
 
   @override
@@ -358,9 +379,20 @@ class _ArOverlay extends StatelessWidget {
           if (decision != null && session != null)
             Padding(
               padding: const EdgeInsets.all(16),
-              child: _InstructionCard(
-                message: decision.message,
-                remainingDistance: session.progress.remainingDistance,
+              child: _InstructionCard(message: decision.message),
+            ),
+          // Physically on the right in both languages, over the shelves
+          // the visitor is heading for, as in the design.
+          if (session != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: _DestinationPanel(
+                  name: destinationName,
+                  shelfLabel: destinationShelfLabel,
+                  remainingMeters: session.progress.remainingDistance,
+                ),
               ),
             ),
           const Spacer(),
@@ -379,13 +411,9 @@ class _ArOverlay extends StatelessWidget {
 }
 
 class _InstructionCard extends StatelessWidget {
-  const _InstructionCard({
-    required this.message,
-    required this.remainingDistance,
-  });
+  const _InstructionCard({required this.message});
 
   final String message;
-  final double remainingDistance;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -407,16 +435,96 @@ class _InstructionCard extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          AppLocalizations.navRemainingDistance(
-            remainingDistance.toStringAsFixed(1),
-          ),
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
-        ),
       ],
     ),
   );
+}
+
+/// Where the visitor is going and how far is left: two stacked cards on the
+/// right edge. The first names the section and, when the trip began from a
+/// book, the shelf it is on; the second counts down the distance.
+class _DestinationPanel extends StatelessWidget {
+  const _DestinationPanel({
+    required this.name,
+    required this.shelfLabel,
+    required this.remainingMeters,
+  });
+
+  final String? name;
+  final String? shelfLabel;
+  final double remainingMeters;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    final hasName = name != null && name!.isNotEmpty;
+
+    // Wide enough for the longest section name ("قسم علوم أساسية") on three
+    // lines, and still narrow enough to leave the camera feed usable.
+    Widget card(List<Widget> children) => Container(
+      width: 140,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.hero.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.onHero.withValues(alpha: 0.18)),
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: children),
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasName || shelfLabel != null) ...[
+          card([
+            if (hasName)
+              Text(
+                name!,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: theme.onHero,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
+                ),
+              ),
+            if (shelfLabel != null) ...[
+              if (hasName) const SizedBox(height: 4),
+              Text(
+                shelfLabel!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: theme.onHero.withValues(alpha: 0.8),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ]),
+          const SizedBox(height: 12),
+        ],
+        card([
+          Text(
+            remainingMeters.round().toString(),
+            style: TextStyle(
+              color: theme.onHero,
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              height: 1.1,
+            ),
+          ),
+          Text(
+            AppLocalizations.navMetersUnit,
+            style: TextStyle(
+              color: theme.onHero.withValues(alpha: 0.8),
+              fontSize: 14,
+            ),
+          ),
+        ]),
+      ],
+    );
+  }
 }
 
 /// A glowing arrow rotated relative to the phone's current facing

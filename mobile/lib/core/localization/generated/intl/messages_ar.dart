@@ -26,15 +26,18 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m2(value) => "الاتجاه: ${value}°";
 
-  static String m3(distance) => "استمر مستقيمًا ${distance} متر";
+  static String m3(height, stride) =>
+      "${height} سم · حوالي ${stride} متر لكل خطوة";
 
-  static String m4(distance) => "ابدأ السير لمسافة ${distance} متر";
+  static String m4(distance) => "استمر مستقيمًا ${distance} متر";
 
-  static String m5(distance) => "متبقي ${distance} م";
+  static String m5(distance) => "ابدأ السير لمسافة ${distance} متر";
 
-  static String m6(value) => "فرق الاتجاه: ${value}°";
+  static String m6(distance) => "متبقي ${distance} م";
 
-  static String m7(code) => "كود QR غير معروف: ${code}";
+  static String m7(value) => "فرق الاتجاه: ${value}°";
+
+  static String m8(code) => "كود QR غير معروف: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -43,12 +46,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "appName": MessageLookupByLibrary.simpleMessage("دليلي"),
     "arabic": MessageLookupByLibrary.simpleMessage("العربية"),
-    "articleIssn": MessageLookupByLibrary.simpleMessage("ISSN"),
+    "articleIssn": MessageLookupByLibrary.simpleMessage("الترقيم الدولي"),
     "articleIssue": MessageLookupByLibrary.simpleMessage("العدد"),
     "articlePages": MessageLookupByLibrary.simpleMessage("الصفحات"),
     "articleSource": MessageLookupByLibrary.simpleMessage("المصدر"),
     "articleVolume": MessageLookupByLibrary.simpleMessage("المجلد"),
     "author": MessageLookupByLibrary.simpleMessage("المؤلف"),
+    "bibid": MessageLookupByLibrary.simpleMessage("رقم BibID"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("اللغة"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage(
       "لم يتم العثور على الكتاب",
@@ -78,6 +82,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "language": MessageLookupByLibrary.simpleMessage("اللغة"),
     "lightTheme": MessageLookupByLibrary.simpleMessage("فاتح"),
     "loading": MessageLookupByLibrary.simpleMessage("جاري التحميل..."),
+    "navAlreadyAtDestination": MessageLookupByLibrary.simpleMessage(
+      "أنت بالفعل في هذا القسم",
+    ),
     "navArNavigationTitle": MessageLookupByLibrary.simpleMessage(
       "الملاحة بالواقع المعزز",
     ),
@@ -102,17 +109,33 @@ class MessageLookup extends MessageLookupByLibrary {
     "navDone": MessageLookupByLibrary.simpleMessage("تم"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("استمر للأمام"),
     "navHeadingLabel": m2,
-    "navInstructionForward": m3,
-    "navInstructionStart": m4,
+    "navHeightClear": MessageLookupByLibrary.simpleMessage("استخدم المتوسط"),
+    "navHeightHint": MessageLookupByLibrary.simpleMessage(
+      "التنقل الداخلي بيعدّ خطواتك. طولك بيحدّد طول الخطوة، عشان المسافة المتبقية تفضل مظبوطة.",
+    ),
+    "navHeightLabel": MessageLookupByLibrary.simpleMessage("طولك"),
+    "navHeightNotSet": MessageLookupByLibrary.simpleMessage(
+      "غير محدد — بنستخدم خطوة متوسطة 0.75 متر",
+    ),
+    "navHeightValue": m3,
+    "navInstructionForward": m4,
+    "navInstructionStart": m5,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("أكمل"),
+    "navMetersUnit": MessageLookupByLibrary.simpleMessage("متر"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
       "مفيش كاميرا متاحة على الجهاز ده.",
     ),
     "navNoDestinationsFound": MessageLookupByLibrary.simpleMessage(
       "مفيش وجهات في الخريطة دي.",
     ),
-    "navRemainingDistance": m5,
+    "navNoRouteFound": MessageLookupByLibrary.simpleMessage(
+      "لا يوجد طريق مشي إلى هذا القسم",
+    ),
+    "navRemainingDistance": m6,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("إعادة المحاولة"),
+    "navRouteFailed": MessageLookupByLibrary.simpleMessage(
+      "تعذّر بدء التنقل. حاول مرة أخرى.",
+    ),
     "navScanCurrentQrTitle": MessageLookupByLibrary.simpleMessage(
       "امسح QR موقعك الحالي",
     ),
@@ -139,11 +162,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "انحرف قليلاً يميناً",
     ),
-    "navTargetDifferenceLabel": m6,
+    "navTargetDifferenceLabel": m7,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("لف يسار"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("لف يمين"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("استدر للخلف"),
-    "navUnrecognizedQr": m7,
+    "navUnrecognizedQr": m8,
+    "navWalkingAccuracy": MessageLookupByLibrary.simpleMessage("دقة المشي"),
     "navigateToBook": MessageLookupByLibrary.simpleMessage("ودّيني للكتاب"),
     "navigation": MessageLookupByLibrary.simpleMessage("التنقل"),
     "noArticles": MessageLookupByLibrary.simpleMessage("لا توجد مقالات"),
@@ -177,7 +201,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "searchBooks": MessageLookupByLibrary.simpleMessage("البحث في الكتب"),
     "searchHint": MessageLookupByLibrary.simpleMessage(
-      "ابحث عن كتب أو مقالات...",
+      "ابحث بالعنوان أو المؤلف أو رقم BibID...",
     ),
     "selectLanguage": MessageLookupByLibrary.simpleMessage("اختر اللغة"),
     "settings": MessageLookupByLibrary.simpleMessage("الإعدادات"),
@@ -185,6 +209,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "shelfLocation": MessageLookupByLibrary.simpleMessage("الموقع"),
     "skip": MessageLookupByLibrary.simpleMessage("تخطي"),
     "suggestedBooks": MessageLookupByLibrary.simpleMessage("كتب مقترحة"),
+    "systemTheme": MessageLookupByLibrary.simpleMessage("حسب النظام"),
     "theme": MessageLookupByLibrary.simpleMessage("المظهر"),
     "viewAll": MessageLookupByLibrary.simpleMessage("عرض الكل"),
     "viewDetails": MessageLookupByLibrary.simpleMessage("عرض التفاصيل"),

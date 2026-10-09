@@ -28,23 +28,23 @@ class SettingsScreen extends StatelessWidget {
             style: context.textStyles.displaySmall,
           ),
           const SizedBox(height: AppSpacing.stackMd),
-          RadioGroup<Locale>(
+          RadioGroup<String>(
             groupValue: settings.locale,
             onChanged: (v) {
               if (v != null) sl<AppSettingsCubit>().setLocale(v);
             },
             child: Column(
               children: [
-                RadioListTile<Locale>(
-                  value: const Locale('ar'),
+                RadioListTile<String>(
+                  value: 'ar',
                   title: Text(
                     AppLocalizations.arabic,
                     style: context.textStyles.bodyMedium,
                   ),
                   activeColor: context.colors.secondary,
                 ),
-                RadioListTile<Locale>(
-                  value: const Locale('en'),
+                RadioListTile<String>(
+                  value: 'en',
                   title: Text(
                     AppLocalizations.english,
                     style: context.textStyles.bodyMedium,
@@ -55,31 +55,37 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.stackLg),
+          Text(
+            AppLocalizations.navWalkingAccuracy,
+            style: context.textStyles.displaySmall,
+          ),
+          const SizedBox(height: AppSpacing.stackSm),
+          Text(
+            AppLocalizations.navHeightHint,
+            style: context.textStyles.bodySmall?.copyWith(
+              color: context.appTheme.onSurfaceVariant,
+            ),
+          ),
+          _HeightSetting(settings: settings),
+          const SizedBox(height: AppSpacing.stackLg),
           Text(AppLocalizations.theme, style: context.textStyles.displaySmall),
           const SizedBox(height: AppSpacing.stackMd),
-          RadioGroup<bool>(
-            groupValue: true,
-            onChanged: (_) {},
+          RadioGroup<AppThemeMode>(
+            groupValue: sl<AppSettingsCubit>().state.themeMode,
+            onChanged: (mode) {
+              if (mode != null) sl<AppSettingsCubit>().setThemeMode(mode);
+            },
             child: Column(
               children: [
-                RadioListTile<bool>(
-                  value: true,
-                  title: Text(
-                    AppLocalizations.lightTheme,
-                    style: context.textStyles.bodyMedium,
+                for (final (mode, label) in [
+                  (AppThemeMode.light, AppLocalizations.lightTheme),
+                  (AppThemeMode.dark, AppLocalizations.darkTheme),
+                ])
+                  RadioListTile<AppThemeMode>(
+                    value: mode,
+                    title: Text(label, style: context.textStyles.bodyMedium),
+                    activeColor: context.colors.secondary,
                   ),
-                  activeColor: context.colors.secondary,
-                ),
-                RadioListTile<bool>(
-                  value: false,
-                  title: Text(
-                    '${AppLocalizations.darkTheme} — ${AppLocalizations.comingSoon}',
-                    style: context.textStyles.bodyMedium?.copyWith(
-                      color: context.appTheme.onSurfaceVariant,
-                    ),
-                  ),
-                  activeColor: context.colors.secondary,
-                ),
               ],
             ),
           ),
@@ -87,4 +93,49 @@ class SettingsScreen extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Height in centimetres, shown with the step length it implies so the
+/// effect on navigation is visible while adjusting it.
+class _HeightSetting extends StatelessWidget {
+  const _HeightSetting({required this.settings});
+
+  final AppSettingsState settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = settings.heightCm;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppSpacing.stackSm),
+        Text(
+          height == null
+              ? AppLocalizations.navHeightNotSet
+              : AppLocalizations.navHeightValue(
+                  '$height',
+                  settings.strideLength.toStringAsFixed(2),
+                ),
+          style: context.textStyles.bodyMedium,
+        ),
+        Slider(
+          value: (height ?? 170).toDouble(),
+          min: AppSettingsState.minHeightCm.toDouble(),
+          max: AppSettingsState.maxHeightCm.toDouble(),
+          divisions:
+              AppSettingsState.maxHeightCm - AppSettingsState.minHeightCm,
+          label: '${height ?? 170} cm',
+          activeColor: context.colors.secondary,
+          onChanged: (value) =>
+              sl<AppSettingsCubit>().setHeightCm(value.round()),
+        ),
+        if (height != null)
+          TextButton(
+            onPressed: () => sl<AppSettingsCubit>().setHeightCm(null),
+            child: Text(AppLocalizations.navHeightClear),
+          ),
+      ],
+    );
+  }
 }

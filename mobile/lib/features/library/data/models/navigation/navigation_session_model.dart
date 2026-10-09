@@ -1,4 +1,3 @@
-import 'package:dalili/features/library/data/models/navigation/navigation_instruction_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_position_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_progress_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_route.dart';
@@ -11,13 +10,10 @@ class NavigationSessionModel {
     required this.status,
     required this.heading,
     required this.progress,
-    required this.instructions,
     required this.currentPosition,
   });
   final double heading;
   final NavigationRouteModel route;
-
-  final List<NavigationInstructionModel> instructions;
 
   final NavigationProgressModel progress;
 
@@ -27,9 +23,6 @@ class NavigationSessionModel {
 
   PathSegment get currentSegment =>
       route.segments[progress.currentSegmentIndex];
-
-  NavigationInstructionModel get currentInstruction =>
-      instructions[progress.currentSegmentIndex];
 
   bool get hasNextSegment =>
       progress.currentSegmentIndex < route.segments.length - 1;
@@ -41,7 +34,6 @@ class NavigationSessionModel {
     NavigationPositionModel? currentPosition,
   }) => NavigationSessionModel(
     route: route,
-    instructions: instructions,
     status: status ?? this.status,
     heading: heading ?? this.heading,
     progress: progress ?? this.progress,

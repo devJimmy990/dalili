@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
   "appName": "Dalili",
-  "searchHint": "Search books, articles...",
+  "searchHint": "Search by title, author or BibID...",
   "welcomeTitle": "Welcome to Dalili",
   "welcomeSubtitle": "Your smart library assistant",
   "departments": "Departments",
@@ -24,6 +24,7 @@
   "navigation": "Navigation",
   "language": "Language",
   "theme": "Theme",
+  "systemTheme": "System default",
   "lightTheme": "Light",
   "darkTheme": "Dark",
   "arabic": "Arabic",
@@ -96,7 +97,18 @@
 "navInstructionForward": "Continue straight for {distance} m",
   "navigateToBook": "Take me to the book",
   "navDestinationUnavailable": "This section is not on the library map yet",
+  "navMetersUnit": "m",
   "navScanMyLocation": "Scan my current location QR",
   "navScanToStart": "Scan the QR code nearest to you to start",
-  "navDestinationLabel": "Destination: {name}"
+  "navDestinationLabel": "Destination: {name}",
+  "navAlreadyAtDestination": "You are already in this section",
+  "navNoRouteFound": "No walking route to this section could be found",
+  "navRouteFailed": "Navigation could not be started. Please try again.",
+  "navWalkingAccuracy": "Walking accuracy",
+  "navHeightLabel": "Your height",
+  "navHeightHint": "Indoor directions count your steps. Your height sets how long a step is, so the remaining distance stays right.",
+  "navHeightValue": "{height} cm · about {stride} m per step",
+  "navHeightNotSet": "Not set — using an average step of 0.75 m",
+  "navHeightClear": "Use the average",
+  "bibid": "BibID"
 }
