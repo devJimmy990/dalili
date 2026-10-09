@@ -78,10 +78,9 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
   }
 
   @override
-  Future<List<BookModel>> searchBooks(String query) async =>
-      _books(await _get(ApiConstants.booksSearch, {
-        ApiConstants.paramQuery: query,
-      }));
+  Future<List<BookModel>> searchBooks(String query) async => _books(
+    await _get(ApiConstants.booksSearch, {ApiConstants.paramQuery: query}),
+  );
 
   @override
   Future<BookPage> getBooksByDepartment(
@@ -95,16 +94,20 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
 
   @override
   Future<BookPage> getBooksByAuthor(String author, {int page = 1}) async =>
-      _page(await _get(ApiConstants.books, {
-        ApiConstants.paramAuthor: author,
-        ApiConstants.paramPage: page,
-      }));
+      _page(
+        await _get(ApiConstants.books, {
+          ApiConstants.paramAuthor: author,
+          ApiConstants.paramPage: page,
+        }),
+      );
 
   @override
   Future<List<BookModel>> getBooksByIds(List<String> ids) async {
     if (ids.isEmpty) return const [];
-    return _books(await _get(ApiConstants.booksByIds, {
-      ApiConstants.paramIds: ids.join(','),
-    }));
+    return _books(
+      await _get(ApiConstants.booksByIds, {
+        ApiConstants.paramIds: ids.join(','),
+      }),
+    );
   }
 }

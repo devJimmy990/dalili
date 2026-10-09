@@ -25,16 +25,20 @@ class DepartmentState extends Equatable {
     List<Book>? books,
     Department? selected,
     String? errorMessage,
-  }) =>
-      DepartmentState(
-        status: status ?? this.status,
-        departments: departments ?? this.departments,
-        books: books ?? this.books,
-        selected: selected ?? this.selected,
-        errorMessage: errorMessage ?? this.errorMessage,
-      );
+  }) => DepartmentState(
+    status: status ?? this.status,
+    departments: departments ?? this.departments,
+    books: books ?? this.books,
+    selected: selected ?? this.selected,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
 
   @override
-  List<Object?> get props =>
-      [status, departments, books, selected, errorMessage];
+  List<Object?> get props => [
+    status,
+    departments,
+    books,
+    selected,
+    errorMessage,
+  ];
 }

@@ -26,14 +26,13 @@ class SearchState extends Equatable {
     List<Book>? results,
     SearchFilter? filter,
     String? errorMessage,
-  }) =>
-      SearchState(
-        status: status ?? this.status,
-        query: query ?? this.query,
-        results: results ?? this.results,
-        filter: filter ?? this.filter,
-        errorMessage: errorMessage ?? this.errorMessage,
-      );
+  }) => SearchState(
+    status: status ?? this.status,
+    query: query ?? this.query,
+    results: results ?? this.results,
+    filter: filter ?? this.filter,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
 
   @override
   List<Object?> get props => [status, query, results, filter, errorMessage];

@@ -18,12 +18,11 @@ class ScannerState extends Equatable {
     ScannerStatus? status,
     Book? book,
     String? errorMessage,
-  }) =>
-      ScannerState(
-        status: status ?? this.status,
-        book: book ?? this.book,
-        errorMessage: errorMessage ?? this.errorMessage,
-      );
+  }) => ScannerState(
+    status: status ?? this.status,
+    book: book ?? this.book,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
 
   @override
   List<Object?> get props => [status, book, errorMessage];

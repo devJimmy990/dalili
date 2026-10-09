@@ -79,9 +79,11 @@ class NavigationProgressEngine {
     required int currentSegmentIndex,
     required double walkedInSegment,
   }) {
-    var remaining = (route.segments[currentSegmentIndex].distance -
-            walkedInSegment)
-        .clamp(0.0, double.infinity);
+    var remaining =
+        (route.segments[currentSegmentIndex].distance - walkedInSegment).clamp(
+          0.0,
+          double.infinity,
+        );
 
     for (var i = currentSegmentIndex + 1; i < route.segments.length; i++) {
       remaining += route.segments[i].distance;
