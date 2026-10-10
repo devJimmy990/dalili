@@ -194,14 +194,14 @@ lives there, so the build fails on missing type declarations without it.
 
 ## Shared book links
 
-`https://<this host>/dalili/<book-name>-<bibid>` is what the app shares. Two
+`https://<this host>/book/<book-name>-<bibid>` is what the app shares. Two
 things on this host make it work:
 
 - **`GET /.well-known/assetlinks.json`** — how Android learns that this host
   belongs to the app, so a tapped link opens the app instead of the browser. It
   lists the signing-key fingerprints in `ANDROID_SHA256` (comma-separated). The
   value in `.env.example` is the *debug* key; add the release key's too.
-- **`GET /dalili/:slug`** — for someone *without* the app. With `LANDING_URL`
+- **`GET /book/:slug`** — for someone *without* the app. With `LANDING_URL`
   set it redirects to the React page (`web/`), keeping the path so the page can
   show the same book. Unset, it is an ordinary 404.
 

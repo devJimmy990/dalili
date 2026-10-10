@@ -1,0 +1,241 @@
+/* ───────────────────────── Related articles ───────────────────────── */
+
+.button {
+  /* A <button> and an <a> must look the same. */
+  font-family: inherit;
+}
+.button--ghost:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* Desktop: the page widens and the list sits beside the book. */
+.page--wide {
+  width: min(100% - 48px, 1140px);
+}
+.layout {
+  display: block;
+}
+.layout--split {
+  display: grid;
+  /* The book keeps its usual width; the list takes the rest, up to 460px. */
+  grid-template-columns: minmax(0, 640px) minmax(320px, 460px);
+  gap: 24px;
+  justify-content: center;
+  align-items: start;
+}
+
+.articles {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--card);
+  border: 1px solid var(--outline);
+  color: var(--on-surface);
+}
+.articles__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--outline);
+}
+.articles__header h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.1rem;
+}
+.articles__count {
+  min-width: 26px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.articles__close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.articles__close:hover {
+  background: color-mix(in srgb, var(--on-surface) 10%, transparent);
+}
+.articles__close:focus-visible,
+.article__title a:focus-visible,
+.chip--link:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.articles__list {
+  flex: 1;
+  margin: 0;
+  padding: 6px 18px 18px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.article {
+  padding: 14px 0;
+  border-top: 1px solid var(--outline);
+}
+.article:first-child {
+  border-top: 0;
+}
+.article__title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.article__title a {
+  color: inherit;
+  text-decoration: none;
+}
+.article__title a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.article__external {
+  display: inline-block;
+  margin-inline-start: 6px;
+  vertical-align: -1px;
+  opacity: 0.6;
+}
+.article__authors,
+.article__meta {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.article__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+.chip {
+  padding: 2px 10px;
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+.chip--accent {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent);
+  font-weight: 700;
+}
+.chip--link {
+  color: var(--accent);
+  text-decoration: none;
+}
+.chip--link:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Desktop column: stays in view while the long book card scrolls. */
+.articles--panel {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  animation: panel-in 0.25s ease both;
+}
+
+/* Tablet and phone: over the page, on a dimmed backdrop. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(0 0 0 / 48%);
+  animation: fade-in 0.2s ease both;
+}
+.articles--drawer,
+.articles--sheet {
+  position: absolute;
+  background: var(--surface);
+  box-shadow: 0 0 40px rgb(0 0 0 / 35%);
+}
+
+/* Drawer: from the reading-end edge (right in English, left in Arabic). */
+.articles--drawer {
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: min(460px, 88vw);
+  border-width: 0 0 0 1px;
+  border-radius: 0;
+  animation: drawer-in 0.26s ease both;
+}
+:root[dir='rtl'] .articles--drawer {
+  border-width: 0 1px 0 0;
+  animation-name: drawer-in-rtl;
+}
+
+/* Sheet: rises from the bottom and fills the width of a narrow screen. */
+.articles--sheet {
+  inset-inline: 0;
+  bottom: 0;
+  max-height: 88vh;
+  max-height: 88dvh;
+  border-width: 1px 0 0;
+  border-radius: 20px 20px 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: sheet-in 0.28s ease both;
+}
+.articles__grabber {
+  align-self: center;
+  width: 40px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: var(--outline);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes drawer-in-rtl {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .articles,
+  .scrim {
+    animation: none !important;
+  }
+}

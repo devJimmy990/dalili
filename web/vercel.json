@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "rewrites": [
+    { "source": "/book/:path*", "destination": "/index.html" },
     { "source": "/dalili/:path*", "destination": "/index.html" }
   ],
   "headers": [

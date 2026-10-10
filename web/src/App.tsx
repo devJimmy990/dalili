@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchBook, type BookResult } from './api';
 import { parseBibid } from './bookLink';
+import { ArticlesPanel } from './ArticlesPanel';
 import { BookCard } from './BookCard';
 import { dir, detectLang, t } from './i18n';
+import { useLayoutMode } from './useLayoutMode';
 
 type State = { kind: 'loading'; slow: boolean } | BookResult;
 
@@ -13,6 +15,8 @@ export function App() {
 
   const [state, setState] = useState<State>({ kind: 'loading', slow: false });
   const [attempt, setAttempt] = useState(0);
+  const [articlesOpen, setArticlesOpen] = useState(false);
+  const mode = useLayoutMode();
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -41,8 +45,11 @@ export function App() {
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
+  // Only the desktop column widens the page; the drawer and sheet float over it.
+  const split = articlesOpen && mode === 'panel';
+
   return (
-    <main className="page">
+    <main className={split ? 'page page--wide' : 'page'}>
       <header className="brand">
         <span className="brand__name">{strings.appName}</span>
         <span className="brand__tagline">{strings.tagline}</span>
@@ -57,7 +64,22 @@ export function App() {
       ) : state.kind === 'error' ? (
         <Message title={strings.errorTitle} body={strings.errorBody} action={{ label: strings.retry, onClick: retry }} />
       ) : (
-        <BookCard book={state.book} lang={lang} />
+        <div className={split ? 'layout layout--split' : 'layout'}>
+          <BookCard
+            book={state.book}
+            lang={lang}
+            articlesOpen={articlesOpen}
+            onToggleArticles={() => setArticlesOpen((open) => !open)}
+          />
+          {articlesOpen && (
+            <ArticlesPanel
+              articles={state.book.articles}
+              lang={lang}
+              mode={mode}
+              onClose={() => setArticlesOpen(false)}
+            />
+          )}
+        </div>
       )}
     </main>
   );

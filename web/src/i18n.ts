@@ -32,6 +32,11 @@ const strings = {
     openInApp: 'افتح في التطبيق',
     getApp: 'حمّل تطبيق دليلي',
     appHint: 'التطبيق بيوصّلك لمكان الكتاب جوه المكتبة خطوة بخطوة.',
+    relatedArticles: 'مقالات ذات صلة',
+    closeArticles: 'إغلاق',
+    relevance: 'نسبة الارتباط',
+    doi: 'DOI',
+    opensInNewTab: 'يُفتح في تبويب جديد',
   },
   en: {
     appName: 'Dalili',
@@ -57,6 +62,11 @@ const strings = {
     openInApp: 'Open in app',
     getApp: 'Get the Dalili app',
     appHint: 'The app walks you to the book inside the library, step by step.',
+    relatedArticles: 'Related articles',
+    closeArticles: 'Close',
+    relevance: 'Relevance',
+    doi: 'DOI',
+    opensInNewTab: 'Opens in a new tab',
   },
 } as const;
 
