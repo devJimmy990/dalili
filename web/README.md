@@ -50,6 +50,16 @@ npm run build            # → dist/
 | `VITE_APP_DOWNLOAD_URL` | Where to get the app (Play Store, an APK link). Empty hides the button. |
 | `VITE_ANDROID_PACKAGE` | Package for the "Open in app" button. |
 
+## Icons
+
+The favicon, the header logo and the home-screen icons are all built from the
+app's own logo (`mobile/assets/images/logo.png`), so the site and the app match.
+If the logo changes, regenerate them and commit the result:
+
+```bash
+npm run icons            # rewrites the images in public/
+```
+
 ## Deploy on Vercel
 
 1. Import the repo, set **Root Directory** to `web`. Vite is detected.

@@ -1,4 +1,5 @@
 import 'package:dalili/core/localization/app_localizations.dart';
+import 'package:dalili/core/theme/app_theme_extension.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_state.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/widgets/navigation_controls.dart';
@@ -31,7 +32,12 @@ class NavigationScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
     create: (_) => NavigationCubit(),
     child: Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.indoorNav)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.indoorNav),
+        backgroundColor: context.colors.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: BlocBuilder<NavigationCubit, NavigationState>(
         builder: (context, state) => Padding(
           padding: const EdgeInsets.all(20),

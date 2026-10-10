@@ -8,6 +8,7 @@ import 'package:dalili/core/theme/app_theme_extension.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_session_model.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_state.dart';
+import 'package:dalili/features/library/presentation/screens/main_layout.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/qr_scanner_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -249,7 +250,7 @@ class _ArNavigationScreenState extends State<ArNavigationScreen>
       // session is technically still alive, racing it for the hardware.
       _pauseCamera();
       await cubit.stopNavigation();
-      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) MainLayout.goHome(context);
     }
   }
 
@@ -346,7 +347,7 @@ class _ArNavigationScreenState extends State<ArNavigationScreen>
     final cubit = context.read<NavigationCubit>();
     _pauseCamera();
     await cubit.stopNavigation();
-    if (context.mounted) Navigator.pop(context);
+    if (context.mounted) MainLayout.goHome(context);
   }
 }
 

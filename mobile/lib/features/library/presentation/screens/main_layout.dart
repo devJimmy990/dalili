@@ -13,12 +13,52 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
 
+  static const homeTab = 0;
+
+  /// Closes every screen above the main layout and shows the Home tab.
+  /// For flows that end a whole trip (stopping navigation), where going back
+  /// one step would land on a book or a half-finished route picker.
+  static void goHome(BuildContext context) {
+    _requests.request(homeTab);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  static final _requests = _TabRequests();
+
   @override
   State<MainLayout> createState() => _MainLayoutState();
 }
 
+/// A listenable that fires on every request, even for the tab already shown
+/// (a ValueNotifier would stay silent when the value does not change).
+class _TabRequests extends ChangeNotifier {
+  int tab = MainLayout.homeTab;
+
+  void request(int index) {
+    tab = index;
+    notifyListeners();
+  }
+}
+
 class _MainLayoutState extends State<MainLayout> {
-  int _selectedIndex = 0;
+  int _selectedIndex = MainLayout.homeTab;
+
+  @override
+  void initState() {
+    super.initState();
+    MainLayout._requests.addListener(_onTabRequested);
+  }
+
+  @override
+  void dispose() {
+    MainLayout._requests.removeListener(_onTabRequested);
+    super.dispose();
+  }
+
+  void _onTabRequested() {
+    final tab = MainLayout._requests.tab;
+    if (tab != _selectedIndex) setState(() => _selectedIndex = tab);
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(

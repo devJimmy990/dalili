@@ -15,6 +15,7 @@ class SettingsScreen extends StatelessWidget {
     appBar: AppBar(
       title: Text(AppLocalizations.settings),
       backgroundColor: context.colors.surface,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
     ),
     backgroundColor: context.colors.surface,
@@ -23,6 +24,19 @@ class SettingsScreen extends StatelessWidget {
       builder: (context, settings) => ListView(
         padding: const EdgeInsets.all(AppSpacing.containerMargin),
         children: [
+          Text(
+            AppLocalizations.navWalkingAccuracy,
+            style: context.textStyles.displaySmall,
+          ),
+          const SizedBox(height: AppSpacing.stackSm),
+          Text(
+            AppLocalizations.navHeightHint,
+            style: context.textStyles.bodySmall?.copyWith(
+              color: context.appTheme.onSurfaceVariant,
+            ),
+          ),
+          _HeightSetting(settings: settings),
+          const SizedBox(height: AppSpacing.stackLg),
           Text(
             AppLocalizations.language,
             style: context.textStyles.displaySmall,
@@ -55,19 +69,7 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.stackLg),
-          Text(
-            AppLocalizations.navWalkingAccuracy,
-            style: context.textStyles.displaySmall,
-          ),
-          const SizedBox(height: AppSpacing.stackSm),
-          Text(
-            AppLocalizations.navHeightHint,
-            style: context.textStyles.bodySmall?.copyWith(
-              color: context.appTheme.onSurfaceVariant,
-            ),
-          ),
-          _HeightSetting(settings: settings),
-          const SizedBox(height: AppSpacing.stackLg),
+
           Text(AppLocalizations.theme, style: context.textStyles.displaySmall),
           const SizedBox(height: AppSpacing.stackMd),
           RadioGroup<AppThemeMode>(

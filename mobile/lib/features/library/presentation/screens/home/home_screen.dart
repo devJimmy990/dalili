@@ -14,23 +14,12 @@ import 'package:dalili/features/library/presentation/widgets/welcome_banner.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<DepartmentCubit>().loadDepartments();
-  }
-
-  @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: context.colors.surface,
+    // backgroundColor: context.colors.surface,
     floatingActionButton: FloatingActionButton(
       backgroundColor: context.appTheme.accent,
       foregroundColor: Colors.white,
@@ -64,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.stackSm,
+                  vertical: AppSpacing.stackSm,
                 ),
                 child: Text(
                   AppLocalizations.departments,
@@ -83,15 +73,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       state.departments.isEmpty) {
                     return const SizedBox(height: 200, child: EmptyWidget());
                   }
+                  // ListTile paints its tileColor on the nearest Material, which
+                  // is the Scaffold's, so scrolled tiles bled over the title and
+                  // search bar above. This Material is the list's own area and
+                  // clips what is painted on it.
                   return Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.only(top: AppSpacing.stackSm),
-                      itemCount: state.departments.length,
-                      separatorBuilder: (_, __) =>
-                          const SizedBox(height: AppSpacing.stackSm),
-                      itemBuilder: (_, i) => DepartmentTile(
-                        key: ValueKey(state.departments[i].id),
-                        department: state.departments[i],
+                    child: Material(
+                      type: MaterialType.transparency,
+                      clipBehavior: Clip.hardEdge,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.only(top: AppSpacing.stackSm),
+                        itemCount: state.departments.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: AppSpacing.stackSm),
+                        itemBuilder: (_, i) => DepartmentTile(
+                          key: ValueKey(state.departments[i].id),
+                          department: state.departments[i],
+                        ),
                       ),
                     ),
                   );

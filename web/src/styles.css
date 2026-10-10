@@ -48,10 +48,25 @@ body {
 }
 
 .brand {
+  /* The logo first, then the name over its tagline. In Arabic the row flips,
+     so the logo sits on the right, where reading starts. */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.brand__logo {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 22%);
+}
+.brand__text {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: 20px;
+  min-width: 0;
 }
 .brand__name {
   font-size: 1.5rem;

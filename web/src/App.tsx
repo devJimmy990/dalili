@@ -51,8 +51,12 @@ export function App() {
   return (
     <main className={split ? 'page page--wide' : 'page'}>
       <header className="brand">
-        <span className="brand__name">{strings.appName}</span>
-        <span className="brand__tagline">{strings.tagline}</span>
+        {/* Decorative: the name beside it already says what this is. */}
+        <img className="brand__logo" src="/icon-96.png" alt="" width={44} height={44} />
+        <div className="brand__text">
+          <span className="brand__name">{strings.appName}</span>
+          <span className="brand__tagline">{strings.tagline}</span>
+        </div>
       </header>
 
       {bibid === null ? (
