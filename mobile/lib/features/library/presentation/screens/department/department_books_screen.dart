@@ -43,6 +43,7 @@ class _DepartmentBooksScreenState extends State<DepartmentBooksScreen> {
       appBar: AppBar(
         title: Text(widget.department.name),
         backgroundColor: context.colors.surface,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
       body: BlocBuilder<DepartmentCubit, DepartmentState>(

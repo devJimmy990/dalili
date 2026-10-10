@@ -29,9 +29,18 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   // allows one owner of the physical camera). Starting immediately would
   // race that release and come up frozen on the last frame instead of a
   // live feed. See SharedCameraLock.
+  //
+  // Only QR codes: the location markers are QR. Without this the scanner
+  // also reads the book's own barcode when it is still in view (right after
+  // "Take me to the book") and reports it as an unknown location.
   final MobileScannerController _controller = MobileScannerController(
     autoStart: false,
+    formats: const [BarcodeFormat.qrCode],
   );
+  // The camera reports the same code many times a second; show the
+  // "unrecognized" message once per code, not once per frame.
+  String? _lastRejected;
+  DateTime _lastRejectedAt = DateTime.fromMillisecondsSinceEpoch(0);
   bool _starting = true;
   String? _errorMessage;
 
@@ -144,6 +153,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         "debug - No node with id \"${payload.id}\" on the map. Node ids: "
         "${widget.map.nodes.map((n) => n.id).join(', ')}",
       );
+      final now = DateTime.now();
+      if (rawValue == _lastRejected &&
+          now.difference(_lastRejectedAt) < const Duration(seconds: 4)) {
+        return;
+      }
+      _lastRejected = rawValue;
+      _lastRejectedAt = now;
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
