@@ -75,9 +75,8 @@ export function serializeBook(b: BookRow, lang: Lang) {
 
   return {
     id: b.id,
-    // Two identifiers: `id` is the book's own (scan, article links);
-    // `bibid` is the catalogue number the reader can search by.
-    bibid: b.bibid,
+    // `id` is the BibID. The accession number is deliberately not sent: the
+    // app only ever sends it, to find a book, and never needs to show it.
     callNumber: b.callNumber,
     title: b.title,
     author: b.author ?? unknownAuthor(lang),

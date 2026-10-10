@@ -17,21 +17,13 @@ export function text(cell: Cell): string {
   return String(cell).replace(/\s+/g, ' ').trim();
 }
 
-/// Prefix of the stand-in id given to a book whose sheet row has no id yet.
-/// Recognizable on sight, and derived from the BibID so a re-seed hands the
-/// same book the same stand-in.
-export const PLACEHOLDER_ID_PREFIX = 'tmp-';
-
-/// The book's own id: the sheet's `id` cell once the librarians have filled
-/// it in, otherwise a placeholder built from the BibID.
+/// The "الرقم العام" (accession number) on a book's barcode label.
 ///
-/// The two are deliberately unrelated values. A scanned barcode is looked up
-/// by this id and a search by BibID, so deriving one from the other for good
-/// would let a barcode quietly resolve through the wrong door.
-export function bookId(cell: Cell, bibid: string): { id: string; placeholder: boolean } {
-  const given = text(cell);
-  if (given.length > 0) return { id: given, placeholder: false };
-  return { id: `${PLACEHOLDER_ID_PREFIX}${bibid}`, placeholder: true };
+/// A blank cell, or a hand-typed "Null", means the book has none → NULL. It is
+/// text, not a number: it is matched against whatever a barcode reader hands
+/// back, and a number type would invite "1415" vs 1415 mismatches.
+export function accessionNumber(cell: Cell): string | null {
+  return nullable(cell);
 }
 
 /// Blank, or a hand-typed "null", means "unknown" → NULL.

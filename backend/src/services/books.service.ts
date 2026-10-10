@@ -54,26 +54,21 @@ export function listBooks(page: Page, lang: Lang, filters: { departmentId?: stri
   return paginate(where, page, lang);
 }
 
-/// A BibID is a whole-number lookup: either the book has exactly that number
-/// or it does not. Matching it as a substring would answer "1249" with every
-/// book whose BibID merely contains it.
-async function findByBibid(bibid: string) {
-  return prisma.book.findUnique({ where: { bibid }, include: bookInclude });
-}
-
 /// Matches the book's own fields, and also books whose linked articles
 /// match — the dataset hides a lot of subject matter in article keywords.
 ///
 /// A query that is exactly a book's BibID returns that book alone — someone
 /// typing a catalogue number wants that record, not whatever else happens to
-/// mention the digits. Anything else is the ordinary text search.
+/// mention the digits. It is an exact match on purpose: "1249" must not
+/// answer with every book whose BibID merely contains it. Anything else is
+/// the ordinary text search.
 ///
 /// Returns every hit in one response: the catalogue is small enough that
 /// paging the search would cost a round trip for nothing.
 export async function searchBooks(query: string, lang: Lang) {
   const q = query.trim();
 
-  const exact = await findByBibid(q);
+  const exact = await prisma.book.findUnique({ where: { id: q }, include: bookInclude });
   if (exact) return { items: [serializeBook(exact, lang)], total: 1 };
 
   const where: Prisma.BookWhereInput = {
@@ -102,12 +97,19 @@ export async function searchBooks(query: string, lang: Lang) {
   return { items: rows.map((b) => serializeBook(b, lang)), total: rows.length };
 }
 
-/// By the book's own `id` only — what a scanned barcode carries. A BibID
-/// deliberately does not resolve here: the two are different identifiers, and
-/// a barcode that matched through the wrong one would show the wrong book
-/// the day the ids stop being derived from BibIDs.
+/// By BibID (the book's id): the detail screen, favorites, article links.
 export async function getBookById(id: string, lang: Lang) {
   const row = await prisma.book.findUnique({ where: { id }, include: bookInclude });
+  return row ? serializeBook(row, lang) : null;
+}
+
+/// What a barcode scan resolves through: the "الرقم العام" on the label.
+///
+/// It is its own lookup — a BibID typed or scanned here is not found, so the
+/// two numbers can never be mistaken for each other. Books with no accession
+/// number have nothing to match, so scanning cannot reach them.
+export async function getBookByAccessionNumber(accessionNumber: string, lang: Lang) {
+  const row = await prisma.book.findUnique({ where: { accessionNumber }, include: bookInclude });
   return row ? serializeBook(row, lang) : null;
 }
 

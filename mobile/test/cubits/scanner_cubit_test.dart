@@ -9,22 +9,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 class _FakeRepository implements LibraryRepository {
-  _FakeRepository(this._books);
+  _FakeRepository(this._byAccessionNumber);
 
-  /// Books by their own id — the only key a scan may use.
-  final Map<String, Book> _books;
+  /// Books by the number on their barcode label — the only key a scan may
+  /// use. Their BibIDs (their ids) are deliberately absent from this map.
+  final Map<String, Book> _byAccessionNumber;
   final List<String> askedFor = [];
 
   @override
-  Future<Book?> getBookById(String id) async {
-    askedFor.add(id);
-    return _books[id];
+  Future<Book?> getBookByAccessionNumber(String number) async {
+    askedFor.add(number);
+    return _byAccessionNumber[number];
   }
 
   @override
   Future<BookPage> getAllBooks({int page = 1}) async => BookPage(
-    books: _books.values.toList(),
-    total: _books.length,
+    books: _byAccessionNumber.values.toList(),
+    total: _byAccessionNumber.length,
     page: 1,
     hasMore: false,
   );
@@ -64,9 +65,8 @@ class _MemoryStorage implements Storage {
   Future<void> close() async {}
 }
 
-Book _book({required String id, required String bibid}) => BookModel.fromJson({
+Book _book({required String id}) => BookModel.fromJson({
   'id': id,
-  'bibid': bibid,
   'callNumber': '621.3',
   'title': 'A Book',
   'author': 'An Author',
@@ -81,29 +81,31 @@ void main() {
   late ScannerCubit cubit;
 
   setUp(() {
-    repository = _FakeRepository({'BK-1': _book(id: 'BK-1', bibid: '555001')});
+    // The book's id is its BibID; the label on it says 1415.
+    repository = _FakeRepository({'1415': _book(id: '555001')});
     cubit = ScannerCubit(repository);
   });
 
   tearDown(() => cubit.close());
 
-  test('a scanned id opens that book', () async {
-    await cubit.onBarcodeDetected('BK-1');
+  test('a scanned label number opens that book', () async {
+    await cubit.onBarcodeDetected('1415');
 
     expect(cubit.state.status, ScannerStatus.found);
-    expect(cubit.state.book?.id, 'BK-1');
+    // The book comes back under its BibID, not under the number scanned.
+    expect(cubit.state.book?.id, '555001');
   });
 
   test('surrounding whitespace in the barcode is ignored', () async {
-    await cubit.onBarcodeDetected('  BK-1\n');
+    await cubit.onBarcodeDetected('  1415\n');
 
     expect(cubit.state.status, ScannerStatus.found);
-    expect(repository.askedFor, ['BK-1']);
+    expect(repository.askedFor, ['1415']);
   });
 
-  test('a BibID is not a scannable id', () async {
-    // 555001 is this book's catalogue number. Scanning must look at ids
-    // only, so it is reported as unknown rather than matched via the BibID.
+  test('a BibID is not a scannable number', () async {
+    // 555001 is this book's BibID. A scan looks at label numbers only, so it
+    // is reported as unknown rather than matched through the BibID.
     await cubit.onBarcodeDetected('555001');
 
     expect(cubit.state.status, ScannerStatus.notFound);
@@ -128,7 +130,7 @@ void main() {
   });
 
   test(
-    'the debug sample scan finds a real book without naming an id',
+    'the debug sample scan finds a real book without naming a number',
     () async {
       await cubit.scanSample();
 

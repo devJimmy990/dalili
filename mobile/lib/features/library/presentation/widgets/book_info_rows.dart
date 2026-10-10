@@ -53,8 +53,7 @@ class BookFindItRows extends StatelessWidget {
         emphasized: true,
       ),
       BookInfoRow(AppLocalizations.callNumber, book.callNumber, code: true),
-      // Hidden by the row itself when a cached book predates the field.
-      BookInfoRow(AppLocalizations.bibid, book.bibid, code: true),
+      BookInfoRow(AppLocalizations.bibid, book.id, code: true),
       BookInfoRow(AppLocalizations.isbn, book.isbn, code: true),
     ],
   );

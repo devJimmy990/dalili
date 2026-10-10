@@ -20,10 +20,8 @@ void main() {
         _fixture('book')['book'] as Map<String, dynamic>,
       );
 
-      // The catalogue number is the BibID; the book's own id is a separate
-      // value (see book_identifiers_test.dart for the split).
-      expect(book.bibid, '12492294');
-      expect(book.id, isNotEmpty);
+      // The BibID is the id.
+      expect(book.id, '12492294');
       expect(book.title, 'High Voltage Engineering');
       expect(book.author, 'Wadhwa, C.L.');
       expect(book.callNumber, '621.3193.W H');
@@ -124,6 +122,18 @@ void main() {
 
       expect(restored.subjects, isNull);
       expect(restored, equals(original));
+    });
+
+    test('a BibID search returns that one book, whole', () {
+      final data = _fixture('search_bibid');
+      final books = (data['items'] as List)
+          .map((e) => BookModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      expect(data['total'], 1);
+      expect(books, hasLength(1));
+      // The BibID is the id, so the match is the book carrying that id.
+      expect(books.single.id, '12492294');
     });
 
     test('parses a page of books and a search result list', () {

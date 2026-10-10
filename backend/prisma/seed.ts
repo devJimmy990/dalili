@@ -10,13 +10,11 @@
  *      names them, and every name must resolve to an existing row.
  *   2. Language, edition and document type are lookup tables with Arabic and
  *      English names; the books/articles store ids.
- *   3. A book has two independent identifiers. "BibID" is the catalogue
- *      number — searchable and shown, never a key. `id` is the book's own
- *      id (what a barcode carries, what articles link to); it is read from
- *      an `id` column when the sheet has one, and until then every book
- *      gets a placeholder "tmp-<BibID>". Articles still name their book by
- *      BibID in the sheet, resolved to the book's id here. The articles
- *      themselves get a stable id derived from their DOI (or title).
+ *   3. "BibID" is the book id, and the articles sheet names its book by it.
+ *      "الرقم العام" (the accession number on the barcode label) is a
+ *      separate value used only for scanning; a blank or "Null" cell leaves
+ *      the book without one. The articles themselves get a stable id derived
+ *      from their DOI (or title).
  *   4. The same article listed under two books becomes ONE article linked
  *      to both.
  *   5. A conference-sourced document is always a conference paper, whatever
@@ -117,8 +115,8 @@ function articleId(doi: string | null, titleText: string): string {
 // ─── Build (pure: no database) ─────────────────────────────
 
 interface Report {
-  /** Books still on a placeholder id because the sheet has no `id` for them. */
-  placeholderIds: number;
+  /** Books with no accession number: they cannot be found by scanning. */
+  noAccessionNumber: string[];
   editionInferred: string[];
   isbnPadded: string[];
   isbnBad: string[];
@@ -133,24 +131,31 @@ function buildBooks(rows: Row[], report: Report) {
   requireColumns(rows, 'books', [
     'BibID', 'رقم الاستدعاء', 'العنوان', 'المؤلف', 'الطبعة', 'الناشر', 'سنة النشر', 'مكان النشر',
     'ISBN', 'رؤوس الموضوعات', 'الموقع على الرف', 'المجموعة المنتمي إليها', 'اللغة', 'الغلاف',
+    'الرقم العام',
   ]);
 
   const canonicalPublisher = parse.publisherCanonicalizer(rows.map((r) => parse.publisher(r['الناشر'])));
-  const seenBibids = new Set<string>();
   const seenIds = new Set<string>();
+  const seenAccession = new Map<string, string>();
 
   return rows.map((row) => {
-    const bibid = parse.text(row['BibID']);
-    if (bibid.length === 0) throw new Error('A book row has no BibID');
-    if (seenBibids.has(bibid)) throw new Error(`Duplicate BibID ${bibid}`);
-    seenBibids.add(bibid);
-
-    // The `id` column does not exist yet; when it arrives it is picked up
-    // here with no other change.
-    const { id, placeholder } = parse.bookId(row['id'], bibid);
-    if (placeholder) report.placeholderIds += 1;
-    if (seenIds.has(id)) throw new Error(`Duplicate book id "${id}" (BibID ${bibid})`);
+    const id = parse.text(row['BibID']);
+    if (id.length === 0) throw new Error('A book row has no BibID');
+    if (seenIds.has(id)) throw new Error(`Duplicate BibID ${id}`);
     seenIds.add(id);
+
+    // Two books sharing a label number would make a scan ambiguous. Blank and
+    // "Null" cells are not numbers and may repeat freely.
+    const accessionNumber = parse.accessionNumber(row['الرقم العام']);
+    if (accessionNumber === null) {
+      report.noAccessionNumber.push(id);
+    } else {
+      const other = seenAccession.get(accessionNumber);
+      if (other !== undefined) {
+        throw new Error(`Books ${other} and ${id} share the accession number "${accessionNumber}"`);
+      }
+      seenAccession.set(accessionNumber, id);
+    }
 
     const callNumber = parse.text(row['رقم الاستدعاء']);
     const bookTitle = parse.title(row['العنوان']);
@@ -176,7 +181,7 @@ function buildBooks(rows: Row[], report: Report) {
 
     return {
       id,
-      bibid,
+      accessionNumber,
       callNumber,
       title: bookTitle,
       author: bookAuthor,
@@ -196,7 +201,7 @@ function buildBooks(rows: Row[], report: Report) {
   });
 }
 
-function buildArticles(rows: Row[], idByBibid: Map<string, string>, report: Report) {
+function buildArticles(rows: Row[], bookIds: Set<string>, report: Report) {
   requireColumns(rows, 'articles', [
     'bibID', 'العنوان', 'المؤلفون', 'السنة', 'نوع الوثيقة', 'نوع المصدر', 'عنوان المصدر',
     'ISSN / ISBN', 'الكلمات المفتاحية', 'المجلد', 'العدد', 'الصفحات', 'رابط الوصول المباشر', 'DOI', 'نسبة الارتباط',
@@ -241,11 +246,9 @@ function buildArticles(rows: Row[], idByBibid: Map<string, string>, report: Repo
   }
 
   rows.forEach((row, i) => {
-    const bibid = parse.text(row['bibID']);
+    const bookId = parse.text(row['bibID']);
     const owner = `Article row ${i + 2}`;
-    // The sheet names a book by BibID; the link itself is stored on the id.
-    const bookId = idByBibid.get(bibid);
-    if (bookId === undefined) throw new Error(`${owner} points at BibID ${bibid}, which is not in the books sheet`);
+    if (!bookIds.has(bookId)) throw new Error(`${owner} points at BibID ${bookId}, which is not in the books sheet`);
 
     const article = toArticle(row, owner);
     const existing = byId.get(article.id);
@@ -266,7 +269,7 @@ async function main(): Promise<void> {
   console.log(DRY_RUN ? `Dry run — reading ${XLSX_PATH}, nothing will be written` : `Reading ${XLSX_PATH}`);
   const wb = XLSX.readFile(XLSX_PATH);
   const report: Report = {
-    placeholderIds: 0,
+    noAccessionNumber: [],
     editionInferred: [], isbnPadded: [], isbnBad: [], noAuthor: [],
     placeIsBinding: [], mergedArticles: [], reclassified: [], noIssn: 0,
   };
@@ -274,8 +277,7 @@ async function main(): Promise<void> {
   // Build everything first: a bad cell aborts before a single row is written.
   const books = buildBooks(readSheet(wb, 'books'), report);
   const bookIds = new Set(books.map((b) => b.id));
-  const idByBibid = new Map(books.map((b) => [b.bibid, b.id]));
-  const articles = buildArticles(readSheet(wb, 'articles'), idByBibid, report);
+  const articles = buildArticles(readSheet(wb, 'articles'), bookIds, report);
 
   const mapNodeIds = readMapNodeIds();
   const departments = DEPARTMENTS.map((d, i) => {
@@ -306,10 +308,12 @@ async function main(): Promise<void> {
 
   // ── Books ──
   if (!DRY_RUN) {
-    // Stale rows go first. When the real ids arrive, the replacement for a
-    // placeholder row carries the same BibID, which is unique — creating it
-    // while the old row still exists would be rejected.
+    // Books the sheet no longer has go first.
     await prisma.book.deleteMany({ where: { id: { notIn: [...bookIds] } } });
+    // Accession numbers are unique, so correcting the sheet by moving a number
+    // from one book to another would be rejected for as long as the old
+    // holder still has it. Every book gets its number back in the loop below.
+    await prisma.book.updateMany({ data: { accessionNumber: null } });
     for (const { languages, ...b } of books) {
       await prisma.book.upsert({ where: { id: b.id }, create: b, update: b });
     }
@@ -320,12 +324,7 @@ async function main(): Promise<void> {
   }
   const languageLinks = books.reduce((n, b) => n + b.languages.length, 0);
   console.log(`  books: ${books.length} (${languageLinks} language links)`);
-  if (report.placeholderIds > 0) {
-    console.warn(
-      `  ! ${report.placeholderIds} of ${books.length} books are on a placeholder id ("tmp-<BibID>") — ` +
-        'add an "id" column to the books sheet and re-seed; barcodes scan by id, so none will resolve until then',
-    );
-  }
+  console.log(`  accession numbers: ${books.length - report.noAccessionNumber.length} of ${books.length} books`);
 
   // ── Articles + links ──
   const links = articles.flatMap((a) => [...a.bookIds].map((bookId) => ({ bookId, articleId: a.id })));
@@ -348,6 +347,7 @@ async function main(): Promise<void> {
   list('editions supplied by the cataloguer ([ ] in the sheet)', report.editionInferred);
   list('ISBNs that lost a leading zero in Excel — restored', report.isbnPadded);
   list('ISBNs that fail their checksum — kept as typed', report.isbnBad);
+  list('books with no accession number — a scan cannot find them', report.noAccessionNumber);
   list('books with no author on record', report.noAuthor);
   list('"place" cells that are really a binding (Hardcover/Paperback)', report.placeIsBinding);
   list('articles listed under several books — merged', report.mergedArticles);

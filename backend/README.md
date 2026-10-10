@@ -59,7 +59,8 @@ book's own title or author.
 | GET | `/api/books` | Paginated. `?page=1&limit=20&department=d_electrical&author=Wadhwa` |
 | GET | `/api/books/search?q=...` | All matches in one response, no paging. A query that is exactly a book's BibID returns that book alone |
 | GET | `/api/books/by-ids?ids=42432,188693` | Keeps the requested order — used by Favorites |
-| GET | `/api/books/:id` | By the book's own `id` (what a barcode carries) — never by BibID. `404` when unknown |
+| GET | `/api/books/by-accession/:number` | What a **scan** resolves through — the label's accession number. `404` when no book has it |
+| GET | `/api/books/:id` | By BibID. `404` when unknown |
 | GET | `/api/books/:id/articles` | Related articles, best score first |
 | GET | `/api/departments` | Every section, each with `bookCount` |
 | GET | `/api/departments/:id` | |
@@ -69,42 +70,33 @@ book's own title or author.
 Paginated responses carry `items`, `total`, `page`, `limit`, `totalPages`,
 `hasMore`.
 
-### Two identifiers
+### Two numbers, two jobs
 
-A book carries two values that look alike and must not be confused:
-
-| | Used for | Where it comes from |
+| | Used for | Sheet column |
 | --- | --- | --- |
-| `id` | The book's own key: what a **scanned barcode** carries, and what articles link to | The sheet's `id` column; until that exists, a placeholder `tmp-<BibID>` |
-| `bibid` | The catalogue number: **searched** by readers and shown on the detail screen | The sheet's `BibID` column |
+| `id` (the **BibID**) | The book's id: searched by readers, shown on the detail screen, and what its articles link to | `BibID` (articles: `bibID`) |
+| `accessionNumber` | **Barcode scanning** only — the "الرقم العام" on the label | `الرقم العام` |
 
-Searching by BibID is an exact match (`1249` does not find BibID `12492294`),
-and scanning looks at `id` only, so a BibID typed into the barcode path is a
-`404`, not a quiet hit.
+They are different numbers and never stand in for each other: a BibID sent to
+`/books/by-accession/…` is a `404`, and an accession number is not a book id.
 
-#### When the real ids arrive
+The accession number is not part of the book payload — the app only ever
+sends it, to find a book — and it is stored as text.
 
-Add an `id` column to the `books` sheet and re-seed — nothing else changes:
+**Books without one.** A blank cell, or the hand-typed `Null` the sheet uses,
+means the book has no label number: it is stored as `NULL`, which a unique
+index allows any number of times. Such a book is still found by search, and
+by BibID; it just cannot be reached by scanning. The seed lists them each run.
+Two books sharing a number is a mistake in the sheet and aborts the seed.
 
-```bash
-npm run seed -- --dry-run   # check it first: lists any books still on a placeholder
-npm run seed
-```
-
-The seed picks the column up by itself, replaces the `tmp-` rows (their BibIDs
-move to the new rows), and re-links the articles. The sheet's `articles` tab
-still names its book by **BibID**; if it will name the new `id` instead,
-`buildArticles` in `prisma/seed.ts` is the one function to adjust.
-
-Heads-up: favorites saved on a phone are stored by `id`, so changing ids drops
-them from users' lists the next time they refresh.
+Searching by BibID is an exact match: `12492294` finds that book alone;
+`1249` falls through to the ordinary text search.
 
 ### A book
 
 ```json
 {
-  "id": "tmp-12492294",
-  "bibid": "12492294",
+  "id": "12492294",
   "callNumber": "621.3193.W H",
   "title": "High Voltage Engineering",
   "author": "Wadhwa, C.L.",

@@ -10,7 +10,7 @@ import 'package:dio/dio.dart';
 abstract class LibraryRemoteDataSource {
   Future<List<DepartmentModel>> getDepartments();
   Future<BookPage> getAllBooks({int page = 1});
-  Future<BookModel?> getBookById(String id);
+  Future<BookModel?> getBookByAccessionNumber(String number);
   Future<List<BookModel>> searchBooks(String query);
   Future<BookPage> getBooksByDepartment(String departmentId, {int page = 1});
   Future<BookPage> getBooksByAuthor(String author, {int page = 1});
@@ -65,14 +65,14 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
       _page(await _get(ApiConstants.books, {ApiConstants.paramPage: page}));
 
   @override
-  Future<BookModel?> getBookById(String id) async {
+  Future<BookModel?> getBookByAccessionNumber(String number) async {
     try {
-      final payload = await _get(ApiConstants.book(id));
+      final payload = await _get(ApiConstants.bookByAccession(number));
       final book = payload.optMap('book');
       return book == null ? null : BookModel.fromJson(book);
     } on NotFoundException {
-      // An unknown id is an expected outcome — a QR code for a book that
-      // is no longer catalogued.
+      // An unknown number is an expected outcome — a label for a book that
+      // is no longer catalogued, or a barcode that is not ours at all.
       return null;
     }
   }

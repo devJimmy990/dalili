@@ -34,8 +34,8 @@ class LibraryRepositoryImpl implements LibraryRepository {
       _guard(() => _dataSource.getAllBooks(page: page));
 
   @override
-  Future<Book?> getBookById(String id) =>
-      _guard(() => _dataSource.getBookById(id));
+  Future<Book?> getBookByAccessionNumber(String number) =>
+      _guard(() => _dataSource.getBookByAccessionNumber(number));
 
   @override
   Future<List<Book>> searchBooks(String query) =>

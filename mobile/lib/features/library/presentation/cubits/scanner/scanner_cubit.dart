@@ -12,22 +12,22 @@ class ScannerCubit extends HydratedCubit<ScannerState>
   final LibraryRepository _repository;
   bool _isProcessing = false;
 
-  /// Looks a scanned barcode up by the book's own id — never by its BibID,
-  /// which is a different identifier meant for searching.
+  /// Looks a scanned barcode up by the accession number printed on the label
+  /// — never by the BibID, which is a different number meant for searching.
   ///
   /// A barcode that decodes to nothing is not a scan: it is ignored rather
   /// than being answered with some default book.
   Future<void> onBarcodeDetected(String? rawValue) async {
-    final id = rawValue?.trim();
-    if (id == null || id.isEmpty) return;
+    final number = rawValue?.trim();
+    if (number == null || number.isEmpty) return;
 
-    await _lookUp(() => _repository.getBookById(id));
+    await _lookUp(() => _repository.getBookByAccessionNumber(number));
   }
 
   /// Development aid behind the scanner's debug-only button: opens the first
   /// book in the catalogue, so the found/not-found screens can be exercised
-  /// without a printed barcode. Asks the catalogue instead of naming an id,
-  /// so it keeps working however the ids are issued.
+  /// without a printed barcode. Asks the catalogue instead of naming a
+  /// number, so it keeps working whichever books have labels.
   Future<void> scanSample() => _lookUp(() async {
     final page = await _repository.getAllBooks();
     return page.books.firstOrNull;
