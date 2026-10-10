@@ -1,6 +1,26 @@
 import { API_BASE_URL } from './env';
 import type { Lang } from './i18n';
 
+/** A paper linked to a book. Almost every field can be missing in the catalogue. */
+export interface Article {
+  id: string;
+  title: string;
+  authors: string | null;
+  year: number | null;
+  /** "Research paper", "بحث"… already in the requested language. */
+  type: string | null;
+  /** "Journal" / "Conference", likewise. */
+  source: string | null;
+  sourceTitle: string | null;
+  volume: string | null;
+  issue: string | null;
+  pages: string | null;
+  url: string | null;
+  doi: string | null;
+  /** Relevance to the book, 0..1. */
+  score: number | null;
+}
+
 export interface Book {
   id: string;
   title: string;
@@ -16,6 +36,7 @@ export interface Book {
   locationLabel: string;
   shelfLabel: string | null;
   department: { id: string; name: string };
+  articles: Article[];
 }
 
 export type BookResult =

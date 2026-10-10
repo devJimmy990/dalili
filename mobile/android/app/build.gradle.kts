@@ -17,7 +17,7 @@ val shareHost: String = run {
             ?.substringAfter("=")?.trim().orEmpty()
     } else ""
     configured.removePrefix("https://").removePrefix("http://")
-        .substringBefore("/").ifEmpty { "dalili-e0qh.onrender.com" }
+        .substringBefore("/").ifEmpty { "dalili-lime.vercel.app" }
 }
 
 android {

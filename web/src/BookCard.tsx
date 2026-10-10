@@ -13,7 +13,14 @@ function intentUrl(): string {
   return `intent://${host}${pathname}${search}#Intent;scheme=https;package=${ANDROID_PACKAGE};S.browser_fallback_url=${fallback};end`;
 }
 
-export function BookCard({ book, lang }: { book: Book; lang: Lang }) {
+interface Props {
+  book: Book;
+  lang: Lang;
+  articlesOpen: boolean;
+  onToggleArticles: () => void;
+}
+
+export function BookCard({ book, lang, articlesOpen, onToggleArticles }: Props) {
   const strings = t(lang);
 
   const rows: [string, string | number | null, boolean?][] = [
@@ -58,11 +65,25 @@ export function BookCard({ book, lang }: { book: Book; lang: Lang }) {
       </dl>
 
       <div className="actions">
+        {/* Same tab on purpose: this is an Android intent, which either opens
+            the app or returns here. In a new tab it would leave a blank one. */}
         <a className="button button--primary" href={intentUrl()}>
           {strings.openInApp}
         </a>
+
+        {book.articles.length > 0 && (
+          <button
+            type="button"
+            className="button button--ghost"
+            onClick={onToggleArticles}
+            aria-expanded={articlesOpen}
+          >
+            {strings.relatedArticles} ({book.articles.length})
+          </button>
+        )}
+
         {APP_DOWNLOAD_URL && (
-          <a className="button button--ghost" href={APP_DOWNLOAD_URL} rel="noopener">
+          <a className="button button--ghost" href={APP_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer">
             {strings.getApp}
           </a>
         )}

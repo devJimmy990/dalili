@@ -8,12 +8,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 String get shareOrigin {
   final configured = dotenv.maybeGet('SHARE_BASE_URL')?.trim();
   return (configured == null || configured.isEmpty)
-      ? 'https://dalili-e0qh.onrender.com'
+      ? 'https://dalili-lime.vercel.app'
       : configured;
 }
 
-/// The link for [book].
-Uri linkFor(Book book) => bookUri(shareOrigin, book.title, book.id);
+/// The link for [book], as readable text (see [bookLinkText]).
+String linkFor(Book book) => bookLinkText(shareOrigin, book.title, book.id);
 
 /// The text that goes into the share sheet: the title, who wrote it, where it
 /// sits in the library, and the link — enough to be useful even to someone who
@@ -26,7 +26,7 @@ String shareMessage(Book book, {required String intro}) {
     if (book.author.isNotEmpty) book.author,
     if (book.locationLabel != null) book.locationLabel!,
     '',
-    linkFor(book).toString(),
+    linkFor(book),
   ];
   return lines.join('\n');
 }

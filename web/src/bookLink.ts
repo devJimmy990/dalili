@@ -3,21 +3,30 @@
  * back (mobile/lib/core/utils/book_link.dart) — the two must agree, and both
  * are tested against the same examples.
  *
- *   https://<host>/dalili/<book-name>-<bibid>
+ *   https://<host>/book/<book-name>-<bibid>
  *
  * The name is only there to be readable in a chat. The BibID after the last
  * hyphen is the key: names repeat and change, a BibID does not.
  */
 
-export const LINK_PREFIX = 'dalili';
+/** What new links are built with: `/book/<name>-<bibid>`. */
+export const LINK_PREFIX = 'book';
 
 /**
- * The BibID in a pathname such as `/dalili/construction-detailing-12554857`,
+ * Prefixes still understood when reading a link. `dalili` is what links were
+ * built with at first — `<host>/dalili/<name>-<id>` repeated the app's name
+ * right after a domain that already carries it — and some of those were
+ * already shared, so they must keep opening.
+ */
+export const READ_PREFIXES: readonly string[] = [LINK_PREFIX, 'dalili'];
+
+/**
+ * The BibID in a pathname such as `/book/construction-detailing-12554857`,
  * or null when the path is not a book link.
  */
 export function parseBibid(pathname: string): string | null {
   const parts = pathname.split('/').filter((part) => part.length > 0);
-  if (parts.length !== 2 || parts[0] !== LINK_PREFIX) return null;
+  if (parts.length !== 2 || !READ_PREFIXES.includes(parts[0]!)) return null;
 
   let segment = parts[1]!;
   try {
@@ -26,7 +35,7 @@ export function parseBibid(pathname: string): string | null {
     // A stray "%" — use the text as it came rather than reject the link.
   }
 
-  // Everything after the last hyphen. A bare "/dalili/12554857" has no hyphen,
+  // Everything after the last hyphen. A bare "/book/12554857" has no hyphen,
   // so the whole segment is the id.
   const id = segment.slice(segment.lastIndexOf('-') + 1).trim();
   return id.length > 0 ? id : null;

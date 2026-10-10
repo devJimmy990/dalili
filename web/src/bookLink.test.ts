@@ -3,34 +3,46 @@ import { bookPath, parseBibid, slugify } from './bookLink';
 
 describe('parseBibid', () => {
   it('reads the id after the last hyphen', () => {
-    expect(parseBibid('/dalili/construction-detailing-for-landscape-12554857')).toBe('12554857');
+    expect(parseBibid('/book/construction-detailing-for-landscape-12554857')).toBe('12554857');
   });
 
   it('accepts a bare id', () => {
-    expect(parseBibid('/dalili/12554857')).toBe('12554857');
+    expect(parseBibid('/book/12554857')).toBe('12554857');
   });
 
   it('is not fooled by digits inside the name', () => {
     // "2nd" and "1990" are part of the title, not the key.
-    expect(parseBibid('/dalili/design-manual-2nd-edition-1990-267302')).toBe('267302');
+    expect(parseBibid('/book/design-manual-2nd-edition-1990-267302')).toBe('267302');
   });
 
   it('reads an Arabic name and an encoded one the same way', () => {
-    expect(parseBibid('/dalili/العمارة-كتلة-وفراغ-12631333')).toBe('12631333');
-    expect(parseBibid('/dalili/' + encodeURIComponent('العمارة-كتلة-وفراغ-12631333'))).toBe('12631333');
+    expect(parseBibid('/book/العمارة-كتلة-وفراغ-12631333')).toBe('12631333');
+    expect(parseBibid('/book/' + encodeURIComponent('العمارة-كتلة-وفراغ-12631333'))).toBe('12631333');
   });
 
   it('tolerates a trailing slash', () => {
-    expect(parseBibid('/dalili/x-12554857/')).toBe('12554857');
+    expect(parseBibid('/book/x-12554857/')).toBe('12554857');
   });
 
   it('rejects anything that is not a book link', () => {
     expect(parseBibid('/')).toBeNull();
-    expect(parseBibid('/dalili')).toBeNull();
-    expect(parseBibid('/dalili/')).toBeNull();
+    expect(parseBibid('/book')).toBeNull();
+    expect(parseBibid('/book/')).toBeNull();
     expect(parseBibid('/other/x-123')).toBeNull();
-    expect(parseBibid('/dalili/a/b-123')).toBeNull();
-    expect(parseBibid('/dalili/title-')).toBeNull();
+    expect(parseBibid('/book/a/b-123')).toBeNull();
+    expect(parseBibid('/book/title-')).toBeNull();
+  });
+});
+
+describe('links shared before the prefix changed', () => {
+  it('still open — they were already sent to people', () => {
+    expect(parseBibid('/dalili/construction-detailing-12554857')).toBe('12554857');
+    expect(parseBibid('/dalili/12554857')).toBe('12554857');
+  });
+
+  it('are no longer produced', () => {
+    expect(bookPath('Anything', '1').startsWith('/book/')).toBe(true);
+    expect(bookPath('Anything', '1')).not.toContain('/dalili/');
   });
 });
 
@@ -66,7 +78,7 @@ describe('slugify', () => {
 describe('bookPath', () => {
   it('round-trips through parseBibid', () => {
     const path = bookPath('Concrete technology: Theory and Practice', '40959');
-    expect(path).toBe('/dalili/concrete-technology-theory-and-practice-40959');
+    expect(path).toBe('/book/concrete-technology-theory-and-practice-40959');
     expect(parseBibid(path)).toBe('40959');
   });
 
