@@ -56,17 +56,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "articleVolume": MessageLookupByLibrary.simpleMessage("Volume"),
     "author": MessageLookupByLibrary.simpleMessage("Author"),
     "bibid": MessageLookupByLibrary.simpleMessage("BibID"),
+    "bibidCopied": MessageLookupByLibrary.simpleMessage("BibID copied"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("Language"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage("Book not found"),
     "bookNotFoundDesc": MessageLookupByLibrary.simpleMessage(
       "This book was not found in the database",
     ),
     "bookNotFoundGn": m0,
-    "bookRecognized": MessageLookupByLibrary.simpleMessage("Book recognized!"),
     "callNumber": MessageLookupByLibrary.simpleMessage("Call Number"),
     "classification": MessageLookupByLibrary.simpleMessage("Classification"),
     "comingSoon": MessageLookupByLibrary.simpleMessage("Coming Soon"),
     "continueBtn": MessageLookupByLibrary.simpleMessage("Continue"),
+    "copyBibid": MessageLookupByLibrary.simpleMessage("Copy BibID"),
     "darkTheme": MessageLookupByLibrary.simpleMessage("Dark"),
     "department": MessageLookupByLibrary.simpleMessage("Department"),
     "departments": MessageLookupByLibrary.simpleMessage("Departments"),
@@ -81,6 +82,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "isbn": MessageLookupByLibrary.simpleMessage("ISBN"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),
     "lightTheme": MessageLookupByLibrary.simpleMessage("Light"),
+    "linkBookNotFound": MessageLookupByLibrary.simpleMessage(
+      "This link points to a book that is not in the library",
+    ),
+    "linkOpenFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not open the shared book. Check your connection and try again.",
+    ),
     "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
     "navAlreadyAtDestination": MessageLookupByLibrary.simpleMessage(
       "You are already in this section",
@@ -209,6 +216,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "selectLanguage": MessageLookupByLibrary.simpleMessage("Select Language"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
+    "shareBook": MessageLookupByLibrary.simpleMessage("Share this book"),
+    "shareIntro": MessageLookupByLibrary.simpleMessage(
+      "Found this in the Dalili library:",
+    ),
     "shelf": MessageLookupByLibrary.simpleMessage("Shelf"),
     "shelfLocation": MessageLookupByLibrary.simpleMessage("Location"),
     "skip": MessageLookupByLibrary.simpleMessage("Skip"),
@@ -216,7 +227,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemTheme": MessageLookupByLibrary.simpleMessage("System default"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "viewAll": MessageLookupByLibrary.simpleMessage("View All"),
-    "viewDetails": MessageLookupByLibrary.simpleMessage("View Details"),
     "welcomeSubtitle": MessageLookupByLibrary.simpleMessage(
       "Your smart library assistant",
     ),

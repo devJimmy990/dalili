@@ -17,6 +17,13 @@ class _FakeRepository implements LibraryRepository {
   final List<String> askedFor = [];
 
   @override
+  Future<Book?> getBookById(String bibid) async {
+    // A scan must never come through here; recording it makes that a failure.
+    askedFor.add('BIBID:$bibid');
+    return null;
+  }
+
+  @override
   Future<Book?> getBookByAccessionNumber(String number) async {
     askedFor.add(number);
     return _byAccessionNumber[number];
@@ -171,6 +178,19 @@ void main() {
     await cubit.scanSample();
 
     expect(cubit.state.scannedCode, isEmpty);
+  });
+
+  test('a scan never looks a book up by BibID', () async {
+    await cubit.onBarcodeDetected('1415');
+    await cubit.onBarcodeDetected('555001');
+
+    expect(
+      repository.askedFor.where((q) => q.startsWith('BIBID:')),
+      isEmpty,
+      reason:
+          'scanning is by label number only; the BibID lookup is for '
+          'links and the detail screen',
+    );
   });
 
   test('an unknown barcode is reported as not found', () async {

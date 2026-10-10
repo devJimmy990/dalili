@@ -7,6 +7,7 @@ catalogue, scan a book, and get walked to its shelf with indoor navigation.
 dalili/
 ├─ backend/   Dalili API — Express + Prisma + PostgreSQL (Neon)
 ├─ mobile/    Flutter app (Android / iOS)
+├─ web/       React page shown for a shared book link when the app is not installed
 └─ docs/      Notes, and the retired Google Apps Script backend
 ```
 

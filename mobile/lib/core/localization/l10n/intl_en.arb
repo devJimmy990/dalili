@@ -43,7 +43,6 @@
   "bookLanguage": "Language",
   "classification": "Classification",
   "scanInstruction": "Align the barcode within the frame",
-  "bookRecognized": "Book recognized!",
   "pointCameraAtBook": "Point camera at a book barcode",
   "scanHintBottom": "Hold steady for best results",
   "author": "Author",
@@ -62,7 +61,6 @@
   "articlePages": "Pages",
   "articleIssn": "ISSN",
   "shelfLocation": "Location",
-  "viewDetails": "View Details",
   "scanAgain": "Scan Again",
   "bookNotFoundDesc": "This book was not found in the database",
   "navSelectDestinationHint": "Select where you want to go",
@@ -111,5 +109,11 @@
   "navHeightNotSet": "Not set — using an average step of 0.75 m",
   "navHeightClear": "Use the average",
   "bibid": "BibID",
-  "bookNotFoundGn": "This book was not found in the database, GN is: {value}"
+  "bookNotFoundGn": "This book was not found in the database, GN is: {value}",
+  "shareBook": "Share this book",
+  "shareIntro": "Found this in the Dalili library:",
+  "bibidCopied": "BibID copied",
+  "copyBibid": "Copy BibID",
+  "linkBookNotFound": "This link points to a book that is not in the library",
+  "linkOpenFailed": "Could not open the shared book. Check your connection and try again."
 }

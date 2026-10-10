@@ -193,10 +193,10 @@ class _ArNavigationScreenState extends State<ArNavigationScreen>
       _confirmExit(context);
     },
     child: Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.colors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: context.colors.surface,
+        foregroundColor: context.colors.onSurface,
         title: Text(AppLocalizations.navArNavigationTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -289,8 +289,8 @@ class _ArNavigationScreenState extends State<ArNavigationScreen>
 
   Widget _buildBody() {
     if (_initializing) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+      return Center(
+        child: CircularProgressIndicator(color: context.colors.secondary),
       );
     }
 
@@ -301,8 +301,8 @@ class _ArNavigationScreenState extends State<ArNavigationScreen>
     final controller = _controller;
 
     if (controller == null || !controller.value.isInitialized) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+      return Center(
+        child: CircularProgressIndicator(color: context.colors.secondary),
       );
     }
 
@@ -420,7 +420,8 @@ class _InstructionCard extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
     decoration: BoxDecoration(
-      color: Colors.black.withValues(alpha: 0.6),
+      color: context.cameraPanel,
+      border: Border.all(color: context.colors.outlineVariant),
       borderRadius: BorderRadius.circular(16),
     ),
     child: Column(
@@ -429,8 +430,8 @@ class _InstructionCard extends StatelessWidget {
       children: [
         Text(
           message,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.colors.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -465,9 +466,9 @@ class _DestinationPanel extends StatelessWidget {
       width: 140,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: theme.hero.withValues(alpha: 0.88),
+        color: context.cameraPanel,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.onHero.withValues(alpha: 0.18)),
+        border: Border.all(color: context.colors.outlineVariant),
       ),
       child: Column(mainAxisSize: MainAxisSize.min, children: children),
     );
@@ -484,7 +485,7 @@ class _DestinationPanel extends StatelessWidget {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: theme.onHero,
+                  color: context.colors.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   height: 1.2,
@@ -495,10 +496,7 @@ class _DestinationPanel extends StatelessWidget {
               Text(
                 shelfLabel!,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: theme.onHero.withValues(alpha: 0.8),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: theme.onSurfaceVariant, fontSize: 14),
               ),
             ],
           ]),
@@ -508,7 +506,7 @@ class _DestinationPanel extends StatelessWidget {
           Text(
             remainingMeters.round().toString(),
             style: TextStyle(
-              color: theme.onHero,
+              color: context.colors.onSurface,
               fontSize: 26,
               fontWeight: FontWeight.bold,
               height: 1.1,
@@ -516,10 +514,7 @@ class _DestinationPanel extends StatelessWidget {
           ),
           Text(
             AppLocalizations.navMetersUnit,
-            style: TextStyle(
-              color: theme.onHero.withValues(alpha: 0.8),
-              fontSize: 14,
-            ),
+            style: TextStyle(color: theme.onSurfaceVariant, fontSize: 14),
           ),
         ]),
       ],
@@ -543,18 +538,18 @@ class _DirectionArrow extends StatelessWidget {
       height: 96,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.black.withValues(alpha: 0.35),
+        color: context.cameraPanel.withValues(alpha: 0.6),
         boxShadow: [
           BoxShadow(
-            color: Colors.blueAccent.withValues(alpha: 0.55),
+            color: context.colors.secondary.withValues(alpha: 0.55),
             blurRadius: 24,
             spreadRadius: 2,
           ),
         ],
       ),
-      child: const Icon(
+      child: Icon(
         Icons.navigation_rounded,
-        color: Colors.blueAccent,
+        color: context.colors.secondary,
         size: 64,
       ),
     ),
@@ -570,7 +565,8 @@ class _ArrivedCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
-      color: Colors.black.withValues(alpha: 0.7),
+      color: context.cameraPanel,
+      border: Border.all(color: context.colors.outlineVariant),
       borderRadius: BorderRadius.circular(16),
     ),
     child: Column(
@@ -578,8 +574,8 @@ class _ArrivedCard extends StatelessWidget {
       children: [
         Text(
           AppLocalizations.navArrivedMessage,
-          style: const TextStyle(
-            color: Colors.greenAccent,
+          style: TextStyle(
+            color: context.appTheme.success,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -605,7 +601,7 @@ class _ErrorView extends StatelessWidget {
     // Opaque background: this view is also used as an overlay on top of
     // the live CameraPreview (sensor-permission error case), where the
     // feed behind it must not show through.
-    color: Colors.black,
+    color: context.colors.surface,
     child: Center(
       // Platform exceptions can run to dozens of lines; scroll instead of
       // overflowing the screen, and cap what is shown.
@@ -614,9 +610,9 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.camera_alt_outlined,
-              color: Colors.white54,
+              color: context.appTheme.onSurfaceVariant,
               size: 48,
             ),
             const SizedBox(height: 16),
@@ -625,7 +621,7 @@ class _ErrorView extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 8,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(color: context.appTheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
             ElevatedButton(

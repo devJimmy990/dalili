@@ -40,7 +40,28 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
+            <!-- Shared book links: https://<host>/dalili/<name>-<bibid>.
+                 autoVerify makes Android check the host's assetlinks.json and,
+                 when it matches this app's signing key, open the link here
+                 instead of in the browser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="${linkHost}"
+                    android:pathPrefix="/dalili/"/>
+            </intent-filter>
+
         </activity>
+
+        <!-- Links are read by the app_links plugin. Flutter's own deep-link
+             handling would also try to route "/dalili/…" as a screen name and
+             fail with "unknown route", so it is switched off. -->
+        <meta-data
+            android:name="flutter_deeplinking_enabled"
+            android:value="false"/>
 
         <meta-data
             android:name="flutterEmbedding"

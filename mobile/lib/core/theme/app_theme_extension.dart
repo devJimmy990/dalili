@@ -13,6 +13,7 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
     required this.onAccent,
     required this.hero,
     required this.onHero,
+    required this.success,
     required this.radiusSm,
     required this.radiusMd,
     required this.radiusLg,
@@ -41,6 +42,11 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
   final Color hero;
   final Color onHero;
 
+  /// Positive confirmation ("you have arrived"). A fixed light green would
+  /// vanish on the light theme and a dark one on the dark theme, so each
+  /// theme carries its own.
+  final Color success;
+
   final double radiusSm;
   final double radiusMd;
   final double radiusLg;
@@ -60,6 +66,7 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
     Color? onAccent,
     Color? hero,
     Color? onHero,
+    Color? success,
     double? radiusSm,
     double? radiusMd,
     double? radiusLg,
@@ -77,6 +84,7 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
     onAccent: onAccent ?? this.onAccent,
     hero: hero ?? this.hero,
     onHero: onHero ?? this.onHero,
+    success: success ?? this.success,
     radiusSm: radiusSm ?? this.radiusSm,
     radiusMd: radiusMd ?? this.radiusMd,
     radiusLg: radiusLg ?? this.radiusLg,
@@ -125,6 +133,7 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
       onAccent: Color.lerp(onAccent, other.onAccent, t)!,
       hero: Color.lerp(hero, other.hero, t)!,
       onHero: Color.lerp(onHero, other.onHero, t)!,
+      success: Color.lerp(success, other.success, t)!,
       radiusSm: radiusSm,
       radiusMd: radiusMd,
       radiusLg: radiusLg,
@@ -135,6 +144,12 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
 }
 
 extension AppThemeX on BuildContext {
+  /// A panel that floats over a live camera feed: the theme's own surface,
+  /// mostly opaque so its text stays readable whatever the camera happens to
+  /// be pointing at — and light in the light theme, dark in the dark one.
+  Color get cameraPanel =>
+      Theme.of(this).colorScheme.surface.withValues(alpha: 0.92);
+
   AppThemeExtension get appTheme =>
       Theme.of(this).extension<AppThemeExtension>()!;
   ColorScheme get colors => Theme.of(this).colorScheme;

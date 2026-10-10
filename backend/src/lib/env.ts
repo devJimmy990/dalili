@@ -9,6 +9,14 @@ const schema = z.object({
   CORS_ORIGIN: z.string().default('*'),
   /// Default page size for paginated endpoints.
   PAGE_SIZE: z.coerce.number().int().positive().max(100).default(20),
+  /// Where people without the app land when they open a shared book link
+  /// (the React page, e.g. https://dalili.vercel.app). Empty: no redirect.
+  LANDING_URL: z.string().default(''),
+  /// SHA-256 fingerprint(s) of the key the Android app is signed with,
+  /// comma-separated. They let Android verify that this host really belongs
+  /// to the app, so a tapped book link opens it instead of the browser.
+  ANDROID_SHA256: z.string().default(''),
+  ANDROID_PACKAGE: z.string().default('com.example.dalili'),
 });
 
 const parsed = schema.safeParse(process.env);

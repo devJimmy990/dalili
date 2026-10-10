@@ -191,3 +191,19 @@ If you create the service through the dashboard rather than the blueprint:
 `--include=dev` is not optional. Render sets `NODE_ENV=production`, which
 makes npm skip devDependencies — and TypeScript plus every `@types/*` package
 lives there, so the build fails on missing type declarations without it.
+
+## Shared book links
+
+`https://<this host>/dalili/<book-name>-<bibid>` is what the app shares. Two
+things on this host make it work:
+
+- **`GET /.well-known/assetlinks.json`** — how Android learns that this host
+  belongs to the app, so a tapped link opens the app instead of the browser. It
+  lists the signing-key fingerprints in `ANDROID_SHA256` (comma-separated). The
+  value in `.env.example` is the *debug* key; add the release key's too.
+- **`GET /dalili/:slug`** — for someone *without* the app. With `LANDING_URL`
+  set it redirects to the React page (`web/`), keeping the path so the page can
+  show the same book. Unset, it is an ordinary 404.
+
+Deploying these needs the three variables set on Render: `ANDROID_SHA256`,
+`ANDROID_PACKAGE` and `LANDING_URL`.

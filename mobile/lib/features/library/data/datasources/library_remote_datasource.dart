@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 abstract class LibraryRemoteDataSource {
   Future<List<DepartmentModel>> getDepartments();
   Future<BookPage> getAllBooks({int page = 1});
+  Future<BookModel?> getBookById(String bibid);
   Future<BookModel?> getBookByAccessionNumber(String number);
   Future<List<BookModel>> searchBooks(String query);
   Future<BookPage> getBooksByDepartment(String departmentId, {int page = 1});
@@ -63,6 +64,20 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
   @override
   Future<BookPage> getAllBooks({int page = 1}) async =>
       _page(await _get(ApiConstants.books, {ApiConstants.paramPage: page}));
+
+  @override
+  Future<BookModel?> getBookById(String bibid) async {
+    try {
+      final payload = await _get(ApiConstants.book(bibid));
+      final book = payload.optMap('book');
+      return book == null ? null : BookModel.fromJson(book);
+    } on NotFoundException catch (e) {
+      // Same rule as a scan: only an explicit "no such book" is a missing
+      // book; any other 404 is a server problem and must surface as one.
+      if (e.isBookNotFound) return null;
+      rethrow;
+    }
+  }
 
   @override
   Future<BookModel?> getBookByAccessionNumber(String number) async {

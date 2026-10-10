@@ -43,7 +43,6 @@
   "bookLanguage": "اللغة",
   "classification": "التصنيف",
   "scanInstruction": "ضع الباركود داخل الإطار",
-  "bookRecognized": "تم التعرف على الكتاب!",
   "pointCameraAtBook": "وجّه الكاميرا نحو باركود الكتاب",
   "scanHintBottom": "حافظ على الثبات للحصول على أفضل النتائج",
   "author": "المؤلف",
@@ -62,7 +61,6 @@
   "articlePages": "الصفحات",
   "articleIssn": "الترقيم الدولي",
   "shelfLocation": "الموقع",
-  "viewDetails": "عرض التفاصيل",
   "scanAgain": "مسح مجدداً",
   "bookNotFoundDesc": "لم يُعثر على هذا الكتاب في قاعدة البيانات",
   "navSelectDestinationHint": "اختر وجهتك",
@@ -111,5 +109,11 @@
   "navHeightNotSet": "غير محدد — بنستخدم خطوة متوسطة 0.75 متر",
   "navHeightClear": "استخدم المتوسط",
   "bibid": "رقم BibID",
-  "bookNotFoundGn": "لم يُعثر على هذا الكتاب في قاعدة البيانات، الرقم العام: {value}"
+  "bookNotFoundGn": "لم يُعثر على هذا الكتاب في قاعدة البيانات، الرقم العام: {value}",
+  "shareBook": "مشاركة الكتاب",
+  "shareIntro": "لقيت الكتاب ده في مكتبة دليلي:",
+  "bibidCopied": "تم نسخ الـ BibID",
+  "copyBibid": "نسخ الـ BibID",
+  "linkBookNotFound": "الرابط ده مرتبط بكتاب مش موجود في المكتبة",
+  "linkOpenFailed": "تعذّر فتح الكتاب المشارك. تأكد من الاتصال وحاول مرة أخرى."
 }

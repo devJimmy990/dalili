@@ -4,30 +4,7 @@ import 'package:dalili/core/theme/app_theme_extension.dart';
 import 'package:dalili/core/utils/display.dart';
 import 'package:dalili/features/library/domain/entities/book.dart';
 import 'package:flutter/material.dart';
-
-/// The book's catalogue data as two labelled groups — what was published,
-/// then where to find it — for the dark detail cards.
-///
-/// Colors come from [AppThemeExtension.onHero] over a [AppThemeExtension.hero]
-/// panel (see [bookInfoPanelColor]), never from whatever sits behind the
-/// card, so the text stays readable over any cover image or camera frame.
-class BookInfoRows extends StatelessWidget {
-  const BookInfoRows({super.key, required this.book});
-
-  final Book book;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      BookPublishingRows(book: book),
-      Divider(
-        color: context.appTheme.onHero.withValues(alpha: .24),
-        height: AppSpacing.stackLg,
-      ),
-      BookFindItRows(book: book),
-    ],
-  );
-}
+import 'package:flutter/services.dart';
 
 /// Where the book physically is. Split out of [BookInfoRows] so the detail
 /// screen can put it first, above the publishing data — someone standing in
@@ -53,7 +30,12 @@ class BookFindItRows extends StatelessWidget {
         emphasized: true,
       ),
       BookInfoRow(AppLocalizations.callNumber, book.callNumber, code: true),
-      BookInfoRow(AppLocalizations.bibid, book.id, code: true),
+      BookInfoRow(
+        AppLocalizations.bibid,
+        book.id,
+        code: true,
+        trailing: _CopyButton(text: book.id),
+      ),
       BookInfoRow(AppLocalizations.isbn, book.isbn, code: true),
     ],
   );
@@ -77,8 +59,11 @@ class BookPublishingRows extends StatelessWidget {
   );
 }
 
-/// Solid panel color for cards that hold [BookInfoRows].
-Color bookInfoPanelColor(BuildContext context) => context.appTheme.hero;
+/// Solid panel colour for the cards that hold book rows. Follows the theme: a
+/// light card in the light theme, a dark one in the dark theme, with
+/// [BookInfoRow]'s text drawn from the matching on-surface colours.
+Color bookInfoPanelColor(BuildContext context) =>
+    context.appTheme.surfaceContainerLow;
 
 /// A label/value line that renders nothing when the catalogue has no
 /// value — most book fields are optional, and a blank row reads as a bug.
@@ -90,6 +75,7 @@ class BookInfoRow extends StatelessWidget {
     this.icon,
     this.code = false,
     this.emphasized = false,
+    this.trailing,
   });
 
   final String label;
@@ -103,10 +89,14 @@ class BookInfoRow extends StatelessWidget {
   /// The location line is what a visitor came for — it gets the accent color.
   final bool emphasized;
 
+  /// An action at the end of the row, such as a copy button.
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) {
     if (!hasText(value)) return const SizedBox.shrink();
-    final onPanel = context.appTheme.onHero;
+    final onPanel = context.colors.onSurface;
+    final labelColor = context.appTheme.onSurfaceVariant;
 
     final text = Text(
       value!,
@@ -129,12 +119,13 @@ class BookInfoRow extends StatelessWidget {
             child: Row(
               spacing: 4,
               children: [
-                if (icon != null) Icon(icon, size: 16, color: onPanel),
+                if (icon != null)
+                  Icon(icon, size: 16, color: context.colors.secondary),
                 Flexible(
                   child: Text(
                     label,
                     style: context.textStyles.labelLarge?.copyWith(
-                      color: onPanel.withValues(alpha: .72),
+                      color: labelColor,
                     ),
                   ),
                 ),
@@ -154,8 +145,43 @@ class BookInfoRow extends StatelessWidget {
                   : text,
             ),
           ),
+          ?trailing,
         ],
       ),
     );
   }
+}
+
+/// Copies [text] and says so. Compact, so it fits at the end of a row without
+/// making that row taller than its neighbours.
+class _CopyButton extends StatelessWidget {
+  const _CopyButton({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 32,
+    height: 24,
+    child: IconButton(
+      tooltip: AppLocalizations.copyBibid,
+      padding: EdgeInsets.zero,
+      iconSize: 18,
+      visualDensity: VisualDensity.compact,
+      color: context.colors.secondary,
+      icon: const Icon(Icons.copy_rounded),
+      onPressed: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        await Clipboard.setData(ClipboardData(text: text));
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.bibidCopied),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+      },
+    ),
+  );
 }

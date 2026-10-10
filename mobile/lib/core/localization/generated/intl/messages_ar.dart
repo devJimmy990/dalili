@@ -56,6 +56,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "articleVolume": MessageLookupByLibrary.simpleMessage("المجلد"),
     "author": MessageLookupByLibrary.simpleMessage("المؤلف"),
     "bibid": MessageLookupByLibrary.simpleMessage("رقم BibID"),
+    "bibidCopied": MessageLookupByLibrary.simpleMessage("تم نسخ الـ BibID"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("اللغة"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage(
       "لم يتم العثور على الكتاب",
@@ -64,13 +65,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "لم يُعثر على هذا الكتاب في قاعدة البيانات",
     ),
     "bookNotFoundGn": m0,
-    "bookRecognized": MessageLookupByLibrary.simpleMessage(
-      "تم التعرف على الكتاب!",
-    ),
     "callNumber": MessageLookupByLibrary.simpleMessage("رقم التصنيف"),
     "classification": MessageLookupByLibrary.simpleMessage("التصنيف"),
     "comingSoon": MessageLookupByLibrary.simpleMessage("قريباً"),
     "continueBtn": MessageLookupByLibrary.simpleMessage("متابعة"),
+    "copyBibid": MessageLookupByLibrary.simpleMessage("نسخ الـ BibID"),
     "darkTheme": MessageLookupByLibrary.simpleMessage("داكن"),
     "department": MessageLookupByLibrary.simpleMessage("القسم"),
     "departments": MessageLookupByLibrary.simpleMessage("الأقسام"),
@@ -85,6 +84,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "isbn": MessageLookupByLibrary.simpleMessage("الترقيم الدولي"),
     "language": MessageLookupByLibrary.simpleMessage("اللغة"),
     "lightTheme": MessageLookupByLibrary.simpleMessage("فاتح"),
+    "linkBookNotFound": MessageLookupByLibrary.simpleMessage(
+      "الرابط ده مرتبط بكتاب مش موجود في المكتبة",
+    ),
+    "linkOpenFailed": MessageLookupByLibrary.simpleMessage(
+      "تعذّر فتح الكتاب المشارك. تأكد من الاتصال وحاول مرة أخرى.",
+    ),
     "loading": MessageLookupByLibrary.simpleMessage("جاري التحميل..."),
     "navAlreadyAtDestination": MessageLookupByLibrary.simpleMessage(
       "أنت بالفعل في هذا القسم",
@@ -209,6 +214,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "selectLanguage": MessageLookupByLibrary.simpleMessage("اختر اللغة"),
     "settings": MessageLookupByLibrary.simpleMessage("الإعدادات"),
+    "shareBook": MessageLookupByLibrary.simpleMessage("مشاركة الكتاب"),
+    "shareIntro": MessageLookupByLibrary.simpleMessage(
+      "لقيت الكتاب ده في مكتبة دليلي:",
+    ),
     "shelf": MessageLookupByLibrary.simpleMessage("الرف"),
     "shelfLocation": MessageLookupByLibrary.simpleMessage("الموقع"),
     "skip": MessageLookupByLibrary.simpleMessage("تخطي"),
@@ -216,7 +225,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemTheme": MessageLookupByLibrary.simpleMessage("حسب النظام"),
     "theme": MessageLookupByLibrary.simpleMessage("المظهر"),
     "viewAll": MessageLookupByLibrary.simpleMessage("عرض الكل"),
-    "viewDetails": MessageLookupByLibrary.simpleMessage("عرض التفاصيل"),
     "welcomeSubtitle": MessageLookupByLibrary.simpleMessage(
       "مساعدك الذكي في المكتبة",
     ),

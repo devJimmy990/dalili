@@ -6,6 +6,11 @@ abstract class LibraryRepository {
   Future<List<Department>> getDepartments();
   Future<BookPage> getAllBooks({int page = 1});
 
+  /// The book with this BibID, or null. Used by shared links and favorites;
+  /// a barcode scan never goes through here (see
+  /// [getBookByAccessionNumber]).
+  Future<Book?> getBookById(String bibid);
+
   /// The book whose barcode label carries [number] (its "الرقم العام"), or
   /// null. This is a different number from the BibID, which a scan never
   /// matches.

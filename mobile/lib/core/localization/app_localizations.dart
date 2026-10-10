@@ -46,7 +46,6 @@ class AppLocalizations {
   static String get bookLanguage => S.current.bookLanguage;
   static String get classification => S.current.classification;
   static String get scanInstruction => S.current.scanInstruction;
-  static String get bookRecognized => S.current.bookRecognized;
   static String get pointCameraAtBook => S.current.pointCameraAtBook;
   static String get scanHintBottom => S.current.scanHintBottom;
   static String get author => S.current.author;
@@ -65,7 +64,6 @@ class AppLocalizations {
   static String get articlePages => S.current.articlePages;
   static String get articleIssn => S.current.articleIssn;
   static String get shelfLocation => S.current.shelfLocation;
-  static String get viewDetails => S.current.viewDetails;
   static String get scanAgain => S.current.scanAgain;
   static String get bookNotFoundDesc => S.current.bookNotFoundDesc;
   static String bookNotFoundGn(String value) => S.current.bookNotFoundGn(value);
@@ -133,4 +131,10 @@ class AppLocalizations {
   static String get navHeightNotSet => S.current.navHeightNotSet;
   static String get navHeightClear => S.current.navHeightClear;
   static String get bibid => S.current.bibid;
+  static String get shareBook => S.current.shareBook;
+  static String get shareIntro => S.current.shareIntro;
+  static String get bibidCopied => S.current.bibidCopied;
+  static String get copyBibid => S.current.copyBibid;
+  static String get linkBookNotFound => S.current.linkBookNotFound;
+  static String get linkOpenFailed => S.current.linkOpenFailed;
 }

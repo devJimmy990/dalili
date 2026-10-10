@@ -5,6 +5,7 @@ import { env } from './lib/env.js';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 import { langMiddleware } from './middleware/lang.js';
 import { apiRouter } from './routes/index.js';
+import { linksRouter } from './routes/links.routes.js';
 
 export function createApp() {
   const app = express();
@@ -27,6 +28,7 @@ export function createApp() {
   });
 
   app.use('/api', apiRouter);
+  app.use(linksRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

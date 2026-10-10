@@ -364,16 +364,6 @@ class S {
     );
   }
 
-  /// `Book recognized!`
-  String get bookRecognized {
-    return Intl.message(
-      'Book recognized!',
-      name: 'bookRecognized',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Point camera at a book barcode`
   String get pointCameraAtBook {
     return Intl.message(
@@ -492,16 +482,6 @@ class S {
   /// `Location`
   String get shelfLocation {
     return Intl.message('Location', name: 'shelfLocation', desc: '', args: []);
-  }
-
-  /// `View Details`
-  String get viewDetails {
-    return Intl.message(
-      'View Details',
-      name: 'viewDetails',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Scan Again`
@@ -946,6 +926,61 @@ class S {
       name: 'bookNotFoundGn',
       desc: '',
       args: [value],
+    );
+  }
+
+  /// `Share this book`
+  String get shareBook {
+    return Intl.message(
+      'Share this book',
+      name: 'shareBook',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Found this in the Dalili library:`
+  String get shareIntro {
+    return Intl.message(
+      'Found this in the Dalili library:',
+      name: 'shareIntro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `BibID copied`
+  String get bibidCopied {
+    return Intl.message(
+      'BibID copied',
+      name: 'bibidCopied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy BibID`
+  String get copyBibid {
+    return Intl.message('Copy BibID', name: 'copyBibid', desc: '', args: []);
+  }
+
+  /// `This link points to a book that is not in the library`
+  String get linkBookNotFound {
+    return Intl.message(
+      'This link points to a book that is not in the library',
+      name: 'linkBookNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not open the shared book. Check your connection and try again.`
+  String get linkOpenFailed {
+    return Intl.message(
+      'Could not open the shared book. Check your connection and try again.',
+      name: 'linkOpenFailed',
+      desc: '',
+      args: [],
     );
   }
 }

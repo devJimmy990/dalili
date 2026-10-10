@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/dalili/:path*", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/assetlinks.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    }
+  ]
+}
