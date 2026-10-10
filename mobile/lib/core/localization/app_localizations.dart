@@ -68,6 +68,7 @@ class AppLocalizations {
   static String get viewDetails => S.current.viewDetails;
   static String get scanAgain => S.current.scanAgain;
   static String get bookNotFoundDesc => S.current.bookNotFoundDesc;
+  static String bookNotFoundGn(String value) => S.current.bookNotFoundGn(value);
 
   static String get navSelectDestinationHint =>
       S.current.navSelectDestinationHint;

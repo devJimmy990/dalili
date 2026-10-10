@@ -17,11 +17,21 @@ class ScannerCubit extends HydratedCubit<ScannerState>
   ///
   /// A barcode that decodes to nothing is not a scan: it is ignored rather
   /// than being answered with some default book.
+  ///
+  /// Detections count only while the scanner is actually scanning. The camera
+  /// keeps reporting the same barcode for as long as it is in view, and while
+  /// a result (or an error) is on screen each of those would otherwise start
+  /// a new lookup and knock it back to "loading".
   Future<void> onBarcodeDetected(String? rawValue) async {
+    if (state.status != ScannerStatus.scanning) return;
+
     final number = rawValue?.trim();
     if (number == null || number.isEmpty) return;
 
-    await _lookUp(() => _repository.getBookByAccessionNumber(number));
+    await _lookUp(
+      () => _repository.getBookByAccessionNumber(number),
+      scannedCode: number,
+    );
   }
 
   /// Development aid behind the scanner's debug-only button: opens the first
@@ -33,11 +43,18 @@ class ScannerCubit extends HydratedCubit<ScannerState>
     return page.books.firstOrNull;
   });
 
-  Future<void> _lookUp(Future<Book?> Function() find) async {
+  Future<void> _lookUp(
+    Future<Book?> Function() find, {
+    String scannedCode = '',
+  }) async {
     if (_isProcessing) return;
     _isProcessing = true;
 
-    emit(state.copyWith(status: ScannerStatus.loading));
+    // Set (or cleared) up front, so a code from an earlier scan can never be
+    // shown against this one.
+    emit(
+      state.copyWith(status: ScannerStatus.loading, scannedCode: scannedCode),
+    );
     try {
       final book = await find();
       if (book == null) {

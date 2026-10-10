@@ -20,24 +20,27 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(error) => "Couldn\'t start the camera: ${error}";
+  static String m0(value) =>
+      "This book was not found in the database, GN is: ${value}";
 
-  static String m1(name) => "Destination: ${name}";
+  static String m1(error) => "Couldn\'t start the camera: ${error}";
 
-  static String m2(value) => "Heading: ${value}°";
+  static String m2(name) => "Destination: ${name}";
 
-  static String m3(height, stride) =>
+  static String m3(value) => "Heading: ${value}°";
+
+  static String m4(height, stride) =>
       "${height} cm · about ${stride} m per step";
 
-  static String m4(distance) => "Continue straight for ${distance} m";
+  static String m5(distance) => "Continue straight for ${distance} m";
 
-  static String m5(distance) => "Start walking for ${distance} m";
+  static String m6(distance) => "Start walking for ${distance} m";
 
-  static String m6(distance) => "${distance} m remaining";
+  static String m7(distance) => "${distance} m remaining";
 
-  static String m7(value) => "Target difference: ${value}°";
+  static String m8(value) => "Target difference: ${value}°";
 
-  static String m8(code) => "Unrecognized QR code: ${code}";
+  static String m9(code) => "Unrecognized QR code: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -58,6 +61,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "bookNotFoundDesc": MessageLookupByLibrary.simpleMessage(
       "This book was not found in the database",
     ),
+    "bookNotFoundGn": m0,
     "bookRecognized": MessageLookupByLibrary.simpleMessage("Book recognized!"),
     "callNumber": MessageLookupByLibrary.simpleMessage("Call Number"),
     "classification": MessageLookupByLibrary.simpleMessage("Classification"),
@@ -90,7 +94,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navCameraPermissionRequired": MessageLookupByLibrary.simpleMessage(
       "Camera permission is required for AR navigation. Please grant it in system settings.",
     ),
-    "navCameraStartError": m0,
+    "navCameraStartError": m1,
     "navCancelNavigationBody": MessageLookupByLibrary.simpleMessage(
       "Leaving now will cancel your current trip. You\'ll need to select a destination and scan a QR code again to restart.",
     ),
@@ -98,13 +102,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Cancel navigation?",
     ),
     "navCancelTrip": MessageLookupByLibrary.simpleMessage("Cancel trip"),
-    "navDestinationLabel": m1,
+    "navDestinationLabel": m2,
     "navDestinationUnavailable": MessageLookupByLibrary.simpleMessage(
       "This section is not on the library map yet",
     ),
     "navDone": MessageLookupByLibrary.simpleMessage("Done"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("Go straight"),
-    "navHeadingLabel": m2,
+    "navHeadingLabel": m3,
     "navHeightClear": MessageLookupByLibrary.simpleMessage("Use the average"),
     "navHeightHint": MessageLookupByLibrary.simpleMessage(
       "Indoor directions count your steps. Your height sets how long a step is, so the remaining distance stays right.",
@@ -113,9 +117,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "navHeightNotSet": MessageLookupByLibrary.simpleMessage(
       "Not set — using an average step of 0.75 m",
     ),
-    "navHeightValue": m3,
-    "navInstructionForward": m4,
-    "navInstructionStart": m5,
+    "navHeightValue": m4,
+    "navInstructionForward": m5,
+    "navInstructionStart": m6,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("Keep going"),
     "navMetersUnit": MessageLookupByLibrary.simpleMessage("m"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
@@ -127,7 +131,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navNoRouteFound": MessageLookupByLibrary.simpleMessage(
       "No walking route to this section could be found",
     ),
-    "navRemainingDistance": m6,
+    "navRemainingDistance": m7,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("Retry"),
     "navRouteFailed": MessageLookupByLibrary.simpleMessage(
       "Navigation could not be started. Please try again.",
@@ -156,11 +160,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "Bear right slightly",
     ),
-    "navTargetDifferenceLabel": m7,
+    "navTargetDifferenceLabel": m8,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("Turn left"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("Turn right"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("Turn around"),
-    "navUnrecognizedQr": m8,
+    "navUnrecognizedQr": m9,
     "navWalkingAccuracy": MessageLookupByLibrary.simpleMessage(
       "Walking accuracy",
     ),

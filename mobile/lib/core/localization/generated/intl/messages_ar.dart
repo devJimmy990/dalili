@@ -20,24 +20,27 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ar';
 
-  static String m0(error) => "تعذر تشغيل الكاميرا: ${error}";
+  static String m0(value) =>
+      "لم يُعثر على هذا الكتاب في قاعدة البيانات، الرقم العام: ${value}";
 
-  static String m1(name) => "الوجهة: ${name}";
+  static String m1(error) => "تعذر تشغيل الكاميرا: ${error}";
 
-  static String m2(value) => "الاتجاه: ${value}°";
+  static String m2(name) => "الوجهة: ${name}";
 
-  static String m3(height, stride) =>
+  static String m3(value) => "الاتجاه: ${value}°";
+
+  static String m4(height, stride) =>
       "${height} سم · حوالي ${stride} متر لكل خطوة";
 
-  static String m4(distance) => "استمر مستقيمًا ${distance} متر";
+  static String m5(distance) => "استمر مستقيمًا ${distance} متر";
 
-  static String m5(distance) => "ابدأ السير لمسافة ${distance} متر";
+  static String m6(distance) => "ابدأ السير لمسافة ${distance} متر";
 
-  static String m6(distance) => "متبقي ${distance} م";
+  static String m7(distance) => "متبقي ${distance} م";
 
-  static String m7(value) => "فرق الاتجاه: ${value}°";
+  static String m8(value) => "فرق الاتجاه: ${value}°";
 
-  static String m8(code) => "كود QR غير معروف: ${code}";
+  static String m9(code) => "كود QR غير معروف: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -60,6 +63,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "bookNotFoundDesc": MessageLookupByLibrary.simpleMessage(
       "لم يُعثر على هذا الكتاب في قاعدة البيانات",
     ),
+    "bookNotFoundGn": m0,
     "bookRecognized": MessageLookupByLibrary.simpleMessage(
       "تم التعرف على الكتاب!",
     ),
@@ -94,7 +98,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navCameraPermissionRequired": MessageLookupByLibrary.simpleMessage(
       "لازم صلاحية الكاميرا عشان تشتغل الملاحة بالواقع المعزز. من فضلك فعّلها من إعدادات النظام.",
     ),
-    "navCameraStartError": m0,
+    "navCameraStartError": m1,
     "navCancelNavigationBody": MessageLookupByLibrary.simpleMessage(
       "الخروج دلوقتي هيلغي رحلتك الحالية. هتحتاج تختار وجهة وتمسح QR تاني عشان تبدأ من جديد.",
     ),
@@ -102,13 +106,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "إلغاء التنقل؟",
     ),
     "navCancelTrip": MessageLookupByLibrary.simpleMessage("ألغِ الرحلة"),
-    "navDestinationLabel": m1,
+    "navDestinationLabel": m2,
     "navDestinationUnavailable": MessageLookupByLibrary.simpleMessage(
       "هذا القسم غير موجود على خريطة المكتبة بعد",
     ),
     "navDone": MessageLookupByLibrary.simpleMessage("تم"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("استمر للأمام"),
-    "navHeadingLabel": m2,
+    "navHeadingLabel": m3,
     "navHeightClear": MessageLookupByLibrary.simpleMessage("استخدم المتوسط"),
     "navHeightHint": MessageLookupByLibrary.simpleMessage(
       "التنقل الداخلي بيعدّ خطواتك. طولك بيحدّد طول الخطوة، عشان المسافة المتبقية تفضل مظبوطة.",
@@ -117,9 +121,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "navHeightNotSet": MessageLookupByLibrary.simpleMessage(
       "غير محدد — بنستخدم خطوة متوسطة 0.75 متر",
     ),
-    "navHeightValue": m3,
-    "navInstructionForward": m4,
-    "navInstructionStart": m5,
+    "navHeightValue": m4,
+    "navInstructionForward": m5,
+    "navInstructionStart": m6,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("أكمل"),
     "navMetersUnit": MessageLookupByLibrary.simpleMessage("متر"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
@@ -131,7 +135,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navNoRouteFound": MessageLookupByLibrary.simpleMessage(
       "لا يوجد طريق مشي إلى هذا القسم",
     ),
-    "navRemainingDistance": m6,
+    "navRemainingDistance": m7,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("إعادة المحاولة"),
     "navRouteFailed": MessageLookupByLibrary.simpleMessage(
       "تعذّر بدء التنقل. حاول مرة أخرى.",
@@ -162,11 +166,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "انحرف قليلاً يميناً",
     ),
-    "navTargetDifferenceLabel": m7,
+    "navTargetDifferenceLabel": m8,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("لف يسار"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("لف يمين"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("استدر للخلف"),
-    "navUnrecognizedQr": m8,
+    "navUnrecognizedQr": m9,
     "navWalkingAccuracy": MessageLookupByLibrary.simpleMessage("دقة المشي"),
     "navigateToBook": MessageLookupByLibrary.simpleMessage("ودّيني للكتاب"),
     "navigation": MessageLookupByLibrary.simpleMessage("التنقل"),

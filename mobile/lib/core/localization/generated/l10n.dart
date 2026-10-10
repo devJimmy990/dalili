@@ -938,6 +938,16 @@ class S {
   String get bibid {
     return Intl.message('BibID', name: 'bibid', desc: '', args: []);
   }
+
+  /// `This book was not found in the database, GN is: {value}`
+  String bookNotFoundGn(Object value) {
+    return Intl.message(
+      'This book was not found in the database, GN is: $value',
+      name: 'bookNotFoundGn',
+      desc: '',
+      args: [value],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -110,5 +110,6 @@
   "navHeightValue": "{height} سم · حوالي {stride} متر لكل خطوة",
   "navHeightNotSet": "غير محدد — بنستخدم خطوة متوسطة 0.75 متر",
   "navHeightClear": "استخدم المتوسط",
-  "bibid": "رقم BibID"
+  "bibid": "رقم BibID",
+  "bookNotFoundGn": "لم يُعثر على هذا الكتاب في قاعدة البيانات، الرقم العام: {value}"
 }

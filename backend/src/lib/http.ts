@@ -4,14 +4,18 @@ import { msg } from './lang.js';
 
 // Every response is wrapped so clients can branch on one field:
 //   { "status": "success", "data": { ... } }
-//   { "status": "error",   "message": "..." }
+//   { "status": "error",   "message": "...", "code": "book_not_found" }
+//
+// `message` is localized prose for people; `code` is stable and for code. A
+// client must branch on `code`: both "no such book" and "no such route" are
+// a 404, and only one of them means the book is missing.
 
 export function sendSuccess<T>(res: Response, data: T, statusCode = 200): void {
   res.status(statusCode).json({ status: 'success', data });
 }
 
-export function sendError(res: Response, message: string, statusCode = 400): void {
-  res.status(statusCode).json({ status: 'error', message });
+export function sendError(res: Response, message: string, statusCode = 400, code?: string): void {
+  res.status(statusCode).json({ status: 'error', message, ...(code ? { code } : {}) });
 }
 
 /// An error the route raises on purpose; the handler turns it into a

@@ -70,10 +70,14 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
       final payload = await _get(ApiConstants.bookByAccession(number));
       final book = payload.optMap('book');
       return book == null ? null : BookModel.fromJson(book);
-    } on NotFoundException {
+    } on NotFoundException catch (e) {
       // An unknown number is an expected outcome — a label for a book that
-      // is no longer catalogued, or a barcode that is not ours at all.
-      return null;
+      // is no longer catalogued, or a barcode that is not ours at all. A 404
+      // for any other reason (the server has no such route) is not "no
+      // book": it is passed on so the reader sees an error, not a false
+      // "not in the database".
+      if (e.isBookNotFound) return null;
+      rethrow;
     }
   }
 

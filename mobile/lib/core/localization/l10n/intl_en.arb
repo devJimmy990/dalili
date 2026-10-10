@@ -110,5 +110,6 @@
   "navHeightValue": "{height} cm · about {stride} m per step",
   "navHeightNotSet": "Not set — using an average step of 0.75 m",
   "navHeightClear": "Use the average",
-  "bibid": "BibID"
+  "bibid": "BibID",
+  "bookNotFoundGn": "This book was not found in the database, GN is: {value}"
 }

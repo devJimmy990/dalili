@@ -42,33 +42,23 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) => BlocProvider<ScannerCubit>.value(
     value: _cubit,
-    child: BlocListener<ScannerCubit, ScannerState>(
-      listener: (context, state) {
-        if (state.status == ScannerStatus.error) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
-          _cubit.reset();
-        }
-      },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            MobileScanner(
-              controller: _cameraController,
-              onDetect: (capture) => _cubit.onBarcodeDetected(
-                capture.barcodes.firstOrNull?.rawValue,
-              ),
+    child: Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          MobileScanner(
+            controller: _cameraController,
+            onDetect: (capture) => _cubit.onBarcodeDetected(
+              capture.barcodes.firstOrNull?.rawValue,
             ),
-            const _CornerOverlay(),
-            BlocBuilder<ScannerCubit, ScannerState>(
-              builder: (context, state) => _buildStateLayer(context, state),
-            ),
-            _TopBar(cameraController: _cameraController),
-          ],
-        ),
+          ),
+          const _CornerOverlay(),
+          BlocBuilder<ScannerCubit, ScannerState>(
+            builder: (context, state) => _buildStateLayer(context, state),
+          ),
+          _TopBar(cameraController: _cameraController),
+        ],
       ),
     ),
   );
@@ -87,8 +77,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
           ),
           onReset: _cubit.reset,
         ),
-        ScannerStatus.notFound => _NotFoundOverlay(onReset: _cubit.reset),
-        ScannerStatus.error => const SizedBox.shrink(),
+        ScannerStatus.notFound => _NotFoundOverlay(
+          scannedCode: state.scannedCode,
+          onReset: _cubit.reset,
+        ),
+        ScannerStatus.error => _ErrorOverlay(
+          message: state.errorMessage,
+          onRetry: _cubit.reset,
+        ),
       };
 }
 
@@ -394,12 +390,85 @@ class _FoundDetailCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Error state
+// ---------------------------------------------------------------------------
+
+/// A lookup that failed for a reason other than "no such book" — the server
+/// unreachable, or too old to know the route. Kept on screen with a retry
+/// instead of flashing a snackbar, so it is not mistaken for the book being
+/// missing and cannot loop while the barcode is still in view.
+class _ErrorOverlay extends StatelessWidget {
+  const _ErrorOverlay({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    color: Colors.black87,
+    child: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.stackLg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.cloud_off_rounded,
+                size: 80,
+                color: Colors.white24,
+              ),
+              const SizedBox(height: AppSpacing.stackLg),
+              Text(
+                AppLocalizations.error,
+                style: context.textStyles.displaySmall?.copyWith(
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (message.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.stackSm),
+                Text(
+                  message,
+                  style: context.textStyles.bodyMedium?.copyWith(
+                    color: Colors.white54,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              const SizedBox(height: AppSpacing.stackLg),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: Text(AppLocalizations.retry),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.appTheme.accent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Not Found state
 // ---------------------------------------------------------------------------
 
 class _NotFoundOverlay extends StatelessWidget {
-  const _NotFoundOverlay({required this.onReset});
+  const _NotFoundOverlay({required this.scannedCode, required this.onReset});
 
+  /// What the barcode said; empty when there was no barcode to report.
+  final String scannedCode;
   final VoidCallback onReset;
 
   @override
@@ -427,7 +496,13 @@ class _NotFoundOverlay extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.stackSm),
               Text(
-                AppLocalizations.bookNotFoundDesc,
+                scannedCode.isEmpty
+                    ? AppLocalizations.bookNotFoundDesc
+                    // Isolated, so a code like "DLB-1415" keeps its order
+                    // inside an Arabic sentence instead of being reshuffled.
+                    : AppLocalizations.bookNotFoundGn(
+                        '\u2066$scannedCode\u2069',
+                      ),
                 style: context.textStyles.bodyMedium?.copyWith(
                   color: Colors.white54,
                 ),

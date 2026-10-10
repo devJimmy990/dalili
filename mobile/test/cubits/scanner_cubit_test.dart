@@ -111,6 +111,68 @@ void main() {
     expect(cubit.state.status, ScannerStatus.notFound);
   });
 
+  test('detections are ignored while a result is on screen', () async {
+    // The camera reports the same barcode for as long as it is in view. With
+    // the "not found" screen showing, each report used to restart the lookup
+    // and knock it back to loading.
+    await cubit.onBarcodeDetected('99999');
+    expect(cubit.state.status, ScannerStatus.notFound);
+    final asked = repository.askedFor.length;
+
+    await cubit.onBarcodeDetected('99999');
+    await cubit.onBarcodeDetected('1415');
+
+    expect(cubit.state.status, ScannerStatus.notFound);
+    expect(cubit.state.scannedCode, '99999');
+    expect(repository.askedFor, hasLength(asked));
+  });
+
+  test('scanning resumes after the screen is dismissed', () async {
+    await cubit.onBarcodeDetected('99999');
+    cubit.reset();
+
+    await cubit.onBarcodeDetected('1415');
+
+    expect(cubit.state.status, ScannerStatus.found);
+  });
+
+  test('a not-found scan keeps the number that was read', () async {
+    // The not-found screen shows it, so the book can be looked up by hand.
+    await cubit.onBarcodeDetected('  99999 ');
+
+    expect(cubit.state.status, ScannerStatus.notFound);
+    expect(cubit.state.scannedCode, '99999');
+  });
+
+  test('a BibID scanned as a label number is reported as read', () async {
+    // The reader sees exactly what was scanned, which is how they notice a
+    // BibID was scanned where a label number was expected.
+    await cubit.onBarcodeDetected('555001');
+
+    expect(cubit.state.status, ScannerStatus.notFound);
+    expect(cubit.state.scannedCode, '555001');
+  });
+
+  test('a number from an earlier scan never leaks into a later one', () async {
+    await cubit.onBarcodeDetected('99999');
+    expect(cubit.state.scannedCode, '99999');
+
+    cubit.reset(); // the reader taps "scan again"
+    await cubit.onBarcodeDetected('1415');
+    expect(cubit.state.status, ScannerStatus.found);
+    expect(cubit.state.scannedCode, '1415');
+
+    cubit.reset();
+    expect(cubit.state.scannedCode, isEmpty);
+  });
+
+  test('the sample scan has no number to report', () async {
+    await cubit.onBarcodeDetected('99999');
+    await cubit.scanSample();
+
+    expect(cubit.state.scannedCode, isEmpty);
+  });
+
   test('an unknown barcode is reported as not found', () async {
     await cubit.onBarcodeDetected('NOPE');
 
