@@ -5,7 +5,16 @@ import 'package:dalili/features/library/domain/entities/department.dart';
 abstract class LibraryRepository {
   Future<List<Department>> getDepartments();
   Future<BookPage> getAllBooks({int page = 1});
-  Future<Book?> getBookById(String id);
+
+  /// The book with this BibID, or null. Used by shared links and favorites;
+  /// a barcode scan never goes through here (see
+  /// [getBookByAccessionNumber]).
+  Future<Book?> getBookById(String bibid);
+
+  /// The book whose barcode label carries [number] (its "الرقم العام"), or
+  /// null. This is a different number from the BibID, which a scan never
+  /// matches.
+  Future<Book?> getBookByAccessionNumber(String number);
 
   /// Every match in one call — the catalogue is small enough not to page.
   Future<List<Book>> searchBooks(String query);

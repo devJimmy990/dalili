@@ -10,19 +10,19 @@ class EmptyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.inbox,
-                size: 48, color: context.appTheme.onSurfaceVariant),
-            const SizedBox(height: AppSpacing.stackSm),
-            Text(
-              message ?? AppLocalizations.noResults,
-              style: context.textStyles.bodyMedium
-                  ?.copyWith(color: context.appTheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
-          ],
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.inbox, size: 48, color: context.appTheme.onSurfaceVariant),
+        const SizedBox(height: AppSpacing.stackSm),
+        Text(
+          message ?? AppLocalizations.noResults,
+          style: context.textStyles.bodyMedium?.copyWith(
+            color: context.appTheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
         ),
-      );
+      ],
+    ),
+  );
 }

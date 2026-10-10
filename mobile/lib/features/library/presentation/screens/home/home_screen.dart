@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: context.colors.surface,
     floatingActionButton: FloatingActionButton(
-      backgroundColor: context.colors.secondary,
+      backgroundColor: context.appTheme.accent,
       foregroundColor: Colors.white,
       onPressed: () => Navigator.push(
         context,

@@ -72,3 +72,25 @@ test('every place alias points at a real place, and every article type is define
   assert.equal(PLACE_BY_SHEET_NAME[p.placeKey('[Washington, D.C.]')], 'washington');
   assert.equal(PLACE_BY_SHEET_NAME[p.placeKey('Iran+:')], 'iran');
 });
+
+test('accessionNumber: the label number, or nothing', () => {
+  // As the sheet has them — text, even though they look like numbers.
+  assert.equal(p.accessionNumber('1415'), '1415');
+  assert.equal(p.accessionNumber(' 1415 '), '1415');
+  assert.equal(p.accessionNumber(1415), '1415');
+
+  // A book with no label number: blank, or the hand-typed "Null" the sheet
+  // uses. Both mean "none" (NULL), never the literal text.
+  assert.equal(p.accessionNumber(''), null);
+  assert.equal(p.accessionNumber('   '), null);
+  assert.equal(p.accessionNumber(undefined), null);
+  assert.equal(p.accessionNumber('Null'), null);
+  assert.equal(p.accessionNumber('null'), null);
+});
+
+test('accessionNumber: "Null" repeated across books is not a duplicate number', () => {
+  // The unique index would reject two rows holding the text "Null". Because
+  // it becomes NULL, any number of books can be without one.
+  const stored = ['Null', 'Null', '1415'].map(p.accessionNumber);
+  assert.deepEqual(stored, [null, null, '1415']);
+});

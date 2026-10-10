@@ -17,6 +17,15 @@ export function text(cell: Cell): string {
   return String(cell).replace(/\s+/g, ' ').trim();
 }
 
+/// The "الرقم العام" (accession number) on a book's barcode label.
+///
+/// A blank cell, or a hand-typed "Null", means the book has none → NULL. It is
+/// text, not a number: it is matched against whatever a barcode reader hands
+/// back, and a number type would invite "1415" vs 1415 mismatches.
+export function accessionNumber(cell: Cell): string | null {
+  return nullable(cell);
+}
+
 /// Blank, or a hand-typed "null", means "unknown" → NULL.
 export function nullable(cell: Cell): string | null {
   const v = text(cell);

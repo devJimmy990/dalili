@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:dalili/core/di/injection_container.dart';
+import 'package:dalili/core/errors/navigation_exception.dart';
 import 'package:dalili/core/localization/app_localizations.dart';
 import 'package:dalili/core/engines/navigation_engine.dart';
 import 'package:dalili/core/engines/navigation_relocation_engine.dart';
 import 'package:dalili/core/services/compass/flutter_compass_service.dart';
+import 'package:dalili/core/services/graph_service.dart';
 import 'package:dalili/core/services/navigation_start_service.dart';
 import 'package:dalili/core/services/pedometer_step_counter_service.dart';
 import 'package:dalili/core/services/sensors/navigation_sensor_service.dart';
@@ -12,6 +15,7 @@ import 'package:dalili/features/library/data/models/navigation/library_map_model
 import 'package:dalili/features/library/data/models/navigation/navigation_location_update_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_session_model.dart';
 import 'package:dalili/features/library/data/models/navigation/navigation_state_snapshot.dart';
+import 'package:dalili/features/library/presentation/cubits/app_settings/app_settings_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/navigation/navigation_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,6 +35,9 @@ class NavigationCubit extends Cubit<NavigationState> {
            NavigationSensorServiceImpl(
              compassService: FlutterCompassService(),
              stepCounterService: PedometerStepCounterService(),
+             // Read per trip, so changing the height in settings applies to
+             // the next walk without a restart.
+             strideLength: () => sl<AppSettingsCubit>().state.strideLength,
            ),
        _navigationEngine = navigationEngine ?? const NavigationEngine(),
        super(const NavigationState());
@@ -83,9 +90,7 @@ class NavigationCubit extends Cubit<NavigationState> {
       final sensorsStarted = await _navigationSensorService.start();
 
       if (!sensorsStarted) {
-        emit(
-          state.copyWith(error: AppLocalizations.navSensorPermissionError),
-        );
+        emit(state.copyWith(error: AppLocalizations.navSensorPermissionError));
         return;
       }
 
@@ -106,7 +111,7 @@ class NavigationCubit extends Cubit<NavigationState> {
           clearMap: true,
           clearPosition: true,
           clearDecision: true,
-          error: e.toString(),
+          error: _errorMessage(e),
         ),
       );
     }
@@ -122,6 +127,13 @@ class NavigationCubit extends Cubit<NavigationState> {
   /// in-progress session.
   Future<void> retrySensors() async {
     if (state.session == null) return;
+
+    // Drop the previous attempt's stream before opening a new one. Retry is
+    // a button the user can press repeatedly, and each press used to add
+    // another live listener on top of the last — every step then counted
+    // once per listener, inflating the walked distance until the route
+    // "arrived" on its own.
+    await _stopSensors();
 
     emit(state.copyWith(clearError: true));
 
@@ -231,6 +243,20 @@ class NavigationCubit extends Cubit<NavigationState> {
       return null;
     }
 
+    // Two sections can share one spot on the floor (Basic Sciences sits
+    // with Mechanical Engineering). They are separate nodes so each book is
+    // announced under its own name, but they describe the same place — so
+    // "nearest node" may land on the twin of the destination. Re-anchoring
+    // there would plot a route out to the corridor and back to a point the
+    // walker is already standing on.
+    final end = result.session.route.end;
+    final nearest = GraphService.of(map).getNode(nearestNodeId);
+    if (nearest != null &&
+        (nearest.x - end.x).abs() < 0.01 &&
+        (nearest.y - end.y).abs() < 0.01) {
+      return null;
+    }
+
     return _relocationEngine.relocate(
       map: map,
       session: result.session,
@@ -284,6 +310,17 @@ class NavigationCubit extends Cubit<NavigationState> {
       ),
     );
   }
+
+  /// Turns a thrown failure into something a visitor can act on. Anything
+  /// unrecognized stays generic rather than leaking a stack-trace string
+  /// onto the screen.
+  String _errorMessage(Object error) => switch (error) {
+    NavigationException(reason: NavigationFailureReason.alreadyAtDestination) =>
+      AppLocalizations.navAlreadyAtDestination,
+    NavigationException(reason: NavigationFailureReason.noRouteFound) =>
+      AppLocalizations.navNoRouteFound,
+    _ => AppLocalizations.navRouteFailed,
+  };
 
   Future<void> _resetNavigation() async {
     await _stopSensors();

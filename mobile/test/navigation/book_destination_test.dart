@@ -23,7 +23,8 @@ void main() {
 
   Map<String, dynamic> fixture(String name) =>
       (jsonDecode(File('test/fixtures/$name.json').readAsStringSync())
-          as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+              as Map<String, dynamic>)['data']
+          as Map<String, dynamic>;
 
   test('every department node id exists on the map as a destination', () {
     final departments = (fixture('departments')['items'] as List)
@@ -37,13 +38,15 @@ void main() {
       expect(
         nodeIds,
         contains(nodeId),
-        reason: '${department.id} points at map node "$nodeId", which the '
+        reason:
+            '${department.id} points at map node "$nodeId", which the '
             'map asset does not define',
       );
       expect(
         destinationIds,
         contains(nodeId),
-        reason: '${department.id} points at "$nodeId", which is on the map '
+        reason:
+            '${department.id} points at "$nodeId", which is on the map '
             'but is not a destination the navigation UI can route to',
       );
     }
@@ -58,6 +61,32 @@ void main() {
     expect(destinationIds, contains(book.location.nodeId));
   });
 
+  test('a Basic Sciences book is walked to under its own name', () {
+    // The section shares Mechanical Engineering's spot in the library. It
+    // used to borrow Mechanical's map node too, so the walking screen
+    // announced "قسم ميكانيكا" for a book the card called "علوم أساسية".
+    final books = (fixture('books_basic_sciences')['items'] as List)
+        .map((e) => BookModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    expect(books, isNotEmpty);
+
+    final mechanical = nodes.firstWhere((n) => n['id'] == 'd_mechanical');
+
+    for (final book in books) {
+      expect(book.location.nodeId, 'd_basic_sciences');
+
+      final node = nodes.firstWhere((n) => n['id'] == book.location.nodeId);
+      expect(node['name'], contains(book.department.name));
+      expect(node['nameEn'], 'Basic Sciences');
+
+      // Same place on the floor, different label.
+      expect(node['x'], mechanical['x']);
+      expect(node['y'], mechanical['y']);
+      expect(node['name'], isNot(mechanical['name']));
+    }
+  });
+
   test('every book in a page carries a usable destination', () {
     final books = (fixture('books')['items'] as List)
         .map((e) => BookModel.fromJson(e as Map<String, dynamic>))
@@ -67,7 +96,8 @@ void main() {
       expect(
         book.location.isNavigable,
         isTrue,
-        reason: '"${book.title}" has no map node, so the navigate button '
+        reason:
+            '"${book.title}" has no map node, so the navigate button '
             'would be disabled for it',
       );
       expect(destinationIds, contains(book.location.nodeId));

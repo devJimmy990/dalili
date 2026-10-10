@@ -20,12 +20,10 @@ class _BannerBackground extends StatelessWidget {
     try {
       return BlocSelector<AppSettingsCubit, AppSettingsState, String>(
         bloc: sl<AppSettingsCubit>(),
-        selector: (state) => state.locale.languageCode,
+        selector: (state) => state.locale,
         builder: (context, lang) => Image.asset(
-          lang == 'ar'
-              ? AssetsManager.assetsImagesBannerAr
-              : AssetsManager.assetsImagesBannerEn,
-          fit: BoxFit.fitWidth,
+          AssetsManager.assetsImagesBanner,
+          fit: BoxFit.fill,
           errorBuilder: (_, __, ___) => _FallbackBackground(),
         ),
       );
@@ -37,6 +35,5 @@ class _BannerBackground extends StatelessWidget {
 
 class _FallbackBackground extends StatelessWidget {
   @override
-  Widget build(BuildContext context) =>
-      Container(color: context.colors.primary);
+  Widget build(BuildContext context) => Container(color: context.appTheme.hero);
 }

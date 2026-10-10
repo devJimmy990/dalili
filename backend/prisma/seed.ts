@@ -10,8 +10,11 @@
  *      names them, and every name must resolve to an existing row.
  *   2. Language, edition and document type are lookup tables with Arabic and
  *      English names; the books/articles store ids.
- *   3. "BibID" is the book id. The articles sheet has no id of its own, so
- *      each gets a stable one derived from its DOI (or title).
+ *   3. "BibID" is the book id, and the articles sheet names its book by it.
+ *      "الرقم العام" (the accession number on the barcode label) is a
+ *      separate value used only for scanning; a blank or "Null" cell leaves
+ *      the book without one. The articles themselves get a stable id derived
+ *      from their DOI (or title).
  *   4. The same article listed under two books becomes ONE article linked
  *      to both.
  *   5. A conference-sourced document is always a conference paper, whatever
@@ -47,12 +50,11 @@ const here = dirname(fileURLToPath(import.meta.url));
 const XLSX_PATH = resolve(here, '../data/Datasource.xlsx');
 const MAP_PATH = resolve(here, '../../mobile/assets/map/library_map.json');
 
-/// Departments that share another section's spot on the library map.
-/// Basic Sciences sits with Mechanical Engineering, and the map has no
-/// node of its own for it — navigation routes to the shared node.
-const MAP_NODE_OVERRIDES: Record<string, string> = {
-  d_basic_sciences: 'd_mechanical',
-};
+/// A department whose map node is named differently from its id. Empty
+/// today: every section has a node of its own, including Basic Sciences,
+/// which shares Mechanical Engineering's coordinates but keeps a separate
+/// node so a book routes to its own section's name.
+const MAP_NODE_OVERRIDES: Record<string, string> = {};
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
@@ -113,6 +115,8 @@ function articleId(doi: string | null, titleText: string): string {
 // ─── Build (pure: no database) ─────────────────────────────
 
 interface Report {
+  /** Books with no accession number: they cannot be found by scanning. */
+  noAccessionNumber: string[];
   editionInferred: string[];
   isbnPadded: string[];
   isbnBad: string[];
@@ -127,16 +131,31 @@ function buildBooks(rows: Row[], report: Report) {
   requireColumns(rows, 'books', [
     'BibID', 'رقم الاستدعاء', 'العنوان', 'المؤلف', 'الطبعة', 'الناشر', 'سنة النشر', 'مكان النشر',
     'ISBN', 'رؤوس الموضوعات', 'الموقع على الرف', 'المجموعة المنتمي إليها', 'اللغة', 'الغلاف',
+    'الرقم العام',
   ]);
 
   const canonicalPublisher = parse.publisherCanonicalizer(rows.map((r) => parse.publisher(r['الناشر'])));
-  const seen = new Set<string>();
+  const seenIds = new Set<string>();
+  const seenAccession = new Map<string, string>();
 
   return rows.map((row) => {
     const id = parse.text(row['BibID']);
     if (id.length === 0) throw new Error('A book row has no BibID');
-    if (seen.has(id)) throw new Error(`Duplicate BibID ${id}`);
-    seen.add(id);
+    if (seenIds.has(id)) throw new Error(`Duplicate BibID ${id}`);
+    seenIds.add(id);
+
+    // Two books sharing a label number would make a scan ambiguous. Blank and
+    // "Null" cells are not numbers and may repeat freely.
+    const accessionNumber = parse.accessionNumber(row['الرقم العام']);
+    if (accessionNumber === null) {
+      report.noAccessionNumber.push(id);
+    } else {
+      const other = seenAccession.get(accessionNumber);
+      if (other !== undefined) {
+        throw new Error(`Books ${other} and ${id} share the accession number "${accessionNumber}"`);
+      }
+      seenAccession.set(accessionNumber, id);
+    }
 
     const callNumber = parse.text(row['رقم الاستدعاء']);
     const bookTitle = parse.title(row['العنوان']);
@@ -162,6 +181,7 @@ function buildBooks(rows: Row[], report: Report) {
 
     return {
       id,
+      accessionNumber,
       callNumber,
       title: bookTitle,
       author: bookAuthor,
@@ -249,6 +269,7 @@ async function main(): Promise<void> {
   console.log(DRY_RUN ? `Dry run — reading ${XLSX_PATH}, nothing will be written` : `Reading ${XLSX_PATH}`);
   const wb = XLSX.readFile(XLSX_PATH);
   const report: Report = {
+    noAccessionNumber: [],
     editionInferred: [], isbnPadded: [], isbnBad: [], noAuthor: [],
     placeIsBinding: [], mergedArticles: [], reclassified: [], noIssn: 0,
   };
@@ -287,10 +308,15 @@ async function main(): Promise<void> {
 
   // ── Books ──
   if (!DRY_RUN) {
+    // Books the sheet no longer has go first.
+    await prisma.book.deleteMany({ where: { id: { notIn: [...bookIds] } } });
+    // Accession numbers are unique, so correcting the sheet by moving a number
+    // from one book to another would be rejected for as long as the old
+    // holder still has it. Every book gets its number back in the loop below.
+    await prisma.book.updateMany({ data: { accessionNumber: null } });
     for (const { languages, ...b } of books) {
       await prisma.book.upsert({ where: { id: b.id }, create: b, update: b });
     }
-    await prisma.book.deleteMany({ where: { id: { notIn: [...bookIds] } } });
     await prisma.bookLanguage.deleteMany({});
     await prisma.bookLanguage.createMany({
       data: books.flatMap((b) => b.languages.map((l) => ({ bookId: b.id, ...l }))),
@@ -298,6 +324,7 @@ async function main(): Promise<void> {
   }
   const languageLinks = books.reduce((n, b) => n + b.languages.length, 0);
   console.log(`  books: ${books.length} (${languageLinks} language links)`);
+  console.log(`  accession numbers: ${books.length - report.noAccessionNumber.length} of ${books.length} books`);
 
   // ── Articles + links ──
   const links = articles.flatMap((a) => [...a.bookIds].map((bookId) => ({ bookId, articleId: a.id })));
@@ -320,6 +347,7 @@ async function main(): Promise<void> {
   list('editions supplied by the cataloguer ([ ] in the sheet)', report.editionInferred);
   list('ISBNs that lost a leading zero in Excel — restored', report.isbnPadded);
   list('ISBNs that fail their checksum — kept as typed', report.isbnBad);
+  list('books with no accession number — a scan cannot find them', report.noAccessionNumber);
   list('books with no author on record', report.noAuthor);
   list('"place" cells that are really a binding (Hardcover/Paperback)', report.placeIsBinding);
   list('articles listed under several books — merged', report.mergedArticles);

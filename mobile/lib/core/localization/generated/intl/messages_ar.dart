@@ -20,21 +20,27 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ar';
 
-  static String m0(error) => "تعذر تشغيل الكاميرا: ${error}";
+  static String m0(value) =>
+      "لم يُعثر على هذا الكتاب في قاعدة البيانات، الرقم العام: ${value}";
 
-  static String m1(name) => "الوجهة: ${name}";
+  static String m1(error) => "تعذر تشغيل الكاميرا: ${error}";
 
-  static String m2(value) => "الاتجاه: ${value}°";
+  static String m2(name) => "الوجهة: ${name}";
 
-  static String m3(distance) => "استمر مستقيمًا ${distance} متر";
+  static String m3(value) => "الاتجاه: ${value}°";
 
-  static String m4(distance) => "ابدأ السير لمسافة ${distance} متر";
+  static String m4(height, stride) =>
+      "${height} سم · حوالي ${stride} متر لكل خطوة";
 
-  static String m5(distance) => "متبقي ${distance} م";
+  static String m5(distance) => "استمر مستقيمًا ${distance} متر";
 
-  static String m6(value) => "فرق الاتجاه: ${value}°";
+  static String m6(distance) => "ابدأ السير لمسافة ${distance} متر";
 
-  static String m7(code) => "كود QR غير معروف: ${code}";
+  static String m7(distance) => "متبقي ${distance} م";
+
+  static String m8(value) => "فرق الاتجاه: ${value}°";
+
+  static String m9(code) => "كود QR غير معروف: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -43,12 +49,14 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "appName": MessageLookupByLibrary.simpleMessage("دليلي"),
     "arabic": MessageLookupByLibrary.simpleMessage("العربية"),
-    "articleIssn": MessageLookupByLibrary.simpleMessage("ISSN"),
+    "articleIssn": MessageLookupByLibrary.simpleMessage("الترقيم الدولي"),
     "articleIssue": MessageLookupByLibrary.simpleMessage("العدد"),
     "articlePages": MessageLookupByLibrary.simpleMessage("الصفحات"),
     "articleSource": MessageLookupByLibrary.simpleMessage("المصدر"),
     "articleVolume": MessageLookupByLibrary.simpleMessage("المجلد"),
     "author": MessageLookupByLibrary.simpleMessage("المؤلف"),
+    "bibid": MessageLookupByLibrary.simpleMessage("رقم BibID"),
+    "bibidCopied": MessageLookupByLibrary.simpleMessage("تم نسخ الـ BibID"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("اللغة"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage(
       "لم يتم العثور على الكتاب",
@@ -56,13 +64,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "bookNotFoundDesc": MessageLookupByLibrary.simpleMessage(
       "لم يُعثر على هذا الكتاب في قاعدة البيانات",
     ),
-    "bookRecognized": MessageLookupByLibrary.simpleMessage(
-      "تم التعرف على الكتاب!",
-    ),
+    "bookNotFoundGn": m0,
     "callNumber": MessageLookupByLibrary.simpleMessage("رقم التصنيف"),
     "classification": MessageLookupByLibrary.simpleMessage("التصنيف"),
     "comingSoon": MessageLookupByLibrary.simpleMessage("قريباً"),
     "continueBtn": MessageLookupByLibrary.simpleMessage("متابعة"),
+    "copyBibid": MessageLookupByLibrary.simpleMessage("نسخ الـ BibID"),
     "darkTheme": MessageLookupByLibrary.simpleMessage("داكن"),
     "department": MessageLookupByLibrary.simpleMessage("القسم"),
     "departments": MessageLookupByLibrary.simpleMessage("الأقسام"),
@@ -77,7 +84,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "isbn": MessageLookupByLibrary.simpleMessage("الترقيم الدولي"),
     "language": MessageLookupByLibrary.simpleMessage("اللغة"),
     "lightTheme": MessageLookupByLibrary.simpleMessage("فاتح"),
+    "linkBookNotFound": MessageLookupByLibrary.simpleMessage(
+      "الرابط ده مرتبط بكتاب مش موجود في المكتبة",
+    ),
+    "linkOpenFailed": MessageLookupByLibrary.simpleMessage(
+      "تعذّر فتح الكتاب المشارك. تأكد من الاتصال وحاول مرة أخرى.",
+    ),
     "loading": MessageLookupByLibrary.simpleMessage("جاري التحميل..."),
+    "navAlreadyAtDestination": MessageLookupByLibrary.simpleMessage(
+      "أنت بالفعل في هذا القسم",
+    ),
     "navArNavigationTitle": MessageLookupByLibrary.simpleMessage(
       "الملاحة بالواقع المعزز",
     ),
@@ -87,7 +103,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navCameraPermissionRequired": MessageLookupByLibrary.simpleMessage(
       "لازم صلاحية الكاميرا عشان تشتغل الملاحة بالواقع المعزز. من فضلك فعّلها من إعدادات النظام.",
     ),
-    "navCameraStartError": m0,
+    "navCameraStartError": m1,
     "navCancelNavigationBody": MessageLookupByLibrary.simpleMessage(
       "الخروج دلوقتي هيلغي رحلتك الحالية. هتحتاج تختار وجهة وتمسح QR تاني عشان تبدأ من جديد.",
     ),
@@ -95,24 +111,40 @@ class MessageLookup extends MessageLookupByLibrary {
       "إلغاء التنقل؟",
     ),
     "navCancelTrip": MessageLookupByLibrary.simpleMessage("ألغِ الرحلة"),
-    "navDestinationLabel": m1,
+    "navDestinationLabel": m2,
     "navDestinationUnavailable": MessageLookupByLibrary.simpleMessage(
       "هذا القسم غير موجود على خريطة المكتبة بعد",
     ),
     "navDone": MessageLookupByLibrary.simpleMessage("تم"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("استمر للأمام"),
-    "navHeadingLabel": m2,
-    "navInstructionForward": m3,
-    "navInstructionStart": m4,
+    "navHeadingLabel": m3,
+    "navHeightClear": MessageLookupByLibrary.simpleMessage("استخدم المتوسط"),
+    "navHeightHint": MessageLookupByLibrary.simpleMessage(
+      "التنقل الداخلي بيعدّ خطواتك. طولك بيحدّد طول الخطوة، عشان المسافة المتبقية تفضل مظبوطة.",
+    ),
+    "navHeightLabel": MessageLookupByLibrary.simpleMessage("طولك"),
+    "navHeightNotSet": MessageLookupByLibrary.simpleMessage(
+      "غير محدد — بنستخدم خطوة متوسطة 0.75 متر",
+    ),
+    "navHeightValue": m4,
+    "navInstructionForward": m5,
+    "navInstructionStart": m6,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("أكمل"),
+    "navMetersUnit": MessageLookupByLibrary.simpleMessage("متر"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
       "مفيش كاميرا متاحة على الجهاز ده.",
     ),
     "navNoDestinationsFound": MessageLookupByLibrary.simpleMessage(
       "مفيش وجهات في الخريطة دي.",
     ),
-    "navRemainingDistance": m5,
+    "navNoRouteFound": MessageLookupByLibrary.simpleMessage(
+      "لا يوجد طريق مشي إلى هذا القسم",
+    ),
+    "navRemainingDistance": m7,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("إعادة المحاولة"),
+    "navRouteFailed": MessageLookupByLibrary.simpleMessage(
+      "تعذّر بدء التنقل. حاول مرة أخرى.",
+    ),
     "navScanCurrentQrTitle": MessageLookupByLibrary.simpleMessage(
       "امسح QR موقعك الحالي",
     ),
@@ -139,11 +171,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "انحرف قليلاً يميناً",
     ),
-    "navTargetDifferenceLabel": m6,
+    "navTargetDifferenceLabel": m8,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("لف يسار"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("لف يمين"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("استدر للخلف"),
-    "navUnrecognizedQr": m7,
+    "navUnrecognizedQr": m9,
+    "navWalkingAccuracy": MessageLookupByLibrary.simpleMessage("دقة المشي"),
     "navigateToBook": MessageLookupByLibrary.simpleMessage("ودّيني للكتاب"),
     "navigation": MessageLookupByLibrary.simpleMessage("التنقل"),
     "noArticles": MessageLookupByLibrary.simpleMessage("لا توجد مقالات"),
@@ -177,17 +210,21 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "searchBooks": MessageLookupByLibrary.simpleMessage("البحث في الكتب"),
     "searchHint": MessageLookupByLibrary.simpleMessage(
-      "ابحث عن كتب أو مقالات...",
+      "ابحث بالعنوان أو المؤلف أو رقم BibID...",
     ),
     "selectLanguage": MessageLookupByLibrary.simpleMessage("اختر اللغة"),
     "settings": MessageLookupByLibrary.simpleMessage("الإعدادات"),
+    "shareBook": MessageLookupByLibrary.simpleMessage("مشاركة الكتاب"),
+    "shareIntro": MessageLookupByLibrary.simpleMessage(
+      "لقيت الكتاب ده في مكتبة دليلي:",
+    ),
     "shelf": MessageLookupByLibrary.simpleMessage("الرف"),
     "shelfLocation": MessageLookupByLibrary.simpleMessage("الموقع"),
     "skip": MessageLookupByLibrary.simpleMessage("تخطي"),
     "suggestedBooks": MessageLookupByLibrary.simpleMessage("كتب مقترحة"),
+    "systemTheme": MessageLookupByLibrary.simpleMessage("حسب النظام"),
     "theme": MessageLookupByLibrary.simpleMessage("المظهر"),
     "viewAll": MessageLookupByLibrary.simpleMessage("عرض الكل"),
-    "viewDetails": MessageLookupByLibrary.simpleMessage("عرض التفاصيل"),
     "welcomeSubtitle": MessageLookupByLibrary.simpleMessage(
       "مساعدك الذكي في المكتبة",
     ),

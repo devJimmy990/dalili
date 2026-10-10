@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:dalili/core/constants/app_spacing.dart';
 import 'package:dalili/core/di/injection_container.dart';
 import 'package:dalili/core/localization/app_localizations.dart';
@@ -8,11 +6,11 @@ import 'package:dalili/features/library/domain/entities/book.dart';
 import 'package:dalili/features/library/presentation/cubits/scanner/scanner_cubit.dart';
 import 'package:dalili/features/library/presentation/cubits/scanner/scanner_state.dart';
 import 'package:dalili/features/library/presentation/screens/book_detail/book_detail_screen.dart';
-import 'package:dalili/features/library/presentation/widgets/book_info_rows.dart';
+import 'package:dalili/features/library/presentation/widgets/overlay_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:dalili/core/utils/display.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -38,20 +36,62 @@ class _ScannerScreenState extends State<ScannerScreen> {
     super.dispose();
   }
 
+  /// Set once a book is found, so a late second event cannot open it twice.
+  bool _openedBook = false;
+
+  /// The camera only runs while the scanner is scanning.
+  ///
+  /// Left running under a result it kept filming — and, because a page fades in
+  /// over the one before it, showed through the first moments of the next
+  /// screen. Stopping it the moment a lookup starts releases the camera (and
+  /// its privacy indicator) straight away; "scan again" starts it again.
+  Future<void> _syncCamera(ScannerStatus status) async {
+    try {
+      final running = _cameraController.value.isRunning;
+      if (status == ScannerStatus.scanning) {
+        if (!running) await _cameraController.start();
+      } else if (running) {
+        await _cameraController.stop();
+      }
+    } catch (e) {
+      // A stop/start that races the screen closing is harmless; the
+      // controller is disposed with the screen either way.
+      debugPrint('debug - scanner camera sync failed: $e');
+    }
+  }
+
+  /// A recognized book goes straight to its own page — there is no
+  /// intermediate result screen. The scanner is *replaced*, not covered, so
+  /// Back from the book returns to where scanning started rather than to a
+  /// camera that has nothing left to show.
+  Future<void> _openBook(Book book) async {
+    if (_openedBook) return;
+    _openedBook = true;
+
+    // Camera off before the page changes, so nothing of it shows through.
+    await _syncCamera(ScannerStatus.found);
+    if (!mounted) return;
+
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute<void>(builder: (_) => BookDetailScreen(book: book)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => BlocProvider<ScannerCubit>.value(
     value: _cubit,
     child: BlocListener<ScannerCubit, ScannerState>(
+      listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
-        if (state.status == ScannerStatus.error) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
-          _cubit.reset();
+        if (state.status == ScannerStatus.found) {
+          _openBook(state.book!);
+        } else {
+          _syncCamera(state.status);
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: context.colors.surface,
         body: Stack(
           fit: StackFit.expand,
           children: [
@@ -72,25 +112,24 @@ class _ScannerScreenState extends State<ScannerScreen> {
     ),
   );
 
-  Widget _buildStateLayer(BuildContext context, ScannerState state) =>
-      switch (state.status) {
-        ScannerStatus.scanning => _ScanningPanel(
-          onTestScan: () => _cubit.onBarcodeDetected(null),
-        ),
-        ScannerStatus.loading => const _LoadingOverlay(),
-        ScannerStatus.found => _FoundOverlay(
-          book: state.book!,
-          onViewDetails: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => BookDetailScreen(book: state.book!),
-            ),
-          ),
-          onReset: _cubit.reset,
-        ),
-        ScannerStatus.notFound => _NotFoundOverlay(onReset: _cubit.reset),
-        ScannerStatus.error => const SizedBox.shrink(),
-      };
+  Widget _buildStateLayer(
+    BuildContext context,
+    ScannerState state,
+  ) => switch (state.status) {
+    ScannerStatus.scanning => _ScanningPanel(onTestScan: _cubit.scanSample),
+    ScannerStatus.loading => const _LoadingOverlay(),
+    // Already leaving for the book's page; keep the loading cover up for the
+    // few frames before it arrives rather than flashing the camera.
+    ScannerStatus.found => const _LoadingOverlay(),
+    ScannerStatus.notFound => _NotFoundOverlay(
+      scannedCode: state.scannedCode,
+      onReset: _cubit.reset,
+    ),
+    ScannerStatus.error => _ErrorOverlay(
+      message: state.errorMessage,
+      onRetry: _cubit.reset,
+    ),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -110,16 +149,16 @@ class _TopBar extends StatelessWidget {
     child: SafeArea(
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          OverlayIconButton(
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
               context.read<ScannerCubit>().reset();
               Navigator.pop(context);
             },
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.flash_on, color: Colors.white),
+          OverlayIconButton(
+            icon: const Icon(Icons.flash_on),
             onPressed: () => cameraController.toggleTorch(),
           ),
         ],
@@ -144,28 +183,31 @@ class _ScanningPanel extends StatelessWidget {
     right: 0,
     child: Container(
       padding: const EdgeInsets.all(AppSpacing.stackLg),
-      decoration: const BoxDecoration(
-        color: Colors.black87,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.cameraPanel,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             AppLocalizations.pointCameraAtBook,
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: context.appTheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.stackMd),
-          ElevatedButton.icon(
-            onPressed: onTestScan,
-            icon: const Icon(Icons.bug_report),
-            label: const Text('Test Scan'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.colors.secondary,
-              foregroundColor: Colors.white,
+          // A development shortcut; readers never see it.
+          if (kDebugMode) ...[
+            const SizedBox(height: AppSpacing.stackMd),
+            ElevatedButton.icon(
+              onPressed: onTestScan,
+              icon: const Icon(Icons.bug_report),
+              label: const Text('Test Scan'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.appTheme.accent,
+                foregroundColor: context.appTheme.onAccent,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     ),
@@ -181,7 +223,7 @@ class _LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    color: Colors.black54,
+    color: context.colors.surface.withValues(alpha: 0.6),
     child: Center(
       child: CircularProgressIndicator(color: context.colors.secondary),
     ),
@@ -189,202 +231,70 @@ class _LoadingOverlay extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Found state — full-screen book detail overlay
+// Error state
 // ---------------------------------------------------------------------------
 
-class _FoundOverlay extends StatelessWidget {
-  const _FoundOverlay({
-    required this.book,
-    required this.onViewDetails,
-    required this.onReset,
-  });
+/// A lookup that failed for a reason other than "no such book" — the server
+/// unreachable, or too old to know the route. Kept on screen with a retry
+/// instead of flashing a snackbar, so it is not mistaken for the book being
+/// missing and cannot loop while the barcode is still in view.
+class _ErrorOverlay extends StatelessWidget {
+  const _ErrorOverlay({required this.message, required this.onRetry});
 
-  final Book book;
-  final VoidCallback onViewDetails;
-  final VoidCallback onReset;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.expand,
-    children: [
-      // Blurred cover background when available
-      if (book.cover case final cover? when cover.isNotEmpty)
-        ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-          child: Image.network(
-            cover,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                Container(color: context.colors.primary),
-          ),
-        )
-      else
-        Container(color: context.colors.primary),
-      Container(color: Colors.black54),
-      SafeArea(
-        child: Column(
-          children: [
-            // Book cover image
-            Expanded(
-              flex: 2,
-              child: Center(child: _FoundCover(url: book.cover)),
-            ),
-            // Detail card
-            Expanded(
-              flex: 3,
-              child: _FoundDetailCard(
-                book: book,
-                onViewDetails: onViewDetails,
-                onReset: onReset,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-class _FoundCover extends StatelessWidget {
-  const _FoundCover({required this.url});
-
-  final String? url;
+  final String message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) => Container(
-    decoration: const BoxDecoration(
-      boxShadow: [
-        BoxShadow(color: Colors.black45, blurRadius: 24, offset: Offset(0, 10)),
-      ],
-    ),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
-      child: hasText(url)
-          ? Image.network(
-              url!,
-              height: 170,
-              width: 115,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _placeholder(context),
-            )
-          : _placeholder(context),
-    ),
-  );
-
-  Widget _placeholder(BuildContext context) => Container(
-    height: 170,
-    width: 115,
-    decoration: BoxDecoration(
-      color: context.appTheme.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(context.appTheme.radiusMd),
-    ),
-    child: Icon(
-      Icons.menu_book_rounded,
-      size: 56,
-      color: context.colors.secondary,
-    ),
-  );
-}
-
-class _FoundDetailCard extends StatelessWidget {
-  const _FoundDetailCard({
-    required this.book,
-    required this.onViewDetails,
-    required this.onReset,
-  });
-
-  final Book book;
-  final VoidCallback onViewDetails;
-  final VoidCallback onReset;
-
-  @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.only(
-      topLeft: Radius.circular(context.appTheme.radiusXl),
-      topRight: Radius.circular(context.appTheme.radiusXl),
-    ),
-    // A solid panel, not a see-through blur: the text color is chosen for
-    // this color, so it must not change with the camera frame behind it.
-    child: Container(
-      color: bookInfoPanelColor(context),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.stackLg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Recognized badge
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Colors.greenAccent,
-                  size: 16,
+    color: context.cameraPanel,
+    child: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.stackLg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.cloud_off_rounded,
+                size: 80,
+                color: context.appTheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: AppSpacing.stackLg),
+              Text(
+                AppLocalizations.error,
+                style: context.textStyles.displaySmall?.copyWith(
+                  color: context.colors.onSurface,
                 ),
-                const SizedBox(width: 6),
+                textAlign: TextAlign.center,
+              ),
+              if (message.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.stackSm),
                 Text(
-                  AppLocalizations.bookRecognized,
-                  style: context.textStyles.bodySmall?.copyWith(
-                    color: Colors.greenAccent,
+                  message,
+                  style: context.textStyles.bodyMedium?.copyWith(
+                    color: context.appTheme.onSurfaceVariant,
                   ),
+                  textAlign: TextAlign.center,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-            const SizedBox(height: AppSpacing.stackSm),
-            // Title
-            Text(
-              book.title,
-              style: context.textStyles.displayMedium?.copyWith(
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: AppSpacing.stackSm / 2),
-            // Author
-            Text(
-              book.author,
-              style: context.textStyles.bodyLarge?.copyWith(
-                color: Colors.white70,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            Divider(
-              color: context.appTheme.outlineVariant,
-              height: AppSpacing.stackLg,
-            ),
-            BookInfoRows(book: book),
-            const SizedBox(height: AppSpacing.stackMd),
-            // View Details button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: onViewDetails,
-                icon: const Icon(Icons.menu_book_rounded),
-                label: Text(AppLocalizations.viewDetails),
+              const SizedBox(height: AppSpacing.stackLg),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: Text(AppLocalizations.retry),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colors.secondary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      context.appTheme.radiusLg,
-                    ),
+                  backgroundColor: context.appTheme.accent,
+                  foregroundColor: context.appTheme.onAccent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 14,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.stackSm),
-            // Scan Again text button
-            TextButton(
-              onPressed: onReset,
-              child: Text(
-                AppLocalizations.scanAgain,
-                style: const TextStyle(color: Colors.white54),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ),
@@ -396,13 +306,15 @@ class _FoundDetailCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _NotFoundOverlay extends StatelessWidget {
-  const _NotFoundOverlay({required this.onReset});
+  const _NotFoundOverlay({required this.scannedCode, required this.onReset});
 
+  /// What the barcode said; empty when there was no barcode to report.
+  final String scannedCode;
   final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) => Container(
-    color: Colors.black87,
+    color: context.cameraPanel,
     child: SafeArea(
       child: Center(
         child: Padding(
@@ -410,24 +322,30 @@ class _NotFoundOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.search_off_rounded,
                 size: 80,
-                color: Colors.white24,
+                color: context.appTheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
               const SizedBox(height: AppSpacing.stackLg),
               Text(
                 AppLocalizations.bookNotFound,
                 style: context.textStyles.displaySmall?.copyWith(
-                  color: Colors.white,
+                  color: context.colors.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.stackSm),
               Text(
-                AppLocalizations.bookNotFoundDesc,
+                scannedCode.isEmpty
+                    ? AppLocalizations.bookNotFoundDesc
+                    // Isolated, so a code like "DLB-1415" keeps its order
+                    // inside an Arabic sentence instead of being reshuffled.
+                    : AppLocalizations.bookNotFoundGn(
+                        '\u2066$scannedCode\u2069',
+                      ),
                 style: context.textStyles.bodyMedium?.copyWith(
-                  color: Colors.white54,
+                  color: context.appTheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -437,8 +355,8 @@ class _NotFoundOverlay extends StatelessWidget {
                 icon: const Icon(Icons.qr_code_scanner),
                 label: Text(AppLocalizations.scanAgain),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colors.secondary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: context.appTheme.accent,
+                  foregroundColor: context.appTheme.onAccent,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 14,

@@ -52,7 +52,7 @@ class _LangInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     options.queryParameters[ApiConstants.paramLang] =
-        sl<AppSettingsCubit>().state.locale.languageCode;
+        sl<AppSettingsCubit>().state.locale;
     handler.next(options);
   }
 }
@@ -135,7 +135,9 @@ extension ApiResponse on Response<dynamic> {
 
     if (body['status'] == 'error' || (statusCode ?? 500) >= 400) {
       final message = body['message']?.toString() ?? 'HTTP $statusCode';
-      if (statusCode == 404) throw NotFoundException(message);
+      if (statusCode == 404) {
+        throw NotFoundException(message, code: body['code']?.toString());
+      }
       throw ServerException(message);
     }
 
@@ -159,7 +161,10 @@ Never rethrowAsAppException(DioException error) {
     final body = error.response?.data;
     final serverMessage = body is Map ? body['message']?.toString() : null;
     if (error.response?.statusCode == 404) {
-      throw NotFoundException(serverMessage ?? 'Not found');
+      throw NotFoundException(
+        serverMessage ?? 'Not found',
+        code: body is Map ? body['code']?.toString() : null,
+      );
     }
     throw ServerException(serverMessage ?? message);
   }

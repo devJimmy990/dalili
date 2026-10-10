@@ -1,7 +1,11 @@
 // ignore_for_file: prefer_single_quotes
 class AssetsManager {
   AssetsManager._();
-  
+
+  /// Assets for assetsImagesBanner
+  /// assets/images/banner_.jpg
+  static const String assetsImagesBanner = "assets/images/banner.jpg";
+
   /// Assets for assetsImagesBannerAr
   /// assets/images/banner_ar.png
   static const String assetsImagesBannerAr = "assets/images/banner_ar.png";
@@ -18,4 +22,3 @@ class AssetsManager {
   /// assets/images/logo.png
   static const String assetsImagesLogo = "assets/images/logo.png";
 }
-

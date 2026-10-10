@@ -10,7 +10,8 @@ import 'package:dio/dio.dart';
 abstract class LibraryRemoteDataSource {
   Future<List<DepartmentModel>> getDepartments();
   Future<BookPage> getAllBooks({int page = 1});
-  Future<BookModel?> getBookById(String id);
+  Future<BookModel?> getBookById(String bibid);
+  Future<BookModel?> getBookByAccessionNumber(String number);
   Future<List<BookModel>> searchBooks(String query);
   Future<BookPage> getBooksByDepartment(String departmentId, {int page = 1});
   Future<BookPage> getBooksByAuthor(String author, {int page = 1});
@@ -65,23 +66,40 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
       _page(await _get(ApiConstants.books, {ApiConstants.paramPage: page}));
 
   @override
-  Future<BookModel?> getBookById(String id) async {
+  Future<BookModel?> getBookById(String bibid) async {
     try {
-      final payload = await _get(ApiConstants.book(id));
+      final payload = await _get(ApiConstants.book(bibid));
       final book = payload.optMap('book');
       return book == null ? null : BookModel.fromJson(book);
-    } on NotFoundException {
-      // An unknown id is an expected outcome — a QR code for a book that
-      // is no longer catalogued.
-      return null;
+    } on NotFoundException catch (e) {
+      // Same rule as a scan: only an explicit "no such book" is a missing
+      // book; any other 404 is a server problem and must surface as one.
+      if (e.isBookNotFound) return null;
+      rethrow;
     }
   }
 
   @override
-  Future<List<BookModel>> searchBooks(String query) async =>
-      _books(await _get(ApiConstants.booksSearch, {
-        ApiConstants.paramQuery: query,
-      }));
+  Future<BookModel?> getBookByAccessionNumber(String number) async {
+    try {
+      final payload = await _get(ApiConstants.bookByAccession(number));
+      final book = payload.optMap('book');
+      return book == null ? null : BookModel.fromJson(book);
+    } on NotFoundException catch (e) {
+      // An unknown number is an expected outcome — a label for a book that
+      // is no longer catalogued, or a barcode that is not ours at all. A 404
+      // for any other reason (the server has no such route) is not "no
+      // book": it is passed on so the reader sees an error, not a false
+      // "not in the database".
+      if (e.isBookNotFound) return null;
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<BookModel>> searchBooks(String query) async => _books(
+    await _get(ApiConstants.booksSearch, {ApiConstants.paramQuery: query}),
+  );
 
   @override
   Future<BookPage> getBooksByDepartment(
@@ -95,16 +113,20 @@ class LibraryRemoteDataSourceImpl implements LibraryRemoteDataSource {
 
   @override
   Future<BookPage> getBooksByAuthor(String author, {int page = 1}) async =>
-      _page(await _get(ApiConstants.books, {
-        ApiConstants.paramAuthor: author,
-        ApiConstants.paramPage: page,
-      }));
+      _page(
+        await _get(ApiConstants.books, {
+          ApiConstants.paramAuthor: author,
+          ApiConstants.paramPage: page,
+        }),
+      );
 
   @override
   Future<List<BookModel>> getBooksByIds(List<String> ids) async {
     if (ids.isEmpty) return const [];
-    return _books(await _get(ApiConstants.booksByIds, {
-      ApiConstants.paramIds: ids.join(','),
-    }));
+    return _books(
+      await _get(ApiConstants.booksByIds, {
+        ApiConstants.paramIds: ids.join(','),
+      }),
+    );
   }
 }

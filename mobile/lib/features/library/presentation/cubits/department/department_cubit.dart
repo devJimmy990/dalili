@@ -6,7 +6,8 @@ import 'package:dalili/features/library/presentation/cubits/department/departmen
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:dalili/core/utils/safe_emit.dart';
 
-class DepartmentCubit extends HydratedCubit<DepartmentState> with SafeEmit<DepartmentState> {
+class DepartmentCubit extends HydratedCubit<DepartmentState>
+    with SafeEmit<DepartmentState> {
   DepartmentCubit(this._repository) : super(const DepartmentState());
 
   final LibraryRepository _repository;

@@ -57,9 +57,10 @@ book's own title or author.
 | --- | --- | --- |
 | GET | `/api/health` | Also verifies the database is awake |
 | GET | `/api/books` | Paginated. `?page=1&limit=20&department=d_electrical&author=Wadhwa` |
-| GET | `/api/books/search?q=...` | All matches in one response, no paging |
+| GET | `/api/books/search?q=...` | All matches in one response, no paging. A query that is exactly a book's BibID returns that book alone |
 | GET | `/api/books/by-ids?ids=42432,188693` | Keeps the requested order — used by Favorites |
-| GET | `/api/books/:id` | `404` when unknown |
+| GET | `/api/books/by-accession/:number` | What a **scan** resolves through — the label's accession number. `404` when no book has it |
+| GET | `/api/books/:id` | By BibID. `404` when unknown |
 | GET | `/api/books/:id/articles` | Related articles, best score first |
 | GET | `/api/departments` | Every section, each with `bookCount` |
 | GET | `/api/departments/:id` | |
@@ -68,6 +69,28 @@ book's own title or author.
 
 Paginated responses carry `items`, `total`, `page`, `limit`, `totalPages`,
 `hasMore`.
+
+### Two numbers, two jobs
+
+| | Used for | Sheet column |
+| --- | --- | --- |
+| `id` (the **BibID**) | The book's id: searched by readers, shown on the detail screen, and what its articles link to | `BibID` (articles: `bibID`) |
+| `accessionNumber` | **Barcode scanning** only — the "الرقم العام" on the label | `الرقم العام` |
+
+They are different numbers and never stand in for each other: a BibID sent to
+`/books/by-accession/…` is a `404`, and an accession number is not a book id.
+
+The accession number is not part of the book payload — the app only ever
+sends it, to find a book — and it is stored as text.
+
+**Books without one.** A blank cell, or the hand-typed `Null` the sheet uses,
+means the book has no label number: it is stored as `NULL`, which a unique
+index allows any number of times. Such a book is still found by search, and
+by BibID; it just cannot be reached by scanning. The seed lists them each run.
+Two books sharing a number is a mistake in the sheet and aborts the seed.
+
+Searching by BibID is an exact match: `12492294` finds that book alone;
+`1249` falls through to the ordinary text search.
 
 ### A book
 
@@ -168,3 +191,19 @@ If you create the service through the dashboard rather than the blueprint:
 `--include=dev` is not optional. Render sets `NODE_ENV=production`, which
 makes npm skip devDependencies — and TypeScript plus every `@types/*` package
 lives there, so the build fails on missing type declarations without it.
+
+## Shared book links
+
+`https://<this host>/dalili/<book-name>-<bibid>` is what the app shares. Two
+things on this host make it work:
+
+- **`GET /.well-known/assetlinks.json`** — how Android learns that this host
+  belongs to the app, so a tapped link opens the app instead of the browser. It
+  lists the signing-key fingerprints in `ANDROID_SHA256` (comma-separated). The
+  value in `.env.example` is the *debug* key; add the release key's too.
+- **`GET /dalili/:slug`** — for someone *without* the app. With `LANDING_URL`
+  set it redirects to the React page (`web/`), keeping the path so the page can
+  show the same book. Unset, it is an ordinary 404.
+
+Deploying these needs the three variables set on Render: `ANDROID_SHA256`,
+`ANDROID_PACKAGE` and `LANDING_URL`.

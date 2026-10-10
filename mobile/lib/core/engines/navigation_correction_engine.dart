@@ -57,7 +57,7 @@ class NavigationCorrectionEngine {
     required LibraryMapModel map,
     required NavigationPositionModel position,
   }) {
-    final graph = GraphService(map);
+    final graph = GraphService.of(map);
 
     NodeModel? nearest;
     var bestDistanceSquared = double.infinity;

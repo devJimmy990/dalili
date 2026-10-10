@@ -13,7 +13,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// spot — two explicit steps, so a stray tap on the list never opens the
 /// camera.
 class NavigationControls extends StatefulWidget {
-  const NavigationControls({super.key, this.destinationNodeId});
+  const NavigationControls({
+    super.key,
+    this.destinationNodeId,
+    this.destinationShelfLabel,
+  });
+
+  /// Shelf of the book the trip is for ("الرف 34"); only meaningful together
+  /// with [destinationNodeId].
+  final String? destinationShelfLabel;
 
   /// Destination chosen elsewhere (from a book's section). When set, the
   /// list is replaced by the scan step for this node.
@@ -62,6 +70,9 @@ class _NavigationControlsState extends State<NavigationControls> {
         selector: (state) => (state.loading, state.navigating),
         builder: (context, flags) {
           final (loading, navigating) = flags;
+          // The map asset carries both labels; pick the one matching the UI
+          // so an English session is not sent to "قسم كهربية".
+          final languageCode = Localizations.localeOf(context).languageCode;
 
           // // Once navigation is active the AR screen owns the experience
           // // (including its own cancel confirmation) — nothing to show here.
@@ -75,7 +86,7 @@ class _NavigationControlsState extends State<NavigationControls> {
               if (snapshot.hasError) {
                 return Text(
                   AppLocalizations.error,
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 );
               }
 
@@ -98,7 +109,9 @@ class _NavigationControlsState extends State<NavigationControls> {
                 if (node == null) {
                   return Text(
                     AppLocalizations.navDestinationUnavailable,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   );
                 }
 
@@ -107,7 +120,9 @@ class _NavigationControlsState extends State<NavigationControls> {
                 return Column(
                   children: [
                     Text(
-                      AppLocalizations.navDestinationLabel(node.name),
+                      AppLocalizations.navDestinationLabel(
+                        node.displayName(languageCode),
+                      ),
                       style: Theme.of(context).textTheme.titleMedium,
                       textAlign: TextAlign.center,
                     ),
@@ -137,7 +152,7 @@ class _NavigationControlsState extends State<NavigationControls> {
                   const SizedBox(height: 12),
                   for (final node in destinations)
                     _DestinationTile(
-                      name: node.name,
+                      name: node.displayName(languageCode),
                       selected: node.id == _selected,
                       onTap: loading
                           ? null
@@ -165,6 +180,8 @@ class _NavigationControlsState extends State<NavigationControls> {
     LibraryMapModel map,
     String endNode,
   ) async {
+    final languageCode = Localizations.localeOf(context).languageCode;
+
     final startNode = await Navigator.push<String>(
       context,
       MaterialPageRoute(
@@ -199,8 +216,19 @@ class _NavigationControlsState extends State<NavigationControls> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            BlocProvider.value(value: cubit, child: const ArNavigationScreen()),
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: ArNavigationScreen(
+            destinationName: map.nodes
+                .where((n) => n.id == endNode)
+                .firstOrNull
+                ?.displayName(languageCode),
+            // Only the trip that started from a book knows its shelf.
+            destinationShelfLabel: endNode == widget.destinationNodeId
+                ? widget.destinationShelfLabel
+                : null,
+          ),
+        ),
       ),
     );
   }

@@ -22,15 +22,14 @@ class SearchBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final decoration = InputDecoration(
       hintText: AppLocalizations.searchHint,
-      hintStyle: context.textStyles.bodyMedium
-          ?.copyWith(color: context.appTheme.onSurfaceVariant),
-      prefixIcon:
-          Icon(Icons.search, color: context.appTheme.onSurfaceVariant),
+      hintStyle: context.textStyles.bodyMedium?.copyWith(
+        color: context.appTheme.onSurfaceVariant,
+      ),
+      prefixIcon: Icon(Icons.search, color: context.appTheme.onSurfaceVariant),
       filled: true,
       fillColor: context.appTheme.surfaceContainerLow,
       border: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(context.appTheme.radiusFull),
+        borderRadius: BorderRadius.circular(context.appTheme.radiusFull),
         borderSide: BorderSide.none,
       ),
       contentPadding: const EdgeInsets.symmetric(vertical: 14),

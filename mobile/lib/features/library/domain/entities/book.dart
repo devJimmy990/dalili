@@ -33,6 +33,8 @@ class Book extends Equatable {
     this.isbn,
   });
 
+  /// The catalogue's BibID: the book's id everywhere — what readers search
+  /// by and see, and what its articles link to.
   final String id;
 
   /// Dewey-style code printed on the spine.
@@ -74,8 +76,24 @@ class Book extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, callNumber, title, author, department, location, articles,
-    edition, editionLabel, publisher, place, year, subjects,
-    shelf, shelfLabel, locationLabel, language, cover, isbn,
+    id,
+    callNumber,
+    title,
+    author,
+    department,
+    location,
+    articles,
+    edition,
+    editionLabel,
+    publisher,
+    place,
+    year,
+    subjects,
+    shelf,
+    shelfLabel,
+    locationLabel,
+    language,
+    cover,
+    isbn,
   ];
 }

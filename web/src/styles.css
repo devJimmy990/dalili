@@ -1,0 +1,225 @@
+/* Colours mirror the app's two themes so a shared link looks like Dalili. */
+:root {
+  --surface: #f8f9ff;
+  --card: #eff4ff;
+  --on-surface: #0b1c30;
+  --muted: #44474c;
+  --outline: #c4c6cd;
+  --accent: #0058bc;
+  --on-accent: #ffffff;
+  --shadow: 0 10px 30px rgb(4 22 39 / 12%);
+  --radius: 16px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #0a1420;
+    --card: #111d2c;
+    --on-surface: #e3ecf8;
+    --muted: #afbbcb;
+    --outline: #2c394b;
+    --accent: #1f6fe0;
+    --shadow: 0 10px 30px rgb(0 0 0 / 40%);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Noto Sans Arabic', 'Tajawal', Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  /* 16px gutters on a phone, a centred column on anything wider. */
+  width: min(100% - 32px, 640px);
+  margin-inline: auto;
+  padding: max(20px, env(safe-area-inset-top)) 0 max(32px, env(safe-area-inset-bottom));
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+}
+.brand__name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.brand__tagline {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.book {
+  background: var(--card);
+  border: 1px solid var(--outline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(16px, 4vw, 28px);
+}
+
+.book__top {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.book__cover {
+  flex: none;
+  width: 104px;
+  height: auto;
+  aspect-ratio: 120 / 170;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  background: var(--outline);
+}
+.book__cover--empty {
+  height: 147px;
+}
+.book__heading {
+  min-width: 0;
+}
+.book h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.15rem, 4.5vw, 1.6rem);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.book__author {
+  margin: 0;
+  color: var(--muted);
+}
+
+.location {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 20px 0 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.location__label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.location__value {
+  font-size: 1.1rem;
+}
+
+.facts {
+  margin: 12px 0 0;
+}
+.facts__row {
+  display: grid;
+  grid-template-columns: minmax(96px, 36%) 1fr;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--outline);
+}
+.facts dt {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+/* Call numbers and ISBNs are Latin codes: never reorder them inside Arabic text. */
+.code {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.button {
+  flex: 1 1 180px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.button--ghost {
+  color: var(--on-surface);
+  border-color: var(--outline);
+  background: transparent;
+}
+.button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.hint {
+  margin: 14px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 56px 12px;
+  text-align: center;
+}
+.status h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.status p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid var(--outline);
+  border-top-color: var(--accent);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
+}

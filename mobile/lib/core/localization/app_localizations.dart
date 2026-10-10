@@ -27,6 +27,7 @@ class AppLocalizations {
   static String get navigation => S.current.navigation;
   static String get language => S.current.language;
   static String get theme => S.current.theme;
+  static String get systemTheme => S.current.systemTheme;
   static String get lightTheme => S.current.lightTheme;
   static String get darkTheme => S.current.darkTheme;
   static String get arabic => S.current.arabic;
@@ -45,7 +46,6 @@ class AppLocalizations {
   static String get bookLanguage => S.current.bookLanguage;
   static String get classification => S.current.classification;
   static String get scanInstruction => S.current.scanInstruction;
-  static String get bookRecognized => S.current.bookRecognized;
   static String get pointCameraAtBook => S.current.pointCameraAtBook;
   static String get scanHintBottom => S.current.scanHintBottom;
   static String get author => S.current.author;
@@ -64,9 +64,9 @@ class AppLocalizations {
   static String get articlePages => S.current.articlePages;
   static String get articleIssn => S.current.articleIssn;
   static String get shelfLocation => S.current.shelfLocation;
-  static String get viewDetails => S.current.viewDetails;
   static String get scanAgain => S.current.scanAgain;
   static String get bookNotFoundDesc => S.current.bookNotFoundDesc;
+  static String bookNotFoundGn(String value) => S.current.bookNotFoundGn(value);
 
   static String get navSelectDestinationHint =>
       S.current.navSelectDestinationHint;
@@ -114,8 +114,27 @@ class AppLocalizations {
   static String get navigateToBook => S.current.navigateToBook;
   static String get navDestinationUnavailable =>
       S.current.navDestinationUnavailable;
+  static String get navMetersUnit => S.current.navMetersUnit;
   static String get navScanMyLocation => S.current.navScanMyLocation;
   static String get navScanToStart => S.current.navScanToStart;
   static String navDestinationLabel(String name) =>
       S.current.navDestinationLabel(name);
+  static String get navAlreadyAtDestination =>
+      S.current.navAlreadyAtDestination;
+  static String get navNoRouteFound => S.current.navNoRouteFound;
+  static String get navRouteFailed => S.current.navRouteFailed;
+  static String get navWalkingAccuracy => S.current.navWalkingAccuracy;
+  static String get navHeightLabel => S.current.navHeightLabel;
+  static String get navHeightHint => S.current.navHeightHint;
+  static String navHeightValue(String height, String stride) =>
+      S.current.navHeightValue(height, stride);
+  static String get navHeightNotSet => S.current.navHeightNotSet;
+  static String get navHeightClear => S.current.navHeightClear;
+  static String get bibid => S.current.bibid;
+  static String get shareBook => S.current.shareBook;
+  static String get shareIntro => S.current.shareIntro;
+  static String get bibidCopied => S.current.bibidCopied;
+  static String get copyBibid => S.current.copyBibid;
+  static String get linkBookNotFound => S.current.linkBookNotFound;
+  static String get linkOpenFailed => S.current.linkOpenFailed;
 }

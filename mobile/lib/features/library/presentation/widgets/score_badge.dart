@@ -15,7 +15,7 @@ class ScoreBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: context.colors.secondary,
+        color: context.appTheme.accent,
         borderRadius: BorderRadius.circular(context.appTheme.radiusFull),
       ),
       child: Text(

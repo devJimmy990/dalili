@@ -5,6 +5,21 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// The host that shared book links point at. It comes from SHARE_BASE_URL in
+// mobile/.env — the same value the app uses to build the links it shares — so
+// the manifest and the links cannot drift apart. A tapped link only opens the
+// app when this host matches the one that serves /.well-known/assetlinks.json.
+val shareHost: String = run {
+    val envFile = File(rootProject.projectDir.parentFile, ".env")
+    val configured = if (envFile.exists()) {
+        envFile.readLines()
+            .firstOrNull { it.trim().startsWith("SHARE_BASE_URL=") }
+            ?.substringAfter("=")?.trim().orEmpty()
+    } else ""
+    configured.removePrefix("https://").removePrefix("http://")
+        .substringBefore("/").ifEmpty { "dalili-e0qh.onrender.com" }
+}
+
 android {
     namespace = "com.example.dalili"
     compileSdk = flutter.compileSdkVersion
@@ -28,6 +43,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["linkHost"] = shareHost
     }
 
     buildTypes {

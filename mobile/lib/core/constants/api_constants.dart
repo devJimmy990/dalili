@@ -9,7 +9,13 @@ class ApiConstants {
   static const String departments = '/departments';
   static const String places = '/places';
 
-  static String book(String id) => '/books/$id';
+  /// A book by its BibID (its id) — used when opening a shared link.
+  static String book(String bibid) => '/books/${Uri.encodeComponent(bibid)}';
+
+  /// What a scanned barcode resolves through. Encoded: a barcode can carry
+  /// any text, and a "/" in it must not become part of the path.
+  static String bookByAccession(String number) =>
+      '/books/by-accession/${Uri.encodeComponent(number)}';
   static String bookArticles(String id) => '/books/$id/articles';
   static String departmentBooks(String id) => '/departments/$id/books';
 

@@ -55,8 +55,21 @@ class Article extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, bookIds, title, authors, year, type, source,
-    sourceTitle, issn, keywords, volume, issue, pages,
-    url, doi, score,
+    id,
+    bookIds,
+    title,
+    authors,
+    year,
+    type,
+    source,
+    sourceTitle,
+    issn,
+    keywords,
+    volume,
+    issue,
+    pages,
+    url,
+    doi,
+    score,
   ];
 }

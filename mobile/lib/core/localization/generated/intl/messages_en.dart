@@ -20,21 +20,27 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(error) => "Couldn\'t start the camera: ${error}";
+  static String m0(value) =>
+      "This book was not found in the database, GN is: ${value}";
 
-  static String m1(name) => "Destination: ${name}";
+  static String m1(error) => "Couldn\'t start the camera: ${error}";
 
-  static String m2(value) => "Heading: ${value}°";
+  static String m2(name) => "Destination: ${name}";
 
-  static String m3(distance) => "Continue straight for ${distance} m";
+  static String m3(value) => "Heading: ${value}°";
 
-  static String m4(distance) => "Start walking for ${distance} m";
+  static String m4(height, stride) =>
+      "${height} cm · about ${stride} m per step";
 
-  static String m5(distance) => "${distance} m remaining";
+  static String m5(distance) => "Continue straight for ${distance} m";
 
-  static String m6(value) => "Target difference: ${value}°";
+  static String m6(distance) => "Start walking for ${distance} m";
 
-  static String m7(code) => "Unrecognized QR code: ${code}";
+  static String m7(distance) => "${distance} m remaining";
+
+  static String m8(value) => "Target difference: ${value}°";
+
+  static String m9(code) => "Unrecognized QR code: ${code}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -49,16 +55,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "articleSource": MessageLookupByLibrary.simpleMessage("Source"),
     "articleVolume": MessageLookupByLibrary.simpleMessage("Volume"),
     "author": MessageLookupByLibrary.simpleMessage("Author"),
+    "bibid": MessageLookupByLibrary.simpleMessage("BibID"),
+    "bibidCopied": MessageLookupByLibrary.simpleMessage("BibID copied"),
     "bookLanguage": MessageLookupByLibrary.simpleMessage("Language"),
     "bookNotFound": MessageLookupByLibrary.simpleMessage("Book not found"),
     "bookNotFoundDesc": MessageLookupByLibrary.simpleMessage(
       "This book was not found in the database",
     ),
-    "bookRecognized": MessageLookupByLibrary.simpleMessage("Book recognized!"),
+    "bookNotFoundGn": m0,
     "callNumber": MessageLookupByLibrary.simpleMessage("Call Number"),
     "classification": MessageLookupByLibrary.simpleMessage("Classification"),
     "comingSoon": MessageLookupByLibrary.simpleMessage("Coming Soon"),
     "continueBtn": MessageLookupByLibrary.simpleMessage("Continue"),
+    "copyBibid": MessageLookupByLibrary.simpleMessage("Copy BibID"),
     "darkTheme": MessageLookupByLibrary.simpleMessage("Dark"),
     "department": MessageLookupByLibrary.simpleMessage("Department"),
     "departments": MessageLookupByLibrary.simpleMessage("Departments"),
@@ -73,7 +82,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "isbn": MessageLookupByLibrary.simpleMessage("ISBN"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),
     "lightTheme": MessageLookupByLibrary.simpleMessage("Light"),
+    "linkBookNotFound": MessageLookupByLibrary.simpleMessage(
+      "This link points to a book that is not in the library",
+    ),
+    "linkOpenFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not open the shared book. Check your connection and try again.",
+    ),
     "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
+    "navAlreadyAtDestination": MessageLookupByLibrary.simpleMessage(
+      "You are already in this section",
+    ),
     "navArNavigationTitle": MessageLookupByLibrary.simpleMessage(
       "AR Navigation",
     ),
@@ -83,7 +101,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "navCameraPermissionRequired": MessageLookupByLibrary.simpleMessage(
       "Camera permission is required for AR navigation. Please grant it in system settings.",
     ),
-    "navCameraStartError": m0,
+    "navCameraStartError": m1,
     "navCancelNavigationBody": MessageLookupByLibrary.simpleMessage(
       "Leaving now will cancel your current trip. You\'ll need to select a destination and scan a QR code again to restart.",
     ),
@@ -91,24 +109,40 @@ class MessageLookup extends MessageLookupByLibrary {
       "Cancel navigation?",
     ),
     "navCancelTrip": MessageLookupByLibrary.simpleMessage("Cancel trip"),
-    "navDestinationLabel": m1,
+    "navDestinationLabel": m2,
     "navDestinationUnavailable": MessageLookupByLibrary.simpleMessage(
       "This section is not on the library map yet",
     ),
     "navDone": MessageLookupByLibrary.simpleMessage("Done"),
     "navGoStraight": MessageLookupByLibrary.simpleMessage("Go straight"),
-    "navHeadingLabel": m2,
-    "navInstructionForward": m3,
-    "navInstructionStart": m4,
+    "navHeadingLabel": m3,
+    "navHeightClear": MessageLookupByLibrary.simpleMessage("Use the average"),
+    "navHeightHint": MessageLookupByLibrary.simpleMessage(
+      "Indoor directions count your steps. Your height sets how long a step is, so the remaining distance stays right.",
+    ),
+    "navHeightLabel": MessageLookupByLibrary.simpleMessage("Your height"),
+    "navHeightNotSet": MessageLookupByLibrary.simpleMessage(
+      "Not set — using an average step of 0.75 m",
+    ),
+    "navHeightValue": m4,
+    "navInstructionForward": m5,
+    "navInstructionStart": m6,
     "navKeepGoing": MessageLookupByLibrary.simpleMessage("Keep going"),
+    "navMetersUnit": MessageLookupByLibrary.simpleMessage("m"),
     "navNoCameraFound": MessageLookupByLibrary.simpleMessage(
       "No camera was found on this device.",
     ),
     "navNoDestinationsFound": MessageLookupByLibrary.simpleMessage(
       "No destinations found in this map.",
     ),
-    "navRemainingDistance": m5,
+    "navNoRouteFound": MessageLookupByLibrary.simpleMessage(
+      "No walking route to this section could be found",
+    ),
+    "navRemainingDistance": m7,
     "navRetryLabel": MessageLookupByLibrary.simpleMessage("Retry"),
+    "navRouteFailed": MessageLookupByLibrary.simpleMessage(
+      "Navigation could not be started. Please try again.",
+    ),
     "navScanCurrentQrTitle": MessageLookupByLibrary.simpleMessage(
       "Scan Current QR",
     ),
@@ -133,11 +167,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "navSlightRight": MessageLookupByLibrary.simpleMessage(
       "Bear right slightly",
     ),
-    "navTargetDifferenceLabel": m6,
+    "navTargetDifferenceLabel": m8,
     "navTurnLeft": MessageLookupByLibrary.simpleMessage("Turn left"),
     "navTurnRight": MessageLookupByLibrary.simpleMessage("Turn right"),
     "navUTurn": MessageLookupByLibrary.simpleMessage("Turn around"),
-    "navUnrecognizedQr": m7,
+    "navUnrecognizedQr": m9,
+    "navWalkingAccuracy": MessageLookupByLibrary.simpleMessage(
+      "Walking accuracy",
+    ),
     "navigateToBook": MessageLookupByLibrary.simpleMessage(
       "Take me to the book",
     ),
@@ -175,17 +212,21 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "searchBooks": MessageLookupByLibrary.simpleMessage("Search Books"),
     "searchHint": MessageLookupByLibrary.simpleMessage(
-      "Search books, articles...",
+      "Search by title, author or BibID...",
     ),
     "selectLanguage": MessageLookupByLibrary.simpleMessage("Select Language"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
+    "shareBook": MessageLookupByLibrary.simpleMessage("Share this book"),
+    "shareIntro": MessageLookupByLibrary.simpleMessage(
+      "Found this in the Dalili library:",
+    ),
     "shelf": MessageLookupByLibrary.simpleMessage("Shelf"),
     "shelfLocation": MessageLookupByLibrary.simpleMessage("Location"),
     "skip": MessageLookupByLibrary.simpleMessage("Skip"),
     "suggestedBooks": MessageLookupByLibrary.simpleMessage("Suggested Books"),
+    "systemTheme": MessageLookupByLibrary.simpleMessage("System default"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "viewAll": MessageLookupByLibrary.simpleMessage("View All"),
-    "viewDetails": MessageLookupByLibrary.simpleMessage("View Details"),
     "welcomeSubtitle": MessageLookupByLibrary.simpleMessage(
       "Your smart library assistant",
     ),

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dalili/core/di/injection_container.dart';
+import 'package:dalili/core/utils/safe_emit.dart';
 import 'package:dalili/features/library/data/models/book_model.dart';
 import 'package:dalili/features/library/domain/entities/book.dart';
 import 'package:dalili/features/library/domain/repositories/library_repository.dart';
@@ -7,15 +9,15 @@ import 'package:dalili/features/library/presentation/cubits/app_settings/app_set
 import 'package:dalili/features/library/presentation/cubits/favorites/favorites_state.dart';
 import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:dalili/core/utils/safe_emit.dart';
 
-class FavoritesCubit extends HydratedCubit<FavoritesState> with SafeEmit<FavoritesState> {
+class FavoritesCubit extends HydratedCubit<FavoritesState>
+    with SafeEmit<FavoritesState> {
   FavoritesCubit(this._repository, this._settingsCubit)
     : super(const FavoritesState()) {
-    _lastLocale = _settingsCubit.state.locale;
+    _lastLocale = Locale(sl<AppSettingsCubit>().state.locale);
     _localeSubscription = _settingsCubit.stream.listen((settings) {
-      if (settings.locale != _lastLocale) {
-        _lastLocale = settings.locale;
+      if (settings.locale != _lastLocale.languageCode) {
+        _lastLocale = Locale(settings.locale);
         refreshFavorites();
       }
     });

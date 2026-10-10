@@ -10,23 +10,20 @@ class AppErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline,
-                size: 48, color: context.colors.error),
-            const SizedBox(height: AppSpacing.stackSm),
-            Text(
-              AppLocalizations.error,
-              style: context.textStyles.bodyMedium
-                  ?.copyWith(color: context.appTheme.onSurfaceVariant),
-            ),
-            if (onRetry != null)
-              TextButton(
-                onPressed: onRetry,
-                child: Text(AppLocalizations.retry),
-              ),
-          ],
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.error_outline, size: 48, color: context.colors.error),
+        const SizedBox(height: AppSpacing.stackSm),
+        Text(
+          AppLocalizations.error,
+          style: context.textStyles.bodyMedium?.copyWith(
+            color: context.appTheme.onSurfaceVariant,
+          ),
         ),
-      );
+        if (onRetry != null)
+          TextButton(onPressed: onRetry, child: Text(AppLocalizations.retry)),
+      ],
+    ),
+  );
 }

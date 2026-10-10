@@ -59,10 +59,10 @@ class S {
     return Intl.message('Dalili', name: 'appName', desc: '', args: []);
   }
 
-  /// `Search books, articles...`
+  /// `Search by title, author or BibID...`
   String get searchHint {
     return Intl.message(
-      'Search books, articles...',
+      'Search by title, author or BibID...',
       name: 'searchHint',
       desc: '',
       args: [],
@@ -229,6 +229,16 @@ class S {
     return Intl.message('Theme', name: 'theme', desc: '', args: []);
   }
 
+  /// `System default`
+  String get systemTheme {
+    return Intl.message(
+      'System default',
+      name: 'systemTheme',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Light`
   String get lightTheme {
     return Intl.message('Light', name: 'lightTheme', desc: '', args: []);
@@ -354,16 +364,6 @@ class S {
     );
   }
 
-  /// `Book recognized!`
-  String get bookRecognized {
-    return Intl.message(
-      'Book recognized!',
-      name: 'bookRecognized',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Point camera at a book barcode`
   String get pointCameraAtBook {
     return Intl.message(
@@ -482,16 +482,6 @@ class S {
   /// `Location`
   String get shelfLocation {
     return Intl.message('Location', name: 'shelfLocation', desc: '', args: []);
-  }
-
-  /// `View Details`
-  String get viewDetails {
-    return Intl.message(
-      'View Details',
-      name: 'viewDetails',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `Scan Again`
@@ -799,6 +789,11 @@ class S {
     );
   }
 
+  /// `m`
+  String get navMetersUnit {
+    return Intl.message('m', name: 'navMetersUnit', desc: '', args: []);
+  }
+
   /// `Scan my current location QR`
   String get navScanMyLocation {
     return Intl.message(
@@ -826,6 +821,166 @@ class S {
       name: 'navDestinationLabel',
       desc: '',
       args: [name],
+    );
+  }
+
+  /// `You are already in this section`
+  String get navAlreadyAtDestination {
+    return Intl.message(
+      'You are already in this section',
+      name: 'navAlreadyAtDestination',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No walking route to this section could be found`
+  String get navNoRouteFound {
+    return Intl.message(
+      'No walking route to this section could be found',
+      name: 'navNoRouteFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Navigation could not be started. Please try again.`
+  String get navRouteFailed {
+    return Intl.message(
+      'Navigation could not be started. Please try again.',
+      name: 'navRouteFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Walking accuracy`
+  String get navWalkingAccuracy {
+    return Intl.message(
+      'Walking accuracy',
+      name: 'navWalkingAccuracy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your height`
+  String get navHeightLabel {
+    return Intl.message(
+      'Your height',
+      name: 'navHeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Indoor directions count your steps. Your height sets how long a step is, so the remaining distance stays right.`
+  String get navHeightHint {
+    return Intl.message(
+      'Indoor directions count your steps. Your height sets how long a step is, so the remaining distance stays right.',
+      name: 'navHeightHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{height} cm · about {stride} m per step`
+  String navHeightValue(Object height, Object stride) {
+    return Intl.message(
+      '$height cm · about $stride m per step',
+      name: 'navHeightValue',
+      desc: '',
+      args: [height, stride],
+    );
+  }
+
+  /// `Not set — using an average step of 0.75 m`
+  String get navHeightNotSet {
+    return Intl.message(
+      'Not set — using an average step of 0.75 m',
+      name: 'navHeightNotSet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use the average`
+  String get navHeightClear {
+    return Intl.message(
+      'Use the average',
+      name: 'navHeightClear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `BibID`
+  String get bibid {
+    return Intl.message('BibID', name: 'bibid', desc: '', args: []);
+  }
+
+  /// `This book was not found in the database, GN is: {value}`
+  String bookNotFoundGn(Object value) {
+    return Intl.message(
+      'This book was not found in the database, GN is: $value',
+      name: 'bookNotFoundGn',
+      desc: '',
+      args: [value],
+    );
+  }
+
+  /// `Share this book`
+  String get shareBook {
+    return Intl.message(
+      'Share this book',
+      name: 'shareBook',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Found this in the Dalili library:`
+  String get shareIntro {
+    return Intl.message(
+      'Found this in the Dalili library:',
+      name: 'shareIntro',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `BibID copied`
+  String get bibidCopied {
+    return Intl.message(
+      'BibID copied',
+      name: 'bibidCopied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy BibID`
+  String get copyBibid {
+    return Intl.message('Copy BibID', name: 'copyBibid', desc: '', args: []);
+  }
+
+  /// `This link points to a book that is not in the library`
+  String get linkBookNotFound {
+    return Intl.message(
+      'This link points to a book that is not in the library',
+      name: 'linkBookNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not open the shared book. Check your connection and try again.`
+  String get linkOpenFailed {
+    return Intl.message(
+      'Could not open the shared book. Check your connection and try again.',
+      name: 'linkOpenFailed',
+      desc: '',
+      args: [],
     );
   }
 }

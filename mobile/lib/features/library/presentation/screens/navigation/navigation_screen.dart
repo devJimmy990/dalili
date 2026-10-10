@@ -12,7 +12,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // showing a visual map to the user.
 
 class NavigationScreen extends StatelessWidget {
-  const NavigationScreen({super.key, this.destinationNodeId});
+  const NavigationScreen({
+    super.key,
+    this.destinationNodeId,
+    this.destinationShelfLabel,
+  });
+
+  /// The book's shelf ("الرف 34"), shown beside the destination while
+  /// walking. Null when the destination was picked from the list.
+  final String? destinationShelfLabel;
 
   /// When set, the destination picker is skipped: the screen goes straight
   /// to the QR scan for this node. Used by "take me to the book", which
@@ -30,7 +38,10 @@ class NavigationScreen extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                NavigationControls(destinationNodeId: destinationNodeId),
+                NavigationControls(
+                  destinationNodeId: destinationNodeId,
+                  destinationShelfLabel: destinationShelfLabel,
+                ),
 
                 if (state.loading)
                   const Padding(
@@ -43,11 +54,12 @@ class NavigationScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 20),
                     child: Text(
                       state.error!,
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
 
-                // NavigationInfoCard(state: state, map: state.map),
                 if (state.arrived)
                   Padding(
                     padding: const EdgeInsets.only(top: 16),

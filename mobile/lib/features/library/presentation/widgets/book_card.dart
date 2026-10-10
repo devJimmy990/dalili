@@ -3,6 +3,7 @@ import 'package:dalili/core/extensions/navigation.dart';
 import 'package:dalili/core/theme/app_theme_extension.dart';
 import 'package:dalili/features/library/domain/entities/book.dart';
 import 'package:dalili/features/library/presentation/screens/book_detail/book_detail_screen.dart';
+import 'package:dalili/features/library/presentation/widgets/book_info_rows.dart';
 import 'package:dalili/features/library/presentation/widgets/cover_image.dart';
 import 'package:flutter/material.dart';
 import 'package:dalili/core/utils/display.dart';
@@ -71,6 +72,7 @@ class BookCard extends StatelessWidget {
                   ],
                   const SizedBox(height: 4),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         Icons.location_on,
@@ -80,16 +82,14 @@ class BookCard extends StatelessWidget {
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          book.locationLabel ??
-                              joinParts([
-                                book.location.name,
-                                book.shelfLabel,
-                              ], separator: '، ') ??
-                              book.callNumber,
+                          BookFindItRows.locationOf(book) ?? book.callNumber,
                           style: context.textStyles.bodySmall?.copyWith(
                             color: context.colors.secondary,
                           ),
-                          maxLines: 1,
+                          // Two lines: "Electrical Engineering Department,
+                          // Shelf 39" does not fit beside the cover on one,
+                          // and the shelf number is the half that matters.
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

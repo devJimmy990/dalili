@@ -113,7 +113,13 @@ model SourceType {
 }
 
 model Book {
+  /// The catalogue's BibID. It is the book's id: readers search by it, and
+  /// articles link to the book through it.
   id         String  @id
+  /// The "الرقم العام" printed on the book's barcode label — what a scan
+  /// looks up. A separate number from the BibID, and absent for a few books
+  /// (NULL; Postgres lets any number of rows be NULL under a unique index).
+  accessionNumber String? @unique
   /// Dewey-style code that locates the book on its shelf. Required: it is
   /// how a visitor actually finds the book.
   callNumber String

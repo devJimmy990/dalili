@@ -1,6 +1,6 @@
 /// Shared angle helpers used across the navigation engines. Extracted
 /// because the "wrap a degree difference into [-180, 180]" loop was
-/// independently duplicated in both NavigationInstructionService and
+/// independently duplicated in both the instruction builder and
 /// NavigationDecisionEngine — same logic, two copies, easy to fix one and
 /// forget the other.
 class AngleUtils {

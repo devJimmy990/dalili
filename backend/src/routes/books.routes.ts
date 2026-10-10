@@ -4,7 +4,13 @@ import { env } from '../lib/env.js';
 import { ApiError, notFound, param, sendSuccess } from '../lib/http.js';
 import { asyncRoute } from '../middleware/error.js';
 import { getArticlesForBook } from '../services/articles.service.js';
-import { getBookById, getBooksByIds, listBooks, searchBooks } from '../services/books.service.js';
+import {
+  getBookByAccessionNumber,
+  getBookById,
+  getBooksByIds,
+  listBooks,
+  searchBooks,
+} from '../services/books.service.js';
 
 export const booksRouter = Router();
 
@@ -37,6 +43,17 @@ booksRouter.get(
     const term = q ?? query;
     if (!term) throw new ApiError('missing_query', 400);
     sendSuccess(res, await searchBooks(term, req.lang));
+  }),
+);
+
+/// GET /api/books/by-accession/:number — what a scanned barcode resolves to.
+/// Declared before /:id; "by-accession" is not a book id.
+booksRouter.get(
+  '/by-accession/:number',
+  asyncRoute(async (req, res) => {
+    const book = await getBookByAccessionNumber(param(req, 'number'), req.lang);
+    if (!book) throw notFound('book_not_found');
+    sendSuccess(res, { book });
   }),
 );
 

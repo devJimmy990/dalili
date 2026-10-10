@@ -6,6 +6,7 @@ import 'package:dalili/core/utils/qr_payload.dart';
 import 'package:dalili/features/library/data/models/navigation/library_map_model.dart';
 import 'package:dalili/features/library/presentation/screens/navigation/qr_node_resolver.dart';
 import 'package:flutter/foundation.dart';
+import 'package:dalili/core/theme/app_theme_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -215,23 +216,25 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
             if (_errorMessage != null)
               ColoredBox(
-                color: Colors.black,
+                color: context.colors.surface,
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.camera_alt_outlined,
-                          color: Colors.white54,
+                          color: context.appTheme.onSurfaceVariant,
                           size: 48,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           _errorMessage!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white70),
+                          style: TextStyle(
+                            color: context.appTheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
@@ -244,9 +247,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 ),
               )
             else if (_starting)
-              const ColoredBox(
-                color: Colors.black,
-                child: Center(child: CircularProgressIndicator()),
+              ColoredBox(
+                color: context.colors.surface,
+                child: const Center(child: CircularProgressIndicator()),
               ),
 
             // Dev-only bypass for testing without printed QR codes — must
@@ -258,7 +261,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
-                  color: Colors.black54,
+                  color: context.cameraPanel,
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
